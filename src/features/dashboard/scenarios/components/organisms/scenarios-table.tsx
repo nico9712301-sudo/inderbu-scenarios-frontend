@@ -1,12 +1,7 @@
 "use client";
 
-import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { FileEdit, Loader2, Search, MoreHorizontal } from "lucide-react";
-import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Input } from "@/shared/ui/input";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +9,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
+import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { Input } from "@/shared/ui/input";
 import { Scenario } from "@/services/api";
 
 interface Column {
@@ -57,16 +58,16 @@ export function ScenariosTable({
       cell: (r) => (
         <span
           className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium
-          ${r.state ? "bg-orange-100 text-orange-800" : "bg-gray-100 text-gray-800"}`}
+          ${r.active ? "bg-orange-100 text-orange-800" : "bg-gray-100 text-gray-800"}`}
         >
-          {r.state ? "Activo" : "Inactivo"}
+          {r.active ? "Activo" : "Inactivo"}
         </span>
       ),
     },
     {
       id: "actions",
       header: "Acciones",
-      cell: (r) => (
+      cell: (r: Scenario) => (
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -76,27 +77,11 @@ export function ScenariosTable({
           >
             <FileEdit className="h-4 w-4 mr-1" /> Editar
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Ver detalles</DropdownMenuItem>
-              <DropdownMenuItem>Editar</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                Desactivar
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       ),
     },
   ];
 
-  // ─── Render ─────────────────────────────────────────────────────────────────
   return (
     <Card>
       <CardHeader className="pb-2">

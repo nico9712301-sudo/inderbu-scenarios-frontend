@@ -5,7 +5,7 @@ export interface PaginatedScenarios {
   meta: PageMeta;
 }
 
-export interface ScenariosFilters {
+export interface IScenariosFilters {
   page?: number;
   limit?: number;
   search?: string;
@@ -13,7 +13,7 @@ export interface ScenariosFilters {
 }
 
 export interface IScenarioRepository {
-  getAllWithPagination(filters: ScenariosFilters): Promise<PaginatedScenarios>;
+  getAllWithPagination(filters: IScenariosFilters): Promise<PaginatedScenarios>;
   create(data: CreateScenarioDto): Promise<Scenario>;
   update(id: number, data: UpdateScenarioDto): Promise<Scenario>;
 }

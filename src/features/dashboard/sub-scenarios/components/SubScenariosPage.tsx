@@ -1,29 +1,26 @@
 "use client";
 
+import { Download, Filter, Plus } from "lucide-react";
+import { useState } from "react";
+
 import { CreateSubScenarioDialog } from "@/features/sub-scenario/components/organisms/create-sub-scenario-dialog";
 import { SubScenariosFiltersCard } from "@/features/sub-scenario/components/molecules/SubScenariosFiltersCard";
 import { EditSubScenarioDialog } from "@/features/sub-scenario/components/organisms/edit-sub-scenario-dialog";
 import { SubScenarioTable } from "@/features/sub-scenario/components/organisms/sub-scenario-table";
 import { useSubScenarioData } from "@/features/sub-scenario/hooks/use-sub-scenario-data";
-import { SubScenariosDataResponse } from "../application/GetSubScenariosDataUseCase";
+import { ISubScenariosDataResponse } from "../application/GetSubScenariosDataUseCase";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { Download, Filter, Plus } from "lucide-react";
 import { Button } from "@/shared/ui/button";
-import { useState } from "react";
 
 
 interface SubScenariosPageProps {
-  initialData: SubScenariosDataResponse;
+  initialData: ISubScenariosDataResponse;
 }
 
 export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
-  // Use the dynamic hook (ahora funciona correctamente)
+  
   const {
     subScenarios,
-    scenarios,
-    activityAreas, 
-    neighborhoods,
-    fieldSurfaceTypes,
     pageMeta,
     loading,
     filters,

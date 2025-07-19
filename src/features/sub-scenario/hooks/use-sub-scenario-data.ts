@@ -1,5 +1,7 @@
 "use client";
 
+import { useCallback, useEffect, useState, useRef, useMemo } from "react";
+
 import {
   ActivityArea,
   Neighborhood,
@@ -12,10 +14,12 @@ import {
   scenarioService,
   subScenarioService,
 } from "@/services/api";
-import { useCallback, useEffect, useState, useRef, useMemo } from "react";
-import { useDashboardPagination, PageMeta } from "@/shared/hooks/use-dashboard-pagination";
+import {
+  useDashboardPagination,
+  PageMeta,
+} from "@/shared/hooks/use-dashboard-pagination";
 
-export interface SubScenarioFilters {
+export interface ISubScenarioFilters {
   search: string;
   scenarioId?: number;
   activityAreaId?: number;
@@ -27,7 +31,7 @@ export function useSubScenarioData() {
 
   // ─── Use standardized pagination hook ─────────────────────────────────────────────────────────────
   const pagination = useDashboardPagination({
-    baseUrl: '/dashboard/sub-scenarios',
+    baseUrl: "/dashboard/sub-scenarios",
     defaultLimit: 7,
   });
 
@@ -44,7 +48,7 @@ export function useSubScenarioData() {
   const [error, setError] = useState<string | null>(null);
 
   // ─── Extract specific filters from pagination ──────────────────────────────────────────────────
-  const filters: SubScenarioFilters = {
+  const filters: ISubScenarioFilters = {
     search: pagination.filters.search || "",
     scenarioId: pagination.filters.scenarioId as number | undefined,
     activityAreaId: pagination.filters.activityAreaId as number | undefined,
@@ -81,21 +85,24 @@ export function useSubScenarioData() {
   }, []);
 
   // ─── Memoize query params to avoid infinite loops ─────────────────────────────────────────────
-  const queryParams = useMemo(() => ({
-    page: pagination.filters.page,
-    limit: pagination.filters.limit,
-    search: pagination.filters.search,
-    scenarioId: filters.scenarioId,
-    activityAreaId: filters.activityAreaId,
-    neighborhoodId: filters.neighborhoodId,
-  }), [
-    pagination.filters.page,
-    pagination.filters.limit, 
-    pagination.filters.search,
-    filters.scenarioId,
-    filters.activityAreaId,
-    filters.neighborhoodId
-  ]);
+  const queryParams = useMemo(
+    () => ({
+      page: pagination.filters.page,
+      limit: pagination.filters.limit,
+      search: pagination.filters.search,
+      scenarioId: filters.scenarioId,
+      activityAreaId: filters.activityAreaId,
+      neighborhoodId: filters.neighborhoodId,
+    }),
+    [
+      pagination.filters.page,
+      pagination.filters.limit,
+      pagination.filters.search,
+      filters.scenarioId,
+      filters.activityAreaId,
+      filters.neighborhoodId,
+    ]
+  );
 
   // ─── Fetch subescenarios cuando cambian los filtros ───────────────────────────────────────────
   const fetchSubScenarios = useCallback(async () => {
@@ -103,7 +110,6 @@ export function useSubScenarioData() {
     try {
       const res = await subScenarioService.getAll(queryParams);
       setSubScenarios(res.data);
-      // Build proper PageMeta with pagination utility
       const meta = pagination.buildPageMeta(res.meta.totalItems);
       setPageMeta(meta);
     } catch (err) {
@@ -129,72 +135,81 @@ export function useSubScenarioData() {
   }, [fetchSubScenarios]);
 
   // ─── CRUD actions ───────────────────────────────────────────────────────────
-  const createSubScenario = useCallback(async (
-    formData: Omit<SubScenario, "id"> & { images?: any[] },
-  ) => {
-    setLoading(true);
-    try {
-      // Crear el DTO con solo los campos necesarios y validar tipos
-      const createDto: CreateSubScenarioDto = {
-        name: formData.name,
-        state: Boolean(formData.state),
-        hasCost: Boolean(formData.hasCost),
-        numberOfSpectators: Number(formData.numberOfSpectators) || 0,
-        numberOfPlayers: Number(formData.numberOfPlayers) || 0,
-        recommendations: formData.recommendations || '',
-        scenarioId: Number(formData.scenarioId),
-        activityAreaId: formData.activityAreaId ? Number(formData.activityAreaId) : undefined,
-        fieldSurfaceTypeId: formData.fieldSurfaceTypeId ? Number(formData.fieldSurfaceTypeId) : undefined,
-      };
-      
-      // Extraer archivos File de las imágenes
-      const imageFiles: File[] = formData.images?.map(img => img.file).filter(Boolean) || [];
-      
-      // Crear subescenario con imágenes en una sola llamada
-      await subScenarioService.create(createDto, imageFiles);
-      
-      // Refetch los datos actuales
-      await fetchSubScenarios();
-    } catch (error) {
-      console.error('Error al crear subescenario:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchSubScenarios]);
+  const createSubScenario = useCallback(
+    async (formData: Omit<SubScenario, "id"> & { images?: any[] }) => {
+      setLoading(true);
+      try {
+        // Crear el DTO con solo los campos necesarios y validar tipos
+        const createDto: CreateSubScenarioDto = {
+          name: formData.name,
+          state: Boolean(formData.state),
+          hasCost: Boolean(formData.hasCost),
+          numberOfSpectators: Number(formData.numberOfSpectators) || 0,
+          numberOfPlayers: Number(formData.numberOfPlayers) || 0,
+          recommendations: formData.recommendations || "",
+          scenarioId: Number(formData.scenarioId),
+          activityAreaId: formData.activityAreaId
+            ? Number(formData.activityAreaId)
+            : undefined,
+          fieldSurfaceTypeId: formData.fieldSurfaceTypeId
+            ? Number(formData.fieldSurfaceTypeId)
+            : undefined,
+        };
 
-  const updateSubScenario = useCallback(async (id: number, formData: Partial<SubScenario>) => {
-    setLoading(true);
-    try {
-      // Filtrar solo los campos editables para el DTO de actualización
-      const updateDto: UpdateSubScenarioDto = {
-        name: formData.name,
-        state: formData.state,
-        hasCost: formData.hasCost,
-        numberOfSpectators: formData.numberOfSpectators,
-        numberOfPlayers: formData.numberOfPlayers,
-        recommendations: formData.recommendations,
-        activityAreaId: formData.activityAreaId,
-        fieldSurfaceTypeId: formData.fieldSurfaceTypeId,
-      };
-      
-      // Remover campos undefined para evitar enviarlos
-      const cleanDto = Object.fromEntries(
-        Object.entries(updateDto).filter(([_, value]) => value !== undefined)
-      ) as UpdateSubScenarioDto;
-      
-      await subScenarioService.update(id, cleanDto);
-      // Refetch los datos actuales
-      await fetchSubScenarios();
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchSubScenarios]);
+        // Extraer archivos File de las imágenes
+        const imageFiles: File[] =
+          formData.images?.map((img) => img.file).filter(Boolean) || [];
+
+        // Crear subescenario con imágenes en una sola llamada
+        await subScenarioService.create(createDto, imageFiles);
+
+        // Refetch los datos actuales
+        await fetchSubScenarios();
+      } catch (error) {
+        console.error("Error al crear subescenario:", error);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchSubScenarios]
+  );
+
+  const updateSubScenario = useCallback(
+    async (id: number, formData: Partial<SubScenario>) => {
+      setLoading(true);
+      try {
+        // Filtrar solo los campos editables para el DTO de actualización
+        const updateDto: UpdateSubScenarioDto = {
+          name: formData.name,
+          state: formData.state,
+          hasCost: formData.hasCost,
+          numberOfSpectators: formData.numberOfSpectators,
+          numberOfPlayers: formData.numberOfPlayers,
+          recommendations: formData.recommendations,
+          activityAreaId: formData.activityAreaId,
+          fieldSurfaceTypeId: formData.fieldSurfaceTypeId,
+        };
+
+        // Remover campos undefined para evitar enviarlos
+        const cleanDto = Object.fromEntries(
+          Object.entries(updateDto).filter(([_, value]) => value !== undefined)
+        ) as UpdateSubScenarioDto;
+
+        await subScenarioService.update(id, cleanDto);
+        // Refetch los datos actuales
+        await fetchSubScenarios();
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchSubScenarios]
+  );
 
   return {
     // Pagination from standardized hook
     ...pagination,
-    
+
     // Domain-specific state
     filters,
     subScenarios,
@@ -205,7 +220,7 @@ export function useSubScenarioData() {
     pageMeta,
     loading,
     error,
-    
+
     // CRUD actions
     createSubScenario,
     updateSubScenario,

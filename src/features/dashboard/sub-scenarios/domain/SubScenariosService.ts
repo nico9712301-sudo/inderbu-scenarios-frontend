@@ -1,7 +1,7 @@
 import { 
   GetSubScenariosDataUseCase, 
   SubScenariosFilters, 
-  SubScenariosDataResponse 
+  ISubScenariosDataResponse 
 } from '../application/GetSubScenariosDataUseCase';
 
 export class SubScenariosService {
@@ -9,7 +9,7 @@ export class SubScenariosService {
     private readonly getSubScenariosDataUseCase: GetSubScenariosDataUseCase
   ) {}
 
-  async getSubScenariosData(filters: SubScenariosFilters = {}): Promise<SubScenariosDataResponse> {
+  async getSubScenariosData(filters: SubScenariosFilters = {}): Promise<ISubScenariosDataResponse> {
     return await this.getSubScenariosDataUseCase.execute(filters);
   }
 }

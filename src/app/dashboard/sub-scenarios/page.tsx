@@ -1,5 +1,6 @@
 import { createSubScenariosContainer } from '@/features/dashboard/sub-scenarios/di/SubScenariosContainer.server';
 import { SubScenariosPage } from '@/features/dashboard/sub-scenarios/components/SubScenariosPage';
+import { ISubScenariosDataResponse } from '@/features/dashboard/sub-scenarios/application/GetSubScenariosDataUseCase';
 
 interface SubScenariosPageProps {
   searchParams: {
@@ -31,7 +32,7 @@ export default async function SubScenariosRoute(props: SubScenariosPageProps) {
 
     // DDD: Execute use case through service layer
     // All business logic, validation, and data fetching happens in domain/application layers
-    const result = await subScenariosService.getSubScenariosData(filters);
+    const result: ISubScenariosDataResponse = await subScenariosService.getSubScenariosData(filters);
 
     // Atomic Design: Render page template with clean separation
     return <SubScenariosPage initialData={result} />;

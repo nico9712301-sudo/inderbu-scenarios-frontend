@@ -1,6 +1,6 @@
 import {
   SubScenarioRepository,
-  SubScenarioFilters,
+  ISubScenarioFilters,
   PaginatedSubScenarios,
   HomeDataAccessedEvent,
   HomeFiltersAppliedEvent,
@@ -72,7 +72,7 @@ export class GetHomeDataUseCaseImpl implements GetHomeDataUseCase {
 
     try {
       // Domain: Validate and transform input to domain filters
-      const domainFilters = SubScenarioFilters.validate({
+      const domainFilters = ISubScenarioFilters.validate({
         page: input.page,
         limit: input.limit,
         searchQuery: input.search,
@@ -126,7 +126,7 @@ export class GetHomeDataUseCaseImpl implements GetHomeDataUseCase {
   }
 
   private serializeFilters(
-    filters: SubScenarioFilters
+    filters: ISubScenarioFilters
   ): SerializedSubScenarioFilters {
     // Convert class instance to plain object for client component compatibility
     return {
@@ -143,7 +143,7 @@ export class GetHomeDataUseCaseImpl implements GetHomeDataUseCase {
 
   private buildMetadata(
     subScenarios: PaginatedSubScenarios,
-    filters: SubScenarioFilters,
+    filters: ISubScenarioFilters,
     startTime: number
   ): HomeDataMetadata {
     const loadTime = Date.now() - startTime;
@@ -161,7 +161,7 @@ export class GetHomeDataUseCaseImpl implements GetHomeDataUseCase {
   }
 
   private async publishDomainEvents(
-    filters: SubScenarioFilters,
+    filters: ISubScenarioFilters,
     subScenarios: PaginatedSubScenarios,
     activityAreas: IActivityArea[],
     neighborhoods: INeighborhood[]

@@ -118,7 +118,7 @@ export interface Scenario {
   address: string;
   neighborhood?: Neighborhood;
   description?: string;
-  status?: string;
+  active: boolean;
 }
 
 // DTOs para Communes
@@ -153,7 +153,10 @@ export interface CreateScenarioDto {
 export interface UpdateScenarioDto {
   name?: string;
   address?: string;
-  neighborhoodId?: number;
+  neighborhood?: {
+    id?: number;
+    name?: string;
+  }
 }
 
 // DTOs para SubScenarios

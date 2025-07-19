@@ -30,11 +30,11 @@ export interface PaginatedSubScenarios {
 
 // DDD: Domain Repository Interface
 export interface SubScenarioRepository {
-  findFiltered(filters: SubScenarioFilters): Promise<PaginatedSubScenarios>;
+  findFiltered(filters: ISubScenarioFilters): Promise<PaginatedSubScenarios>;
 }
 
 // DDD: Domain Value Objects
-export class SubScenarioFilters {
+export class ISubScenarioFilters {
   constructor(
     public readonly page: number,
     public readonly limit: number,
@@ -44,7 +44,7 @@ export class SubScenarioFilters {
     public readonly hasCost?: boolean
   ) {}
 
-  static validate(input: any): SubScenarioFilters {
+  static validate(input: any): ISubScenarioFilters {
     const page = this.validatePage(input.page);
     const limit = this.validateLimit(input.limit);
     const searchQuery = this.validateSearchQuery(input.searchQuery);
@@ -52,7 +52,7 @@ export class SubScenarioFilters {
     const neighborhoodId = this.validateId(input.neighborhoodId);
     const hasCost = this.validateBoolean(input.hasCost);
 
-    return new SubScenarioFilters(
+    return new ISubScenarioFilters(
       page,
       limit, 
       searchQuery,
@@ -151,7 +151,7 @@ export class SearchLimitExceededError extends Error {
 // DDD: Domain Events
 export class HomeDataAccessedEvent extends DomainEvent {
   constructor(
-    public readonly filters: SubScenarioFilters,
+    public readonly filters: ISubScenarioFilters,
     public readonly resultCount: number,
     public readonly timestamp: Date = new Date()
   ) {

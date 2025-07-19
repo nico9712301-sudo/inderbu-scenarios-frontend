@@ -1,6 +1,6 @@
 // Infrastructure: Sub-Scenario Repository Adapter (bridges existing API to domain interface)
 
-import { SubScenarioRepository, SubScenarioFilters, PaginatedSubScenarios } from '@/entities/sub-scenario/domain/sub-scenario.domain';
+import { SubScenarioRepository, ISubScenarioFilters, PaginatedSubScenarios } from '@/entities/sub-scenario/domain/sub-scenario.domain';
 
 // Existing API interface (what currently exists)
 interface SubScenarioApiService {
@@ -18,7 +18,7 @@ interface SubScenarioApiService {
 export class SubScenarioRepositoryAdapter implements SubScenarioRepository {
   constructor(private readonly apiService: SubScenarioApiService) {}
 
-  async findFiltered(filters: SubScenarioFilters): Promise<PaginatedSubScenarios> {
+  async findFiltered(filters: ISubScenarioFilters): Promise<PaginatedSubScenarios> {
     console.log('SubScenarioRepositoryAdapter: Executing findFiltered with:', filters);
 
     try {

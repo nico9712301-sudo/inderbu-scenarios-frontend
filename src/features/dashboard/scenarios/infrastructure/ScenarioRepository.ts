@@ -10,14 +10,14 @@ import {
   IScenarioRepository, 
   INeighborhoodRepository,
   PaginatedScenarios, 
-  ScenariosFilters 
+  IScenariosFilters 
 } from '../domain/repositories/IScenarioRepository';
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
 
 export class ScenarioRepository implements IScenarioRepository {
   
-  async getAllWithPagination(filters: ScenariosFilters): Promise<PaginatedScenarios> {
+  async getAllWithPagination(filters: IScenariosFilters): Promise<PaginatedScenarios> {
     try {
       // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();

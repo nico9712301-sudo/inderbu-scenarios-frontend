@@ -7,7 +7,7 @@ import {
   SubScenariosFilters,
 } from '../domain/repositories/ISubScenarioRepository';
 
-export interface SubScenariosDataResponse {
+export interface ISubScenariosDataResponse {
   subScenarios: SubScenario[];
   scenarios: Scenario[];
   activityAreas: ActivityArea[];
@@ -25,7 +25,7 @@ export class GetSubScenariosDataUseCase {
     private readonly neighborhoodRepository: INeighborhoodRepository
   ) {}
 
-  async execute(filters: SubScenariosFilters = {}): Promise<SubScenariosDataResponse> {
+  async execute(filters: SubScenariosFilters = {}): Promise<ISubScenariosDataResponse> {
     try {
       // Default filters
       const defaultFilters: SubScenariosFilters = {

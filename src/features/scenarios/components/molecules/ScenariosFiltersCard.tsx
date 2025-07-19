@@ -16,15 +16,15 @@ import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 
 
-type ScenariosFilters = {
+type IScenariosFilters = {
   search: string;
   neighborhoodId?: number;
 };
 
 interface ScenariosFiltersCardProps {
   open: boolean;
-  filters: ScenariosFilters;
-  onFiltersChange: (filters: ScenariosFilters) => void;
+  filters: IScenariosFilters;
+  onFiltersChange: (filters: IScenariosFilters) => void;
   onClearFilters: () => void;
 }
 

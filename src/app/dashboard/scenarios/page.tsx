@@ -1,3 +1,4 @@
+import { IScenariosDataResponse } from '@/features/dashboard/scenarios/application/GetScenariosDataUseCase';
 import { createScenariosContainer } from '@/features/dashboard/scenarios/di/ScenariosContainer.server';
 import { ScenariosPage } from '@/features/dashboard/scenarios/components/ScenariosPage';
 
@@ -27,7 +28,7 @@ export default async function ScenariosRoute(props: ScenariosPageProps) {
 
     // DDD: Execute use case through service layer
     // All business logic, validation, and data fetching happens in domain/application layers
-    const result = await scenariosService.getScenariosData(filters);
+    const result: IScenariosDataResponse = await scenariosService.getScenariosData(filters);
 
     // Atomic Design: Render page template with clean separation
     return <ScenariosPage initialData={result} />;

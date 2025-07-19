@@ -1,11 +1,11 @@
 import { Neighborhood, Scenario, PageMeta } from '@/services/api';
-import { IScenarioRepository, INeighborhoodRepository, ScenariosFilters } from '../domain/repositories/IScenarioRepository';
+import { IScenarioRepository, INeighborhoodRepository, IScenariosFilters } from '../domain/repositories/IScenarioRepository';
 
-export interface ScenariosDataResponse {
+export interface IScenariosDataResponse {
   scenarios: Scenario[];
   neighborhoods: Neighborhood[];
   meta: PageMeta;
-  filters: ScenariosFilters;
+  filters: IScenariosFilters;
 }
 
 export class GetScenariosDataUseCase {
@@ -14,10 +14,10 @@ export class GetScenariosDataUseCase {
     private readonly neighborhoodRepository: INeighborhoodRepository
   ) {}
 
-  async execute(filters: ScenariosFilters = {}): Promise<ScenariosDataResponse> {
+  async execute(filters: IScenariosFilters = {}): Promise<IScenariosDataResponse> {
     try {
       // Default filters
-      const defaultFilters: ScenariosFilters = {
+      const defaultFilters: IScenariosFilters = {
         page: 1,
         limit: 7,
         search: "",
