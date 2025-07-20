@@ -29,6 +29,7 @@ export class ScenarioRepository implements IScenarioRepository {
       if (filters.limit) params.append('limit', filters.limit.toString());
       if (filters.search) params.append('search', filters.search);
       if (filters.neighborhoodId) params.append('neighborhoodId', filters.neighborhoodId.toString());
+      if (filters.active !== undefined) params.append('active', filters.active.toString());
 
       // Direct API call with authentication
       const result = await httpClient.get<PaginatedScenarios>(

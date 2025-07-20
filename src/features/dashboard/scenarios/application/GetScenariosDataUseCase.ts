@@ -1,5 +1,7 @@
 import { Neighborhood, Scenario, PageMeta } from '@/services/api';
-import { IScenarioRepository, INeighborhoodRepository, IScenariosFilters } from '../domain/repositories/IScenarioRepository';
+import { IScenariosFilters } from '../domain/repositories/IScenarioRepository';
+import { GetScenariosUseCase } from './GetScenariosUseCase';
+import { GetNeighborhoodsUseCase } from './GetNeighborhoodsUseCase';
 
 export interface IScenariosDataResponse {
   scenarios: Scenario[];
@@ -10,8 +12,8 @@ export interface IScenariosDataResponse {
 
 export class GetScenariosDataUseCase {
   constructor(
-    private readonly scenarioRepository: IScenarioRepository,
-    private readonly neighborhoodRepository: INeighborhoodRepository
+    private readonly getScenariosUseCase: GetScenariosUseCase,
+    private readonly getNeighborhoodsUseCase: GetNeighborhoodsUseCase
   ) {}
 
   async execute(filters: IScenariosFilters = {}): Promise<IScenariosDataResponse> {
@@ -24,13 +26,13 @@ export class GetScenariosDataUseCase {
         ...filters,
       };
 
-      // Load scenarios and neighborhoods in parallel using repositories
+      // Compose using dedicated use cases
       const [
         scenariosResult,
         neighborhoods,
       ] = await Promise.all([
-        this.scenarioRepository.getAllWithPagination(defaultFilters),
-        this.neighborhoodRepository.getAll(),
+        this.getScenariosUseCase.execute(defaultFilters),
+        this.getNeighborhoodsUseCase.execute(),
       ]);
 
       return {

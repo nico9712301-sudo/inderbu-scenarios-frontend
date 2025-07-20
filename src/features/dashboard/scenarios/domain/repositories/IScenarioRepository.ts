@@ -10,6 +10,7 @@ export interface IScenariosFilters {
   limit?: number;
   search?: string;
   neighborhoodId?: number;
+  active?: boolean;
 }
 
 export interface IScenarioRepository {

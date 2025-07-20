@@ -2,13 +2,7 @@
 
 import { FileEdit, Loader2, Search, MoreHorizontal } from "lucide-react";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
+
 import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
@@ -16,6 +10,7 @@ import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { Scenario } from "@/services/api";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
 
 interface Column {
   id: string;
@@ -27,22 +22,24 @@ interface Props {
   rows: Scenario[];
   meta: PageMeta | null;
   loading: boolean;
-  filters: { page: number; search: string };
+  searchValue: string;
+  onSearchChange: (value: string) => void;
   onPageChange(page: number): void;
   onLimitChange?(limit: number): void;
-  onSearch(term: string): void;
   onEdit(row: Scenario): void;
+  onToggleStatus?(row: Scenario): void;
 }
 
 export function ScenariosTable({
   rows,
   meta,
   loading,
-  filters,
+  searchValue,
+  onSearchChange,
   onPageChange,
   onLimitChange,
-  onSearch,
   onEdit,
+  onToggleStatus,
 }: Props) {
   const columns: Column[] = [
     {
@@ -56,12 +53,30 @@ export function ScenariosTable({
       id: "status",
       header: "Estado",
       cell: (r) => (
-        <span
-          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium
-          ${r.active ? "bg-orange-100 text-orange-800" : "bg-gray-100 text-gray-800"}`}
-        >
-          {r.active ? "Activo" : "Inactivo"}
-        </span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-6 px-2.5 py-0.5 text-xs font-medium rounded-full
+                ${r.active 
+                  ? "bg-orange-100 text-orange-800 hover:bg-orange-200" 
+                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                }`}
+            >
+              {r.active ? "Activo" : "Inactivo"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-32">
+            <DropdownMenuItem
+              onClick={() => onToggleStatus?.(r)}
+              disabled={!onToggleStatus}
+              className={r.active ? "text-gray-600" : "text-orange-600"}
+            >
+              {r.active ? "Desactivar" : "Activar"}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ),
     },
     {
@@ -95,8 +110,8 @@ export function ScenariosTable({
             <Input
               className="pl-8"
               placeholder="Buscar…"
-              value={filters.search}
-              onChange={(e) => onSearch(e.target.value)}
+              value={searchValue}
+              onChange={(e) => onSearchChange(e.target.value)}
             />
           </div>
         </div>
@@ -158,7 +173,7 @@ export function ScenariosTable({
               meta={meta}
               onPageChange={onPageChange}
               onLimitChange={onLimitChange}
-              showLimitSelector={!!onLimitChange}
+              showLimitSelector={!!onLimitChange} // el doble !! se usa para forzar a booleano
             />
           </div>
         )}

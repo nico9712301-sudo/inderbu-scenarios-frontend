@@ -87,13 +87,8 @@ export function useDashboardPagination(config: PaginationConfig) {
     const queryString = params.toString();
     const newUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
     
-    // Navigate to new URL and refresh SSR data
+    // Navigate to new URL (Next.js App Router should auto-refresh server components)
     router.push(newUrl);
-    
-    // Force SSR re-execution for server components
-    setTimeout(() => {
-      router.refresh();
-    }, 50);
   }, [router, baseUrl, defaultLimit]);
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
@@ -157,52 +152,5 @@ export function useDashboardPagination(config: PaginationConfig) {
     getQueryParams,
     getServerParams,
     updateUrl,
-  };
-}
-
-/**
- * Hook simplificado para paginación básica (solo página y búsqueda)
- */
-export function useSimplePagination(baseUrl: string, defaultLimit = 10) {
-  return useDashboardPagination({ baseUrl, defaultLimit });
-}
-
-/**
- * Hook para múltiples entidades en la misma página (como Locations)
- */
-export function useMultiEntityPagination(baseUrl: string, entities: string[]) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const getFiltersForEntity = useCallback((entity: string) => {
-    const pageParam = `${entity}Page`;
-    const limitParam = `${entity}Limit`;
-    
-    return {
-      page: searchParams.get(pageParam) ? Number(searchParams.get(pageParam)) : 1,
-      limit: searchParams.get(limitParam) ? Number(searchParams.get(limitParam)) : 10,
-      search: searchParams.get('search') || "",
-    };
-  }, [searchParams]);
-
-  const updateEntityPage = useCallback((entity: string, page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    const pageParam = `${entity}Page`;
-    
-    if (page > 1) {
-      params.set(pageParam, page.toString());
-    } else {
-      params.delete(pageParam);
-    }
-    
-    const queryString = params.toString();
-    const newUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
-    router.push(newUrl);
-  }, [router, baseUrl, searchParams]);
-
-  return {
-    getFiltersForEntity,
-    updateEntityPage,
-    searchParams: Object.fromEntries(searchParams.entries()),
   };
 }

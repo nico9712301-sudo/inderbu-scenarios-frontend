@@ -153,10 +153,8 @@ export interface CreateScenarioDto {
 export interface UpdateScenarioDto {
   name?: string;
   address?: string;
-  neighborhood?: {
-    id?: number;
-    name?: string;
-  }
+  neighborhoodId?: number;
+  isActive?: boolean;
 }
 
 // DTOs para SubScenarios

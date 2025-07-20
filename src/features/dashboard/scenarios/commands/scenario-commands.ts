@@ -62,6 +62,58 @@ export class CreateScenarioCommand implements Command<Scenario | null> {
   }
 }
 
+// Toggle Scenario Status Command
+export class ToggleScenarioStatusCommand implements Command<Scenario | null> {
+  constructor(
+    private scenario: Scenario,
+    private onSuccess?: (scenario: Scenario) => void,
+    private onError?: (error: string) => void
+  ) {}
+
+  async execute(): Promise<Scenario | null> {
+    try {
+      const newStatus = !this.scenario.active;
+      const updateData = { isActive: newStatus };
+
+      console.log(`Toggling scenario ${this.scenario.id} status to:`, newStatus);
+
+      const result = await updateScenarioAction(this.scenario.id, updateData);
+
+      if (result.success) {
+        // Build optimistic updated scenario
+        const updatedScenario = {
+          ...this.scenario,
+          active: newStatus,
+        };
+
+        toast.success(`Escenario ${newStatus ? 'activado' : 'desactivado'}`, {
+          description: `${updatedScenario.name} está ahora ${newStatus ? 'activo' : 'inactivo'}.`,
+        });
+
+        this.onSuccess?.(updatedScenario);
+        return updatedScenario;
+      } else {
+        const error = result.error || "Error al cambiar estado del escenario";
+        toast.error("Error al cambiar estado", {
+          description: error,
+        });
+        this.onError?.(error);
+        return null;
+      }
+    } catch (error: any) {
+      console.error("Error toggling scenario status:", error);
+      const errorMessage = error.message || "Ocurrió un error inesperado. Intente nuevamente.";
+      
+      toast.error("Error al cambiar estado", {
+        description: errorMessage,
+      });
+      
+      this.onError?.(errorMessage);
+      return null;
+    }
+  }
+}
+
 // Update Scenario Command
 export class UpdateScenarioCommand implements Command<Scenario | null> {
   constructor(
@@ -160,11 +212,25 @@ export class ScenarioCommandFactory {
       callbacks?.onError
     );
   }
+
+  static toggleScenarioStatus(
+    scenario: Scenario,
+    callbacks?: {
+      onSuccess?: (scenario: Scenario) => void;
+      onError?: (error: string) => void;
+    }
+  ): ToggleScenarioStatusCommand {
+    return new ToggleScenarioStatusCommand(
+      scenario,
+      callbacks?.onSuccess,
+      callbacks?.onError
+    );
+  }
 }
 
 // Command Invoker (for batch operations, undo/redo, etc.)
 export class ScenarioCommandInvoker {
-  private commands: Command[] = [];
+  private commands: Command<any>[] = [];
   private currentPosition = -1;
 
   async executeCommand<T>(command: Command<T>): Promise<T> {

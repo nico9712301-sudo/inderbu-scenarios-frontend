@@ -109,6 +109,7 @@ export function useSubScenarioData() {
     setLoading(true);
     try {
       const res = await subScenarioService.getAll(queryParams);
+      console.log("Sub-escenarios obtenidos:", res.data);
       setSubScenarios(res.data);
       const meta = pagination.buildPageMeta(res.meta.totalItems);
       setPageMeta(meta);

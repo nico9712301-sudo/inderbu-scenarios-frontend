@@ -1,5 +1,6 @@
 import { EUserRole } from "@/shared/enums/user-role.enum";
 import { type ClassValue, clsx } from "clsx";
+import { useEffect, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -238,3 +239,29 @@ export const createFormDataValidator = <T>(schema: z.ZodSchema<T>) => {
         return validateSchema(schema, data);
     };
 };
+
+export function useTraceUpdate(props: Record<string, any>) {
+  const prev = useRef(props);
+
+  useEffect(() => {
+    const changedProps = Object.entries(props).reduce((ps, [key, value]) => {
+      if (prev.current[key] !== value) {
+        ps[key] = [prev.current[key], value];
+      }
+      return ps;
+    }, {} as Record<string, any>);
+
+    if (Object.keys(changedProps).length > 0) {
+      console.log("🔄 Changed props/state causing re-render:", changedProps);
+    }
+
+    prev.current = props;
+  });
+}
+
+//Mdo de uso useTraceUpdate
+
+// const [count, setCount] = useState(0);
+// useTraceUpdate({ count, setCount });
+
+// De esta manera, le pasamos cualquier cantidad de dependencias que puedan estar ejecutando re-renders innecesarios, y el hook se encargará de imprimir en consola los cambios que se produzcan en cada renderizado.

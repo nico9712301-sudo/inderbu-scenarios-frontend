@@ -37,9 +37,9 @@ export function CreateScenarioModal({
     onSubmit: async (formData) => {
       const command = ScenarioCommandFactory.createScenario(formData, neighborhoods, {
         onSuccess: (newScenario) => {
-          onScenarioCreated(newScenario);
           form.reset();
           onClose();
+          onScenarioCreated(newScenario);
         },
         onError: (error) => {
           console.error('Create scenario error:', error);

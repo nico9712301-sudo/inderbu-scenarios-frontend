@@ -36,10 +36,7 @@ export function buildUpdateScenarioDto(
   }
 
   if (Number(formData.neighborhood.id) !== originalScenario.neighborhood?.id) {
-    updateData.neighborhood = {
-      id: Number(formData.neighborhood.id),
-      name: formData.neighborhood.name || "",
-    };
+    updateData.neighborhoodId = Number(formData.neighborhood.id)
   }
 
 
@@ -67,8 +64,6 @@ export function buildNewScenario(
       name: selectedNeighborhood?.name || formData.neighborhood.name || "",
     },
     active: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   };
 }
 
@@ -101,7 +96,6 @@ export function buildUpdatedScenario(
       id: Number(formData.neighborhood.id),
       name: getNeighborhoodName(),
     },
-    updatedAt: new Date().toISOString(),
   };
 }
 

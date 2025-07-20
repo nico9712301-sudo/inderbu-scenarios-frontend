@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
 
 import {
   Dialog,
@@ -11,12 +11,11 @@ import {
   DialogTitle,
 } from "@/shared/ui/dialog";
 import { Button } from "@/shared/ui/button";
-
 import { Scenario } from "@/services/api";
 import { ScenarioForm } from "../molecules/scenario-form";
 import { useScenarioForm } from "../../hooks/use-scenario-form";
 import { ScenarioCommandFactory } from "../../commands/scenario-commands";
-import { buildFormDataFromScenario } from "../../utils/scenario-builders";
+
 
 interface NeighborhoodOption {
   id: number;
@@ -38,22 +37,22 @@ export function EditScenarioModal({
   neighborhoods,
   onScenarioUpdated,
 }: EditScenarioModalProps) {
-  const form = useScenarioForm({
+    const form = useScenarioForm({
     onSubmit: async (formData) => {
       if (!scenario) return;
 
       const command = ScenarioCommandFactory.updateScenario(
-        formData, 
-        scenario, 
-        neighborhoods, 
+        formData,
+        scenario,
+        neighborhoods,
         {
           onSuccess: (updatedScenario) => {
             onScenarioUpdated(updatedScenario);
             onClose();
           },
           onError: (error) => {
-            console.error('Update scenario error:', error);
-          }
+            console.error("Update scenario error:", error);
+          },
         }
       );
 
@@ -62,12 +61,14 @@ export function EditScenarioModal({
     },
   });
 
+
+
   // Load scenario data when modal opens or scenario changes
   useEffect(() => {
     if (scenario && isOpen) {
       form.loadScenario(scenario);
     }
-  }, [scenario, isOpen, form]);
+  }, [scenario, isOpen]);
 
   const handleSubmit = async () => {
     await form.handleSubmit();

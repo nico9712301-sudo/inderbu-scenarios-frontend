@@ -1,7 +1,8 @@
 "use client";
 
 import { Download, Filter, Plus } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useDebouncedSearch } from "@/shared/hooks/use-debounced-search";
 
 import { ScenariosFiltersCard } from "@/features/scenarios/components/molecules/ScenariosFiltersCard";
 import { IScenariosDataResponse } from "../application/GetScenariosDataUseCase";
@@ -12,14 +13,19 @@ import { useScenarioModals } from "../hooks/use-scenario-modals";
 import { useScenariosData } from "../hooks/use-scenarios-data";
 import { ScenariosTable } from "./organisms/scenarios-table";
 import { NavValues } from "../utils/nav-values";
+import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import { Scenario } from "@/services/api";
+import { ScenarioCommandFactory } from "../commands/scenario-commands";
+import { ExportButton } from "./atoms/export-button";
 
 interface ScenariosPageProps {
   initialData: IScenariosDataResponse;
 }
 
 export function ScenariosPage({ initialData }: ScenariosPageProps) {
+  const router = useRouter();
+
   // State management with custom hooks
   const {
     filters,
@@ -28,7 +34,26 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
     onSearch,
     onFilterChange,
     buildPageMeta,
-  } = useScenariosData();
+    scenarios,
+    neighborhoods,
+  } = useScenariosData(initialData);
+
+  // Determine current tab based on active filter
+  const getCurrentTab = useCallback(() => {
+    const activeMap: Record<string, string> = {
+      true: "active",
+      false: "inactive",
+    };
+
+    return activeMap[String(filters.active)] || "all";
+  }, [filters.active]);
+
+  // Debounced search for responsive input
+  const search = useDebouncedSearch({
+    initialValue: filters.search || "",
+    onSearch,
+    delay: 300,
+  });
 
   const {
     isCreateModalOpen,
@@ -42,11 +67,9 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
     toggleFilters,
   } = useScenarioModals();
 
-  // Local data state
-  const [scenarios, setScenarios] = useState(initialData.scenarios);
-  const [neighborhoods] = useState(initialData.neighborhoods);
+  // Build page meta
   const pageMeta = buildPageMeta(initialData.meta.totalItems);
-
+  console.log("Page Meta:", pageMeta);
 
   // Event handlers
   const handleFiltersChange = (newFilters: any) => {
@@ -61,17 +84,25 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
     openEditModal(scenario);
   };
 
-  const handleScenarioCreated = (newScenario: Scenario) => {
-    setScenarios(prev => [newScenario, ...prev]);
-  };
+  const handleScenarioCreatedOrUpdated = useCallback(
+    (mutatedScenario: Scenario) => {
+      router.refresh();
+    },
+    [router]
+  );
 
-  const handleScenarioUpdated = (updatedScenario: Scenario) => {
-    setScenarios(prev => 
-      prev.map(scenario => 
-        scenario.id === selectedScenario?.id ? updatedScenario : scenario
-      )
-    );
-  };
+  const handleToggleStatus = useCallback(async (scenario: Scenario) => {
+    const command = ScenarioCommandFactory.toggleScenarioStatus(scenario, {
+      onSuccess: (updatedScenario) => {
+        router.refresh();
+      },
+      onError: (error) => {
+        console.error("Toggle status error:", error);
+      },
+    });
+
+    await command.execute();
+  }, [router]);
 
   return (
     <div className="space-y-6">
@@ -81,11 +112,7 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
           Escenarios Deportivos
         </h1>
         <div className="flex items-center gap-2">
-          <Button
-            onClick={toggleFilters}
-            variant="outline"
-            size="sm"
-          >
+          <Button onClick={toggleFilters} variant="outline" size="sm">
             <Filter className="h-4 w-4 mr-2" />
             Filtros
           </Button>
@@ -105,21 +132,37 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
       />
 
       {/* Tabs */}
-      <Tabs defaultValue="all" className="w-full">
+      <Tabs
+        value={getCurrentTab()}
+        className="w-full"
+        onValueChange={(value) => {
+          // Map tab values to filter parameters
+          const filterMap: Record<string, any> = {
+            all: { active: undefined },
+            active: { active: true },
+            inactive: { active: false },
+          };
+
+          onFilterChange(filterMap[value] || {});
+        }}
+      >
         <div className="flex items-center justify-between mb-4">
           <TabsList>
             {NavValues.map((k) => (
               <TabsTrigger key={k.value} value={k.value}>
                 {k.label}
               </TabsTrigger>
-            ))} 
+            ))}
           </TabsList>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Exportar
-            </Button>
+            <ExportButton 
+              filters={{
+                active: filters.active,
+                neighborhoodId: filters.neighborhoodId,
+                search: filters.search,
+              }}
+            />
           </div>
         </div>
 
@@ -127,17 +170,15 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
         {NavValues.map((k) => (
           <TabsContent key={k.value} value={k.value} className="mt-0">
             <ScenariosTable
-              rows={k.value === "all" ? scenarios : scenarios.filter((r) => r.active === (k.value === "active"))}
+              rows={scenarios}
               meta={pageMeta}
               loading={false}
-              filters={{
-                page: pageMeta?.page || 1,
-                search: filters.search || "",
-              }}
+              searchValue={search.value}
+              onSearchChange={search.onChange}
               onPageChange={onPageChange}
               onLimitChange={onLimitChange}
-              onSearch={onSearch}
               onEdit={handleOpenEditModal}
+              onToggleStatus={handleToggleStatus}
             />
           </TabsContent>
         ))}
@@ -148,15 +189,15 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
         isOpen={isCreateModalOpen}
         onClose={closeCreateModal}
         neighborhoods={neighborhoods}
-        onScenarioCreated={handleScenarioCreated}
+        onScenarioCreated={handleScenarioCreatedOrUpdated}
       />
 
       <EditScenarioModal
         isOpen={isEditModalOpen}
-        onClose={closeEditModal}
         scenario={selectedScenario}
         neighborhoods={neighborhoods}
-        onScenarioUpdated={handleScenarioUpdated}
+        onClose={closeEditModal}
+        onScenarioUpdated={handleScenarioCreatedOrUpdated}
       />
     </div>
   );

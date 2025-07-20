@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { CreateScenarioDto, UpdateScenarioDto } from '@/services/api';
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
+import { createScenariosContainer } from '../di/ScenariosContainer.server';
+import { IScenariosFilters } from '../domain/repositories/IScenarioRepository';
 
 export async function createScenarioAction(data: CreateScenarioDto) {
   try {

@@ -23,7 +23,7 @@ export function DashboardPagination({
   onPageChange,
   onLimitChange,
   showLimitSelector = true,
-  limitOptions = [5, 10, 20, 50],
+  limitOptions = [5, 7, 10, 20, 50],
   className = "",
 }: DashboardPaginationProps) {
   const { page, limit, totalItems, totalPages, hasNext, hasPrev } = meta;
@@ -78,6 +78,9 @@ export function DashboardPagination({
   if (totalPages <= 1 && !showLimitSelector) {
     return null;
   }
+
+  console.log("Pagination Meta:", meta);
+  console.log('El limite que deberia ser: ', limit);
 
   return (
     <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 ${className}`}>

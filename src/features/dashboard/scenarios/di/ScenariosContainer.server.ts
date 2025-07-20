@@ -1,4 +1,6 @@
 import { GetScenariosDataUseCase } from '../application/GetScenariosDataUseCase';
+import { GetScenariosUseCase } from '../application/GetScenariosUseCase';
+import { GetNeighborhoodsUseCase } from '../application/GetNeighborhoodsUseCase';
 import { ScenariosService } from '../domain/ScenariosService';
 import { ScenarioRepository, NeighborhoodRepository } from '../infrastructure/ScenarioRepository';
 import { IScenarioRepository, INeighborhoodRepository } from '../domain/repositories/IScenarioRepository';
@@ -15,14 +17,24 @@ export function createScenariosContainer(): ScenariosContainer {
   const neighborhoodRepository: INeighborhoodRepository = new NeighborhoodRepository();
   
   // Application layer - Use cases with injected repositories
-  const getScenariosDataUseCase = new GetScenariosDataUseCase(
-    scenarioRepository,
+  const getScenariosUseCase = new GetScenariosUseCase(
+    scenarioRepository
+  );
+  
+  const getNeighborhoodsUseCase = new GetNeighborhoodsUseCase(
     neighborhoodRepository
+  );
+  
+  const getScenariosDataUseCase = new GetScenariosDataUseCase(
+    getScenariosUseCase,
+    getNeighborhoodsUseCase
   );
   
   // Domain layer - Services with injected use cases
   const scenariosService = new ScenariosService(
-    getScenariosDataUseCase
+    getScenariosDataUseCase,
+    getScenariosUseCase,
+    getNeighborhoodsUseCase
   );
 
   return {
