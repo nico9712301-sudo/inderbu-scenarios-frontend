@@ -11,9 +11,7 @@ import { Label } from "@/shared/ui/label";
 import { 
   ScenarioFormData, 
   ScenarioFormErrors,
-  useScenarioForm 
 } from "../../hooks/use-scenario-form";
-import { updateFormDataWithNeighborhood } from "../../utils/scenario-builders";
 
 interface NeighborhoodOption {
   id: number;
@@ -76,7 +74,7 @@ export const ScenarioForm = memo(({
   selectedScenario,
 }: ScenarioFormProps) => {
   return (
-    <div className="space-y-4">
+    <div>
       {/* Ubicación Section */}
       <div className="bg-gray-50 p-3 rounded-md">
         <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
@@ -136,9 +134,6 @@ export const ScenarioForm = memo(({
 
       {/* Información General Section */}
       <div className="bg-gray-50 p-3 rounded-md">
-        <h3 className="font-medium text-gray-800 mb-2 text-sm">
-          Información General
-        </h3>
         <div className="grid grid-cols-1 gap-3">
           {/* Name Input */}
           <ValidatedInput

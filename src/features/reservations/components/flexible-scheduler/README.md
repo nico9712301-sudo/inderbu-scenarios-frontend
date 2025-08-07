@@ -18,7 +18,7 @@ Este módulo ha sido refactorizado desde un archivo monolítico de más de 800 l
 - **🚫 Estado temporal**: Como períodos expandidos o loading
 - **🚫 Opciones avanzadas**: Se simplificó la UI eliminando el toggle
 
-### 🌐 Ejemplos de URLs:
+### Ejemplos de URLs:
 
 ```bash
 # Reserva simple

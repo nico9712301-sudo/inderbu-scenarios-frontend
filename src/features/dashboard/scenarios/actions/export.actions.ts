@@ -1,8 +1,9 @@
 "use server";
 
-import { createServerAuthContext } from '@/shared/api/server-auth';
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
+import { createServerAuthContext } from '@/shared/api/server-auth';
 import { ExportJob } from '@/shared/hooks/use-async-export';
+
 
 export interface ExportScenariosPayload {
   format: 'xlsx' | 'csv';
@@ -65,7 +66,7 @@ export async function checkExportStatusAction(
 
     // Construir downloadUrl usando el endpoint /file cuando esté completed
     const isCompleted = response.status === 'completed' || response.data?.status === 'completed';
-    const downloadUrl = isCompleted ? `/api/scenarios/export/${jobId}/file` : undefined;
+    const downloadUrl = isCompleted ? `/scenarios/export/${jobId}/file` : undefined;
 
     const job: ExportJob = {
       id: jobId,
