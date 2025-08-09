@@ -18,6 +18,7 @@ export interface SubScenariosFilters {
   scenarioId?: number;
   activityAreaId?: number;
   neighborhoodId?: number;
+  active?: boolean;
 }
 
 export interface ISubScenarioRepository {

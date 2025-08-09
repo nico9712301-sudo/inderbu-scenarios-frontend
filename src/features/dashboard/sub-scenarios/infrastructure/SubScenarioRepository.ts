@@ -35,9 +35,10 @@ export class SubScenarioRepository implements ISubScenarioRepository {
       if (filters.scenarioId) params.append('scenarioId', filters.scenarioId.toString());
       if (filters.activityAreaId) params.append('activityAreaId', filters.activityAreaId.toString());
       if (filters.neighborhoodId) params.append('neighborhoodId', filters.neighborhoodId.toString());
+      if (filters.active !== undefined) params.append('active', filters.active.toString());
 
       // Direct API call with authentication
-      const result = await httpClient.get<PaginatedSubScenarios>(
+      const result: PaginatedSubScenarios = await httpClient.get<PaginatedSubScenarios>(
         `/sub-scenarios?${params.toString()}`
       );
 
@@ -61,7 +62,7 @@ export class SubScenarioRepository implements ISubScenarioRepository {
       if (data.images?.length) {
         const fd = new FormData();
         data.images.forEach((img) => {
-          fd.append("files", img.file);
+          fd.append("files", img.url!);
           fd.append("isFeature", img.isFeature ? "true" : "false");
         });
         

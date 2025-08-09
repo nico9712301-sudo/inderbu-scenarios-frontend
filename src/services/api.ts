@@ -76,6 +76,7 @@ export interface PageOptions {
   activityAreaId?: number;
   neighborhoodId?: number;
   scenarioId?: number;
+  active?: boolean;
 }
 
 export interface PageMeta {
@@ -160,7 +161,7 @@ export interface UpdateScenarioDto {
 // DTOs para SubScenarios
 export interface CreateSubScenarioDto {
   name: string;
-  state?: boolean;
+  active?: boolean;
   hasCost?: boolean;
   numberOfSpectators?: number;
   numberOfPlayers?: number;
@@ -172,7 +173,7 @@ export interface CreateSubScenarioDto {
 
 export interface UpdateSubScenarioDto {
   name?: string;
-  state?: boolean;
+  active?: boolean;
   hasCost?: boolean;
   numberOfSpectators?: number;
   numberOfPlayers?: number;
@@ -206,7 +207,7 @@ export interface SubScenarioImageGallery {
 export interface SubScenario {
   id: number;
   name: string;
-  state: boolean;
+  active: boolean;
   hasCost: boolean;
   numberOfSpectators?: number;
   numberOfPlayers?: number;
@@ -317,7 +318,7 @@ export const subScenarioService = {
       
       // Agregar campos del DTO asegurando tipos correctos
       formData.append('name', data.name);
-      formData.append('state', String(data.state ?? false));
+      formData.append('active', String(data.active ?? false));
       formData.append('hasCost', String(data.hasCost ?? false));
       formData.append('numberOfSpectators', String(data.numberOfSpectators ?? 0));
       formData.append('numberOfPlayers', String(data.numberOfPlayers ?? 0));

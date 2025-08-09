@@ -2,12 +2,22 @@
 
 import { Card, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { ImageIcon, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { OptionsDataResponse } from "../application/GetOptionsDataUseCase";
 
 interface OptionsPageProps {
   initialData: OptionsDataResponse;
 }
+
+// Mapa de iconos: convierte strings a componentes React
+const ICON_MAP = {
+  ImageIcon: ImageIcon,
+  Users: Users,
+  Settings: Settings,
+} as const;
+
+type IconName = keyof typeof ICON_MAP;
 
 export function OptionsPage({ initialData }: OptionsPageProps) {
   const { categories } = initialData;
@@ -25,16 +35,21 @@ export function OptionsPage({ initialData }: OptionsPageProps) {
 
       <Tabs defaultValue="content" className="space-y-4">
         <TabsList>
-          {categories.map((category) => (
-            <TabsTrigger
-              key={category.id}
-              value={category.id}
-              className="flex items-center gap-2"
-            >
-              <category.icon className="h-4 w-4" />
-              <span>{category.title}</span>
-            </TabsTrigger>
-          ))}
+          {categories.map((category) => {
+            // Convertir string a componente React
+            const IconComponent = ICON_MAP[category.icon as IconName] || ImageIcon;
+            
+            return (
+              <TabsTrigger
+                key={category.id}
+                value={category.id}
+                className="flex items-center gap-2"
+              >
+                <IconComponent className="h-4 w-4" />
+                <span>{category.title}</span>
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
         {categories.map((category) => (

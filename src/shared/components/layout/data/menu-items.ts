@@ -1,4 +1,4 @@
-import { Calendar, Map, MapPin, Users } from "lucide-react";
+import { Calendar, Map, MapPin, Settings, Users } from "lucide-react";
 
 export const reportItems = [
   // {
@@ -34,9 +34,4 @@ export const menuItems = [
     href: "/dashboard/locations",
     icon: Map,
   },
-  // {
-  //   title: "Opciones",
-  //   href: "/dashboard/opciones",
-  //   icon: Settings,
-  // },
 ];

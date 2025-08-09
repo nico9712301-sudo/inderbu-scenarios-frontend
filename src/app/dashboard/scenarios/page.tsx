@@ -9,6 +9,7 @@ interface ScenariosPageProps {
     limit?: string;
     search?: string;
     neighborhoodId?: string;
+    active?: string
   };
 }
 
@@ -36,7 +37,6 @@ export default async function ScenariosRoute(props: ScenariosPageProps) {
     // All business logic, validation, and data fetching happens in domain/application layers
     const result: IScenariosDataResponse =
       await scenariosService.getScenariosData(filters);
-    console.log("SSR Result:", result);
 
     const getScenarios = async (filters: IScenariosFilters) => {
       return await scenariosService.getScenarios(filters);

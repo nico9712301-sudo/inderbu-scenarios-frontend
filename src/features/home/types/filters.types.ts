@@ -43,4 +43,17 @@ export interface ISubScenario {
   };
   activityArea: { id: number; name: string };
   fieldSurfaceType: { id: number; name: string };
+  imageGallery?: {
+    additional: any[];
+    count: number;
+    featured?: {
+      createdAt: string;
+      displayOrder: number;
+      id: number;
+      isFeature: boolean;
+      path: string;
+      subScenarioId: number;
+      url: string;
+    };
+  };
 }

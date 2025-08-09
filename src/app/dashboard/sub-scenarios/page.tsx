@@ -10,12 +10,13 @@ interface SubScenariosPageProps {
     scenarioId?: string;
     activityAreaId?: string;
     neighborhoodId?: string;
+    active?: string;
   };
 }
 
 export default async function SubScenariosRoute(props: SubScenariosPageProps) {
   const searchParams = await props.searchParams;
-  
+
   // DDD: Dependency injection - build complete container
   const { subScenariosService } = createSubScenariosContainer();
 
@@ -28,6 +29,9 @@ export default async function SubScenariosRoute(props: SubScenariosPageProps) {
       scenarioId: searchParams.scenarioId ? parseInt(searchParams.scenarioId) : undefined,
       activityAreaId: searchParams.activityAreaId ? parseInt(searchParams.activityAreaId) : undefined,
       neighborhoodId: searchParams.neighborhoodId ? parseInt(searchParams.neighborhoodId) : undefined,
+      active: searchParams.active !== undefined
+        ? searchParams.active === 'true'
+        : undefined,
     };
 
     // DDD: Execute use case through service layer

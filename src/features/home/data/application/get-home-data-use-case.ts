@@ -89,6 +89,7 @@ export class GetHomeDataUseCaseImpl implements GetHomeDataUseCase {
         this.activityAreaRepository.findAll(),
         this.neighborhoodRepository.findAll(),
       ]);
+      
 
       console.log(
         `Data loaded: ${subScenarios.data.length} scenarios, ${activityAreas.length} areas, ${neighborhoods.length} neighborhoods`

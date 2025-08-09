@@ -2,6 +2,7 @@
 
 import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
 import { FileEdit, Loader2, Search } from "lucide-react";
 import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
 import { SubScenario } from "@/services/api";
@@ -20,22 +21,24 @@ interface Props {
   rows: SubScenario[];
   meta: PageMeta | null;
   loading: boolean;
-  filters: { page: number; search: string };
+  searchValue: string;
   onPageChange(page: number): void;
   onLimitChange?(limit: number): void;
   onSearch(term: string): void;
   onEdit(row: SubScenario): void;
+  onToggleStatus?(row: SubScenario): void;
 }
 
 export function SubScenarioTable({
   rows,
   meta,
   loading,
-  filters,
+  searchValue,
   onPageChange,
   onLimitChange,
   onSearch,
   onEdit,
+  onToggleStatus,
 }: Props) {
   const columns: Column[] = [
     {
@@ -50,15 +53,33 @@ export function SubScenarioTable({
       cell: (r) => r.activityArea?.name ?? "—",
     },
     {
-      id: "state",
+      id: "active",
       header: "Estado",
       cell: (r) => (
-        <span
-          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium
-          ${r.state ? "bg-orange-100 text-orange-800" : "bg-gray-100 text-gray-800"}`}
-        >
-          {r.state ? "Activo" : "Inactivo"}
-        </span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-6 px-2.5 py-0.5 text-xs font-medium rounded-full
+                ${r.active 
+                  ? "bg-orange-100 text-orange-800 hover:bg-orange-200" 
+                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                }`}
+            >
+              {r.active ? "Activo" : "Inactivo"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-32">
+            <DropdownMenuItem
+              onClick={() => onToggleStatus?.(r)}
+              disabled={!onToggleStatus}
+              className={r.active ? "text-gray-600" : "text-orange-600"}
+            >
+              {r.active ? "Desactivar" : "Activar"}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ),
     },
     {
@@ -94,7 +115,7 @@ export function SubScenarioTable({
             <Input
               className="pl-8"
               placeholder="Buscar…"
-              value={filters.search}
+              value={searchValue}
               onChange={(e) => onSearch(e.target.value)}
             />
           </div>

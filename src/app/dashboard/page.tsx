@@ -38,8 +38,6 @@ export default async function DashboardRoute(props: DashboardPageProps) {
     // All business logic, validation, and data fetching happens in domain/application layers
     const result: DashboardReservationsResponse = await reservationService.getDashboardReservations(filters);
 
-    console.log('SSR Result in DashboardRoute:', result);
-
     // Atomic Design: Render page template with clean separation
     return <DashboardReservationsPage initialData={result} />;
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { FileEdit, Loader2, Search, MoreHorizontal } from "lucide-react";
+import { FileEdit, Loader2, Search } from "lucide-react";
 
 
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
 import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
@@ -10,7 +11,6 @@ import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { Scenario } from "@/services/api";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
 
 interface Column {
   id: string;

@@ -8,16 +8,17 @@ import { ScenariosFiltersCard } from "@/features/scenarios/components/molecules/
 import { IScenariosDataResponse } from "../application/GetScenariosDataUseCase";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { CreateScenarioModal } from "./organisms/create-scenario-modal";
+import { ScenarioCommandFactory } from "../commands/scenario-commands";
 import { EditScenarioModal } from "./organisms/edit-scenario-modal";
 import { useScenarioModals } from "../hooks/use-scenario-modals";
 import { useScenariosData } from "../hooks/use-scenarios-data";
 import { ScenariosTable } from "./organisms/scenarios-table";
+import { ExportButton } from "./atoms/export-button";
 import { NavValues } from "../utils/nav-values";
 import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import { Scenario } from "@/services/api";
-import { ScenarioCommandFactory } from "../commands/scenario-commands";
-import { ExportButton } from "./atoms/export-button";
+import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
 
 interface ScenariosPageProps {
   initialData: IScenariosDataResponse;
@@ -68,8 +69,7 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
   } = useScenarioModals();
 
   // Build page meta
-  const pageMeta = buildPageMeta(initialData.meta.totalItems);
-  console.log("Page Meta:", pageMeta);
+  const pageMeta: PageMeta = buildPageMeta(initialData.meta.totalItems);
 
   // Event handlers
   const handleFiltersChange = (newFilters: any) => {

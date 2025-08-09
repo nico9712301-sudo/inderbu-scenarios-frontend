@@ -32,6 +32,8 @@ export function ModernFacilityCard({
     fieldSurfaceType,
   } = subScenario;
 
+  const subscenarioImageURL = subScenario.imageGallery?.featured?.url ?? "https://inderbu.gov.co/escenarios/content/fields/57/12770.jpg";
+
   return (
     <Link href={`/scenario/${id}`} className="block group">
       <Card
@@ -43,7 +45,7 @@ export function ModernFacilityCard({
         <div className="relative aspect-[4/3] overflow-hidden rounded-t-xl">
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
           <Image
-            src="https://inderbu.gov.co/escenarios/content/fields/57/12770.jpg"
+            src={subscenarioImageURL}
             alt={name}
             fill
             priority={priority}
@@ -55,11 +57,10 @@ export function ModernFacilityCard({
           <div className="absolute top-3 right-3 z-20">
             <Badge
               variant={hasCost ? "destructive" : "secondary"}
-              className={`${
-                hasCost
+              className={`${hasCost
                   ? "bg-red-500/90 text-white shadow-lg"
                   : "bg-green-500/90 text-white shadow-lg"
-              } backdrop-blur-sm border-0`}
+                } backdrop-blur-sm border-0`}
             >
               {hasCost ? (
                 <>

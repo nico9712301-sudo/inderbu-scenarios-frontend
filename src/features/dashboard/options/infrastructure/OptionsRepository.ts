@@ -1,4 +1,4 @@
-import { ImageIcon, Settings, Users } from "lucide-react";
+// Icons are now handled as strings - imported in client components
 import { IOptionsRepository, OptionCategory } from '../domain/repositories/IOptionsRepository';
 
 export class OptionsRepository implements IOptionsRepository {
@@ -12,7 +12,7 @@ export class OptionsRepository implements IOptionsRepository {
           id: "content",
           title: "Contenido",
           description: "Gestiona el contenido de la plataforma",
-          icon: ImageIcon,
+          icon: 'ImageIcon',
           options: [
             {
               id: "banners",
@@ -26,7 +26,7 @@ export class OptionsRepository implements IOptionsRepository {
           id: "users",
           title: "Usuarios",
           description: "Gestiona los usuarios y permisos",
-          icon: Users,
+          icon: 'Users',
           options: [
             {
               id: "roles",
@@ -46,7 +46,7 @@ export class OptionsRepository implements IOptionsRepository {
           id: "system",
           title: "Sistema",
           description: "Configuraciones generales del sistema",
-          icon: Settings,
+          icon: 'Settings',
           options: [
             {
               id: "notifications",

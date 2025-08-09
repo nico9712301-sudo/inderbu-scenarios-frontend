@@ -13,8 +13,6 @@ interface PageProps {
 export default async function ScenarioDetailRoute({ params }: PageProps) {
   const { id } = await params;
   
-  console.log('ScenarioDetailRoute: Starting SSR with ID:', id);
-
   // DDD: Dependency injection - build complete container
   const { scenarioDetailService } = createScenarioDetailContainer();
 

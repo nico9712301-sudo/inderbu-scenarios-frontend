@@ -175,14 +175,11 @@ export class ApiReservationRepository implements ReservationRepository {
   async create(
     command: CreateReservationDto
   ): Promise<CreateReservationResponseDto> {
-    console.log("Repository: Creating reservation with command:", command);
-
     // Backend returns: { statusCode, message, data: CreateReservationResponseDto }
     const response = await this.httpClient.post<
       SimpleApiResponse<CreateReservationResponseDto>
     >("/reservations", command);
 
-    console.log("Repository: Reservation created successfully:", response.data);
     return response.data;
   }
 
@@ -214,8 +211,6 @@ export class ApiReservationRepository implements ReservationRepository {
       command,
       requestConfig
     );
-
-    console.log(`Repository: Reservation ${id} state updated successfully`);
 
     // Handle backend inconsistency and add derived fields
     return {
@@ -292,8 +287,6 @@ export class ApiReservationRepository implements ReservationRepository {
       const response = await this.httpClient.get<
         SimpleApiResponse<SimplifiedAvailabilityResponse>
       >(url, cacheConfig);
-
-      console.log(`Availability configuration response:`, response.data);
 
       if (!response.data || typeof response.data !== 'object') {
         throw new Error('Invalid response format from availability configuration API');

@@ -1,5 +1,6 @@
 import { createOptionsContainer } from '@/features/dashboard/options/di/OptionsContainer.server';
 import { OptionsPage } from '@/features/dashboard/options/components/OptionsPage';
+import { OptionsDataResponse } from '@/features/dashboard/options/application/GetOptionsDataUseCase';
 
 export default async function OptionsRoute() {
   // DDD: Dependency injection - build complete container
@@ -8,8 +9,8 @@ export default async function OptionsRoute() {
   try {
     // DDD: Execute use case through service layer
     // All business logic and data preparation happens in domain/application layers
-    const result = await optionsService.getOptionsData();
-
+    const result: OptionsDataResponse = await optionsService.getOptionsData();
+    
     // Atomic Design: Render page template with clean separation
     return <OptionsPage initialData={result} />;
 

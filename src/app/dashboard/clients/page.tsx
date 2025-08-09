@@ -34,7 +34,6 @@ export default async function ClientsRoute(props: ClientsPageProps) {
     const result = await clientsService.getClientsData(filters);
 
     // Atomic Design: Render page template with clean separation
-    console.log('Rendering ClientsPage with data:', { filters, resultCount: result.data?.length || 0 });
     return <ClientsPage initialData={result} />;
 
   } catch (error) {

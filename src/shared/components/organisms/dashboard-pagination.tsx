@@ -76,6 +76,8 @@ export function DashboardPagination({
   const endItem = Math.min(page * limit, totalItems);
 
   if (totalPages <= 1 && !showLimitSelector) {
+    console.log("Retorna nulo");
+    
     return null;
   }
 

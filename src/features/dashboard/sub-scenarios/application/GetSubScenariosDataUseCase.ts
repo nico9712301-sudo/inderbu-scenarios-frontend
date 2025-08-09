@@ -25,7 +25,7 @@ export class GetSubScenariosDataUseCase {
     private readonly neighborhoodRepository: INeighborhoodRepository
   ) {}
 
-  async execute(filters: SubScenariosFilters = {}): Promise<ISubScenariosDataResponse> {
+  async execute(filters: SubScenariosFilters): Promise<ISubScenariosDataResponse> {
     try {
       // Default filters
       const defaultFilters: SubScenariosFilters = {
@@ -34,6 +34,9 @@ export class GetSubScenariosDataUseCase {
         search: "",
         ...filters,
       };
+
+      console.log({defaultFilters});
+      
 
       // Load all catalog data and sub-scenarios in parallel using repositories
       const [
@@ -48,7 +51,7 @@ export class GetSubScenariosDataUseCase {
         this.subScenarioRepository.getAllWithPagination(defaultFilters),
       ]);
 
-      // Static field surface types (could come from API in the future)
+      // TODO: Static field surface types (MUST come from API in the future)
       const fieldSurfaceTypes = [
         { id: 1, name: "Concreto" },
         { id: 2, name: "Sintético" },

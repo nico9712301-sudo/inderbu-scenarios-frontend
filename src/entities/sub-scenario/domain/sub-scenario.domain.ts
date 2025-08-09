@@ -1,7 +1,7 @@
 import { DomainEvent } from "@/entities/reservation/domain/reservation.domain";
 
 // DDD: Sub-Scenario Domain Logic & Repository Interface
-export interface SubScenario {
+export interface ISubScenario {
   id: number;
   name: string;
   hasCost: boolean;
@@ -16,10 +16,23 @@ export interface SubScenario {
   };
   activityArea: { id: number; name: string };
   fieldSurfaceType: { id: number; name: string };
+  imageGallery?: {
+    additional: any[];
+    count: number;
+    featured?: {
+      createdAt: string;
+      displayOrder: number;
+      id: number;
+      isFeature: boolean;
+      path: string;
+      subScenarioId: number;
+      url: string;
+    };
+  };
 }
 
 export interface PaginatedSubScenarios {
-  data: SubScenario[];
+  data: ISubScenario[];
   meta: {
     page: number;
     limit: number;

@@ -18,12 +18,14 @@ import {
   useDashboardPagination,
   PageMeta,
 } from "@/shared/hooks/use-dashboard-pagination";
+import { SubScenarioCommandFactory } from "@/features/dashboard/sub-scenarios/commands/sub-scenario-commands";
 
 export interface ISubScenarioFilters {
   search: string;
   scenarioId?: number;
   activityAreaId?: number;
   neighborhoodId?: number;
+  active?: boolean;
 }
 
 export function useSubScenarioData() {
@@ -53,6 +55,7 @@ export function useSubScenarioData() {
     scenarioId: pagination.filters.scenarioId as number | undefined,
     activityAreaId: pagination.filters.activityAreaId as number | undefined,
     neighborhoodId: pagination.filters.neighborhoodId as number | undefined,
+    active: pagination.filters.active as boolean | undefined,
   };
 
   // ─── Initial bootstrap ─────────────────────────────────────────────────────────────────────────
@@ -93,6 +96,7 @@ export function useSubScenarioData() {
       scenarioId: filters.scenarioId,
       activityAreaId: filters.activityAreaId,
       neighborhoodId: filters.neighborhoodId,
+      active: filters.active,
     }),
     [
       pagination.filters.page,
@@ -101,6 +105,7 @@ export function useSubScenarioData() {
       filters.scenarioId,
       filters.activityAreaId,
       filters.neighborhoodId,
+      filters.active,
     ]
   );
 
@@ -143,7 +148,7 @@ export function useSubScenarioData() {
         // Crear el DTO con solo los campos necesarios y validar tipos
         const createDto: CreateSubScenarioDto = {
           name: formData.name,
-          state: Boolean(formData.state),
+          active: Boolean(formData.active),
           hasCost: Boolean(formData.hasCost),
           numberOfSpectators: Number(formData.numberOfSpectators) || 0,
           numberOfPlayers: Number(formData.numberOfPlayers) || 0,
@@ -159,7 +164,7 @@ export function useSubScenarioData() {
 
         // Extraer archivos File de las imágenes
         const imageFiles: File[] =
-          formData.images?.map((img) => img.file).filter(Boolean) || [];
+          formData.images?.map((img) => img.url).filter(Boolean) || [];
 
         // Crear subescenario con imágenes en una sola llamada
         await subScenarioService.create(createDto, imageFiles);
@@ -183,7 +188,7 @@ export function useSubScenarioData() {
         // Filtrar solo los campos editables para el DTO de actualización
         const updateDto: UpdateSubScenarioDto = {
           name: formData.name,
-          state: formData.state,
+          active: formData.active,
           hasCost: formData.hasCost,
           numberOfSpectators: formData.numberOfSpectators,
           numberOfPlayers: formData.numberOfPlayers,
@@ -207,6 +212,25 @@ export function useSubScenarioData() {
     [fetchSubScenarios]
   );
 
+  const toggleSubScenarioStatus = useCallback(
+    async (subScenario: SubScenario, onSuccess?: () => void, onError?: (error: string) => void) => {
+      const command = SubScenarioCommandFactory.toggleSubScenarioStatus(subScenario, {
+        onSuccess: (updatedSubScenario) => {
+          // Refetch los datos actuales
+          fetchSubScenarios();
+          onSuccess?.();
+        },
+        onError: (error) => {
+          console.error("Toggle status error:", error);
+          onError?.(error);
+        },
+      });
+
+      return await command.execute();
+    },
+    [fetchSubScenarios]
+  );
+
   return {
     // Pagination from standardized hook
     ...pagination,
@@ -225,5 +249,6 @@ export function useSubScenarioData() {
     // CRUD actions
     createSubScenario,
     updateSubScenario,
+    toggleSubScenarioStatus,
   };
 }

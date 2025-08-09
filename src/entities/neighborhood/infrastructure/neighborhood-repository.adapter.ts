@@ -1,24 +1,23 @@
 // Infrastructure: Neighborhood Repository Adapter (bridges existing API to domain interface)
 
-import { NeighborhoodRepository, Neighborhood } from '@/entities/neighborhood/domain/neighborhood.domain';
+import { NeighborhoodRepository } from '@/entities/neighborhood/domain/neighborhood.domain';
+import { INeighborhood } from "@/features/auth/interfaces/neighborhood.interface";
 
 // Existing API interface (what currently exists)
 interface NeighborhoodApiService {
-  getNeighborhoods(): Promise<Neighborhood[]>;
+  getNeighborhoods(): Promise<INeighborhood[]>;
 }
 
 // Infrastructure: Adapter Pattern - Bridge existing API to domain interface  
 export class NeighborhoodRepositoryAdapter implements NeighborhoodRepository {
   constructor(private readonly apiService: NeighborhoodApiService) {}
 
-  async findAll(): Promise<Neighborhood[]> {
-    console.log('NeighborhoodRepositoryAdapter: Executing findAll');
+  async findAll(): Promise<INeighborhood[]> {
 
     try {
       // Call existing API service
       const result = await this.apiService.getNeighborhoods();
       
-      console.log(`NeighborhoodRepositoryAdapter: Found ${result.length} neighborhoods`);
       return result;
 
     } catch (error) {
@@ -27,14 +26,12 @@ export class NeighborhoodRepositoryAdapter implements NeighborhoodRepository {
     }
   }
 
-  async findById(id: number): Promise<Neighborhood | null> {
-    console.log(`NeighborhoodRepositoryAdapter: Executing findById with id: ${id}`);
+  async findById(id: number): Promise<INeighborhood | null> {
 
     try {
       const allNeighborhoods = await this.findAll();
       const found = allNeighborhoods.find(neighborhood => neighborhood.id === id);
       
-      console.log(`NeighborhoodRepositoryAdapter: ${found ? 'Found' : 'Not found'} neighborhood with id ${id}`);
       return found || null;
 
     } catch (error) {
@@ -43,16 +40,13 @@ export class NeighborhoodRepositoryAdapter implements NeighborhoodRepository {
     }
   }
 
-  async findByName(name: string): Promise<Neighborhood[]> {
-    console.log(`NeighborhoodRepositoryAdapter: Executing findByName with name: ${name}`);
-
+  async findByName(name: string): Promise<INeighborhood[]> {
     try {
       const allNeighborhoods = await this.findAll();
       const filtered = allNeighborhoods.filter(neighborhood => 
         neighborhood.name.toLowerCase().includes(name.toLowerCase())
       );
       
-      console.log(`NeighborhoodRepositoryAdapter: Found ${filtered.length} neighborhoods matching "${name}"`);
       return filtered;
 
     } catch (error) {
