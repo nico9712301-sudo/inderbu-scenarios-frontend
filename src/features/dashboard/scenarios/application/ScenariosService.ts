@@ -1,10 +1,10 @@
 import {
   GetScenariosDataUseCase,
   IScenariosDataResponse,
-} from "../application/GetScenariosDataUseCase";
-import { GetScenariosUseCase, PaginatedScenariosResponse } from "../application/GetScenariosUseCase";
-import { GetNeighborhoodsUseCase } from "../application/GetNeighborhoodsUseCase";
-import { IScenariosFilters } from "./repositories/IScenarioRepository";
+} from "./GetScenariosDataUseCase";
+import { GetScenariosUseCase, PaginatedScenariosResponse } from "./GetScenariosUseCase";
+import { GetNeighborhoodsUseCase } from "./GetNeighborhoodsUseCase";
+import { IScenariosFilters } from "../domain/repositories/IScenarioRepository";
 
 export class ScenariosService {
   constructor(

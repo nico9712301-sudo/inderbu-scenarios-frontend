@@ -4,49 +4,65 @@ import { revalidatePath } from 'next/cache';
 import { SubScenario } from '@/services/api';
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
+import { SubScenarioRepository } from '../infrastructure/SubScenarioRepository';
 
 export async function createSubScenarioAction(
   data: Omit<SubScenario, "id"> & { images?: any[] }
 ) {
   try {
-    // CORRECTO - Con autenticación desde servidor
-    const authContext = createServerAuthContext();
-    const httpClient = ClientHttpClientFactory.createClient(authContext);
-
+    // Autenticación desde servidor
+    const subscenarioRepository = new SubScenarioRepository();
     // Direct API call with authentication
-    const created = await httpClient.post('/sub-scenarios', data);
-
-    // Handle image uploads if provided
-    if (data.images?.length) {
-      const fd = new FormData();
-      data.images.forEach((img) => {
-        fd.append("files", img.file);
-        fd.append("isFeature", img.isFeature ? "true" : "false");
-      });
-      
-      // Note: FormData uploads with fetch (includes cookies for auth)
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/sub-scenarios/${created.id}/images`,
-        { 
-          method: "POST", 
-          body: fd,
-          credentials: 'include' // Include cookies for auth
-        }
-      );
-    }
+    const subScenarioCreated = await subscenarioRepository.create(data);
 
     // Revalidate the sub-scenarios page to show updated data
-    revalidatePath('/dashboard/sub-scenarios');
-
+    // revalidatePath('/dashboard/sub-scenarios');
     return {
       success: true,
-      data: created,
+      data: subScenarioCreated,
     };
   } catch (error: any) {
     console.error('Error creating sub-scenario:', error);
     return {
       success: false,
       error: error.message || 'Error al crear sub-escenario',
+    };
+  }
+}
+
+export async function associateImagesToSubScenarioAction(
+  id: number,
+  images: any[]
+) {
+  try {
+    // Autenticación desde servidor
+    const authContext = createServerAuthContext();
+    const httpClient = ClientHttpClientFactory.createClient(authContext);
+
+    // Prepare FormData for image uploads
+    const fd = new FormData();
+    images.forEach((img) => {
+      fd.append("files", img.file);
+      fd.append("isFeature", img.isFeature ? "true" : "false");
+    });
+
+    // Direct API call with authentication
+    await httpClient.post(`/sub-scenarios/${id}/images`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    // Revalidate the sub-scenarios page to show updated data
+    revalidatePath('/dashboard/sub-scenarios');
+
+    return {
+      success: true,
+      message: 'Images associated successfully',
+    };
+  } catch (error: any) {
+    console.error('Error associating images to sub-scenario:', error);
+    return {
+      success: false,
+      error: error.message || 'Error al asociar imágenes al sub-escenario',
     };
   }
 }

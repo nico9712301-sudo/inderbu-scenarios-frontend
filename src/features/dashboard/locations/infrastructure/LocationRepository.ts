@@ -1,6 +1,4 @@
 import {
-  communeService,
-  neighborhoodService,
   Commune,
   Neighborhood,
   CreateCommuneDto,

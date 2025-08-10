@@ -1,7 +1,7 @@
 import { GetScenariosDataUseCase } from '../application/GetScenariosDataUseCase';
 import { GetScenariosUseCase } from '../application/GetScenariosUseCase';
 import { GetNeighborhoodsUseCase } from '../application/GetNeighborhoodsUseCase';
-import { ScenariosService } from '../domain/ScenariosService';
+import { ScenariosService } from '../application/ScenariosService';
 import { ScenarioRepository, NeighborhoodRepository } from '../infrastructure/ScenarioRepository';
 import { IScenarioRepository, INeighborhoodRepository } from '../domain/repositories/IScenarioRepository';
 

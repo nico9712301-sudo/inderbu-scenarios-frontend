@@ -37,6 +37,10 @@ export function EditScenarioModal({
   neighborhoods,
   onScenarioUpdated,
 }: EditScenarioModalProps) {
+
+    console.log({scenarioToEdit: scenario});
+    
+
     const form = useScenarioForm({
     onSubmit: async (formData) => {
       if (!scenario) return;

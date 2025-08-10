@@ -12,19 +12,22 @@ import { useSubScenarioData } from "../../hooks/use-sub-scenario-data";
 import { SubScenarioForm } from "./sub-scenario-form";
 import { Button } from "@/shared/ui/button";
 import { useState } from "react";
+import { SubScenario } from "@/services/api";
+import { useRouter } from "next/navigation";
 
 
 interface Props {
   open: boolean;
   onOpenChange(v: boolean): void;
+  handleSubScenarioCreatedOrUpdated(): void;
 }
 
-export function CreateSubScenarioDialog({ open, onOpenChange }: Props) {
+export function CreateSubScenarioDialog({ open, onOpenChange, handleSubScenarioCreatedOrUpdated }: Props) {
   const { scenarios, activityAreas, fieldSurfaceTypes, createSubScenario } =
     useSubScenarioData();
-  const [form, setForm] = useState<any>({
+  const [form, setForm] = useState<Omit<SubScenario, "id">>({
     name: "",
-    state: true,
+    active: true,
     hasCost: false,
     numberOfSpectators: 0,
     numberOfPlayers: 0,
@@ -36,8 +39,9 @@ export function CreateSubScenarioDialog({ open, onOpenChange }: Props) {
   });
 
   const save = async () => {
+    console.log("Saving sub-scenario with data:", form);
     await createSubScenario(form);
-    onOpenChange(false);
+    handleSubScenarioCreatedOrUpdated();
   };
 
   return (

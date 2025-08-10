@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 export interface PaginationFilters {
   page?: number;
@@ -33,7 +34,7 @@ export interface PageMeta {
  * @returns Filtros, handlers y utilidades de paginación
  */
 export function useDashboardPagination(config: PaginationConfig) {
-  const router = useRouter();
+  const router: AppRouterInstance = useRouter();
   const searchParams = useSearchParams();
   
   const { baseUrl, defaultLimit = 10, defaultPage = 1 } = config;

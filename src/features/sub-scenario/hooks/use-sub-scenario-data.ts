@@ -7,18 +7,14 @@ import {
   Neighborhood,
   Scenario,
   SubScenario,
-  CreateSubScenarioDto,
   UpdateSubScenarioDto,
-  activityAreaService,
-  neighborhoodService,
-  scenarioService,
-  subScenarioService,
 } from "@/services/api";
 import {
   useDashboardPagination,
   PageMeta,
 } from "@/shared/hooks/use-dashboard-pagination";
 import { SubScenarioCommandFactory } from "@/features/dashboard/sub-scenarios/commands/sub-scenario-commands";
+import { createSubScenarioAction } from "@/features/dashboard/sub-scenarios/actions/sub-scenario.actions";
 
 export interface ISubScenarioFilters {
   search: string;
@@ -29,7 +25,6 @@ export interface ISubScenarioFilters {
 }
 
 export function useSubScenarioData() {
-  const initialRender = useRef(true);
 
   // ─── Use standardized pagination hook ─────────────────────────────────────────────────────────────
   const pagination = useDashboardPagination({
@@ -62,22 +57,22 @@ export function useSubScenarioData() {
   useEffect(() => {
     (async () => {
       try {
-        setLoading(true);
-        const [{ data: scenariosData }, areas, neighs] = await Promise.all([
-          scenarioService.getAll({ limit: 100 }),
-          activityAreaService.getAll(),
-          neighborhoodService.getAll(),
-        ]);
+        // setLoading(true);
+        // const [{ data: scenariosData }, areas, neighs] = await Promise.all([
+        //   scenarioService.getAll({ limit: 100 }),
+        //   activityAreaService.getAll(),
+        //   neighborhoodService.getAll(),
+        // ]);
 
-        setScenarios(scenariosData);
-        setActivityAreas(Array.isArray(areas) ? areas : areas.data);
-        setNeighborhoods(Array.isArray(neighs) ? neighs : neighs.data);
-        setSurface([
-          { id: 1, name: "Concreto" },
-          { id: 2, name: "Sintético" },
-          { id: 3, name: "Césped" },
-          { id: 4, name: "Cemento" },
-        ]);
+        // setScenarios(scenariosData);
+        // setActivityAreas(Array.isArray(areas) ? areas : areas.data);
+        // setNeighborhoods(Array.isArray(neighs) ? neighs : neighs.data);
+        // setSurface([
+        //   { id: 1, name: "Concreto" },
+        //   { id: 2, name: "Sintético" },
+        //   { id: 3, name: "Césped" },
+        //   { id: 4, name: "Cemento" },
+        // ]);
       } catch (err) {
         console.error(err);
         setError("Error al cargar datos iniciales.");
@@ -87,149 +82,71 @@ export function useSubScenarioData() {
     })();
   }, []);
 
-  // ─── Memoize query params to avoid infinite loops ─────────────────────────────────────────────
-  const queryParams = useMemo(
-    () => ({
-      page: pagination.filters.page,
-      limit: pagination.filters.limit,
-      search: pagination.filters.search,
-      scenarioId: filters.scenarioId,
-      activityAreaId: filters.activityAreaId,
-      neighborhoodId: filters.neighborhoodId,
-      active: filters.active,
-    }),
-    [
-      pagination.filters.page,
-      pagination.filters.limit,
-      pagination.filters.search,
-      filters.scenarioId,
-      filters.activityAreaId,
-      filters.neighborhoodId,
-      filters.active,
-    ]
-  );
-
-  // ─── Fetch subescenarios cuando cambian los filtros ───────────────────────────────────────────
-  const fetchSubScenarios = useCallback(async () => {
+  // ─── CRUD actions ───────────────────────────────────────────────────────────
+  const createSubScenario = async (formData: Omit<SubScenario, "id"> & { images?: any[] }) => {
     setLoading(true);
     try {
-      const res = await subScenarioService.getAll(queryParams);
-      console.log("Sub-escenarios obtenidos:", res.data);
-      setSubScenarios(res.data);
-      const meta = pagination.buildPageMeta(res.meta.totalItems);
-      setPageMeta(meta);
-    } catch (err) {
-      console.error(err);
-      setError("Error al obtener sub-escenarios.");
+      // Crear el DTO con solo los campos necesarios y validar tipos
+      const createDto: Omit<SubScenario, "id"> = {
+        name: formData.name,
+        active: Boolean(formData.active),
+        hasCost: Boolean(formData.hasCost),
+        numberOfSpectators: Number(formData.numberOfSpectators) || 0,
+        numberOfPlayers: Number(formData.numberOfPlayers) || 0,
+        recommendations: formData.recommendations || "",
+        scenarioId: Number(formData.scenarioId),
+        activityAreaId: formData.activityAreaId
+          ? Number(formData.activityAreaId)
+          : undefined,
+        fieldSurfaceTypeId: formData.fieldSurfaceTypeId
+          ? Number(formData.fieldSurfaceTypeId)
+          : undefined,
+      };
+
+      createSubScenarioAction(createDto);
+    } catch (error) {
+      console.error("Error al crear subescenario:", error);
+      throw error;
     } finally {
       setLoading(false);
     }
-  }, [queryParams, pagination.buildPageMeta]);
+  };
 
-  // ─── Effect para fetch cuando cambian los filtros ─────────────────────────────────────────────
-  useEffect(() => {
-    // Evitar fetch en el primer render si ya hay datos (SSR)
-    if (initialRender.current) {
-      initialRender.current = false;
-      if (subScenarios.length === 0) {
-        fetchSubScenarios();
-      }
-      return;
+  const updateSubScenario = async (id: number, formData: Partial<SubScenario>) => {
+    setLoading(true);
+    try {
+      // Filtrar solo los campos editables para el DTO de actualización
+      const updateDto: UpdateSubScenarioDto = {
+        name: formData.name,
+        active: formData.active,
+        hasCost: formData.hasCost,
+        numberOfSpectators: formData.numberOfSpectators,
+        numberOfPlayers: formData.numberOfPlayers,
+        recommendations: formData.recommendations,
+        activityAreaId: formData.activityAreaId,
+        fieldSurfaceTypeId: formData.fieldSurfaceTypeId,
+      };
+
+      // TODO: Call update action
+    } finally {
+      setLoading(false);
     }
+  };
 
-    fetchSubScenarios();
-  }, [fetchSubScenarios]);
+  const toggleSubScenarioStatus = async (subScenario: SubScenario, onSuccess?: () => void, onError?: (error: string) => void) => {
+    const command = SubScenarioCommandFactory.toggleSubScenarioStatus(subScenario, {
+      onSuccess: (updatedSubScenario) => {
+        // Execute callback provided
+        onSuccess?.();
+      },
+      onError: (error) => {
+        console.error("Toggle status error:", error);
+        onError?.(error);
+      },
+    });
 
-  // ─── CRUD actions ───────────────────────────────────────────────────────────
-  const createSubScenario = useCallback(
-    async (formData: Omit<SubScenario, "id"> & { images?: any[] }) => {
-      setLoading(true);
-      try {
-        // Crear el DTO con solo los campos necesarios y validar tipos
-        const createDto: CreateSubScenarioDto = {
-          name: formData.name,
-          active: Boolean(formData.active),
-          hasCost: Boolean(formData.hasCost),
-          numberOfSpectators: Number(formData.numberOfSpectators) || 0,
-          numberOfPlayers: Number(formData.numberOfPlayers) || 0,
-          recommendations: formData.recommendations || "",
-          scenarioId: Number(formData.scenarioId),
-          activityAreaId: formData.activityAreaId
-            ? Number(formData.activityAreaId)
-            : undefined,
-          fieldSurfaceTypeId: formData.fieldSurfaceTypeId
-            ? Number(formData.fieldSurfaceTypeId)
-            : undefined,
-        };
-
-        // Extraer archivos File de las imágenes
-        const imageFiles: File[] =
-          formData.images?.map((img) => img.url).filter(Boolean) || [];
-
-        // Crear subescenario con imágenes en una sola llamada
-        await subScenarioService.create(createDto, imageFiles);
-
-        // Refetch los datos actuales
-        await fetchSubScenarios();
-      } catch (error) {
-        console.error("Error al crear subescenario:", error);
-        throw error;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [fetchSubScenarios]
-  );
-
-  const updateSubScenario = useCallback(
-    async (id: number, formData: Partial<SubScenario>) => {
-      setLoading(true);
-      try {
-        // Filtrar solo los campos editables para el DTO de actualización
-        const updateDto: UpdateSubScenarioDto = {
-          name: formData.name,
-          active: formData.active,
-          hasCost: formData.hasCost,
-          numberOfSpectators: formData.numberOfSpectators,
-          numberOfPlayers: formData.numberOfPlayers,
-          recommendations: formData.recommendations,
-          activityAreaId: formData.activityAreaId,
-          fieldSurfaceTypeId: formData.fieldSurfaceTypeId,
-        };
-
-        // Remover campos undefined para evitar enviarlos
-        const cleanDto = Object.fromEntries(
-          Object.entries(updateDto).filter(([_, value]) => value !== undefined)
-        ) as UpdateSubScenarioDto;
-
-        await subScenarioService.update(id, cleanDto);
-        // Refetch los datos actuales
-        await fetchSubScenarios();
-      } finally {
-        setLoading(false);
-      }
-    },
-    [fetchSubScenarios]
-  );
-
-  const toggleSubScenarioStatus = useCallback(
-    async (subScenario: SubScenario, onSuccess?: () => void, onError?: (error: string) => void) => {
-      const command = SubScenarioCommandFactory.toggleSubScenarioStatus(subScenario, {
-        onSuccess: (updatedSubScenario) => {
-          // Refetch los datos actuales
-          fetchSubScenarios();
-          onSuccess?.();
-        },
-        onError: (error) => {
-          console.error("Toggle status error:", error);
-          onError?.(error);
-        },
-      });
-
-      return await command.execute();
-    },
-    [fetchSubScenarios]
-  );
+    return await command.execute();
+  }
 
   return {
     // Pagination from standardized hook

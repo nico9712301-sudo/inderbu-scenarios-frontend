@@ -33,10 +33,6 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
     onFilterChange,
     buildPageMeta,
     subScenarios,
-    scenarios,
-    activityAreas,
-    neighborhoods,
-    fieldSurfaceTypes,
     loading,
     toggleSubScenarioStatus,
   } = useSubScenarioData();
@@ -82,7 +78,7 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
   };
 
   const handleSubScenarioCreatedOrUpdated = useCallback(
-    (mutatedSubScenario: SubScenario) => {
+    () => {
       router.refresh();
       setCreateOpen(false);
       setEditOpen(false);
@@ -182,6 +178,7 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
       <CreateSubScenarioDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
+        handleSubScenarioCreatedOrUpdated={handleSubScenarioCreatedOrUpdated}
       />
       <EditSubScenarioDialog
         open={editOpen}

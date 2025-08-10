@@ -38,10 +38,6 @@ export default async function ScenariosRoute(props: ScenariosPageProps) {
     const result: IScenariosDataResponse =
       await scenariosService.getScenariosData(filters);
 
-    const getScenarios = async (filters: IScenariosFilters) => {
-      return await scenariosService.getScenarios(filters);
-    };
-
     // Atomic Design: Render page template with clean separation
     return <ScenariosPage initialData={result} />;
   } catch (error) {

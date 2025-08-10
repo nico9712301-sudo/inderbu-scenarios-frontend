@@ -40,6 +40,9 @@ export function EditSubScenarioDialog({
     onOpenChange(false);
   };
 
+  console.log({subScenario});
+  
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[650px] max-h-[80vh] mx-auto overflow-y-auto">
@@ -56,6 +59,7 @@ export function EditSubScenarioDialog({
           scenarios={scenarios}
           activityAreas={activityAreas}
           fieldSurfaceTypes={fieldSurfaceTypes}
+          showImages
         />
 
         <DialogFooter className="pt-3">

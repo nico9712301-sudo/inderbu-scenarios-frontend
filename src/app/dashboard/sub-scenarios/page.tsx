@@ -37,6 +37,8 @@ export default async function SubScenariosRoute(props: SubScenariosPageProps) {
     // DDD: Execute use case through service layer
     // All business logic, validation, and data fetching happens in domain/application layers
     const result: ISubScenariosDataResponse = await subScenariosService.getSubScenariosData(filters);
+    console.log("SSR SubScenariosRoute fetched data:", result);
+    
 
     // Atomic Design: Render page template with clean separation
     return <SubScenariosPage initialData={result} />;
