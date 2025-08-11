@@ -1,7 +1,7 @@
 import { InvalidFiltersError, SearchLimitExceededError } from '@/entities/sub-scenario/domain/sub-scenario.domain';
-import { HomeDataResponse } from '@/features/home/data/application/get-home-data-use-case';
-import { createHomeContainer } from '@/features/home/di/home.container';
-import { HomePage } from '@/features/home/components/pages/home.page';
+import { HomeDataResponse } from '@/presentation/features/home/data/application/get-home-data-use-case';
+import { createHomeContainer } from '@/presentation/features/home/di/home.container';
+import { HomePage } from '@/presentation/features/home/components/pages/home.page';
 import { redirect } from 'next/navigation';
 
 interface HomePageProps {

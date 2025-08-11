@@ -2,7 +2,7 @@
 
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import { Check } from "lucide-react";
-import { cn } from "@/utils/utils";
+import { cn } from "@/shared/utils/utils";
 import * as React from "react";
 
 

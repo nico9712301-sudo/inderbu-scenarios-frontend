@@ -1,5 +1,5 @@
-import { createClientsContainer } from '@/features/dashboard/clients/di/ClientsContainer.server';
-import { ClientsPage } from '@/features/dashboard/clients/components/ClientsPage';
+import { createClientsContainer } from '@/presentation/features/dashboard/clients/di/ClientsContainer.server';
+import { ClientsPage } from '@/presentation/features/dashboard/clients/components/ClientsPage';
 
 interface ClientsPageProps {
   searchParams: {

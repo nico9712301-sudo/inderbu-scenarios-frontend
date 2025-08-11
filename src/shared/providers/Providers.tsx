@@ -1,10 +1,9 @@
 'use client';
 
-import { AuthProvider } from '@/features/auth';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ReactNode } from 'react';
 import { getQueryClient } from '../api/query-client';
+import { AuthProvider } from '@/presentation/features/auth/model/use-auth';
 
 interface ProvidersProps {
   children: ReactNode;

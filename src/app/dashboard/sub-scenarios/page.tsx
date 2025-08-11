@@ -1,6 +1,6 @@
-import { createSubScenariosContainer } from '@/features/dashboard/sub-scenarios/di/SubScenariosContainer.server';
-import { SubScenariosPage } from '@/features/dashboard/sub-scenarios/components/SubScenariosPage';
-import { ISubScenariosDataResponse } from '@/features/dashboard/sub-scenarios/application/GetSubScenariosDataUseCase';
+import { createSubScenariosContainer } from '@/presentation/features/dashboard/sub-scenarios/di/SubScenariosContainer.server';
+import { SubScenariosPage } from '@/presentation/features/dashboard/sub-scenarios/components/SubScenariosPage';
+import { ISubScenariosDataResponse } from '@/presentation/features/dashboard/sub-scenarios/application/GetSubScenariosDataUseCase';
 
 interface SubScenariosPageProps {
   searchParams: {

@@ -1,5 +1,6 @@
 import { AuthContext, createClientAuthContext } from './auth';
 import { ApiError, HttpClient, RequestConfig } from './types';
+import { ErrorHandlerComposer } from './error-handler';
 
 export interface HttpClientConfig {
   baseURL: string;

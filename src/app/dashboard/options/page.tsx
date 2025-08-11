@@ -1,6 +1,6 @@
-import { createOptionsContainer } from '@/features/dashboard/options/di/OptionsContainer.server';
-import { OptionsPage } from '@/features/dashboard/options/components/OptionsPage';
-import { OptionsDataResponse } from '@/features/dashboard/options/application/GetOptionsDataUseCase';
+import { createOptionsContainer } from '@/presentation/features/dashboard/options/di/OptionsContainer.server';
+import { OptionsPage } from '@/presentation/features/dashboard/options/components/OptionsPage';
+import { OptionsDataResponse } from '@/presentation/features/dashboard/options/application/GetOptionsDataUseCase';
 
 export default async function OptionsRoute() {
   // DDD: Dependency injection - build complete container

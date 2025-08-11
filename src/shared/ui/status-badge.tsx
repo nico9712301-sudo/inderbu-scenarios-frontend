@@ -1,5 +1,5 @@
 import { Badge } from "@/shared/ui/badge";
-import { cn } from "@/utils/utils";
+import { cn } from "@/shared/utils/utils";
 
 export type StatusType = string;
 

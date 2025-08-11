@@ -46,7 +46,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import { useEffect, useState } from "react";
 import { Badge } from "@/shared/ui/badge";
-import { cn } from "@/utils/utils";
+import { cn } from "@/shared/utils/utils";
 import type React from "react";
 
 

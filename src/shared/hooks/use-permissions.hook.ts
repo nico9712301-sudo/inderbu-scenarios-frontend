@@ -1,4 +1,4 @@
-import { useAuth } from "@/features/auth"; // Updated to new implementation
+import { useAuth } from "@/presentation/features/auth"; // Updated to new implementation
 import { useMemo } from "react";
 import { EUserRole } from "../enums/user-role.enum";
 import { IPermission } from "../interfaces/permission.interface";

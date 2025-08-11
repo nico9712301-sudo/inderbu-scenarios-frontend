@@ -1,9 +1,10 @@
 'use client';
 
-import { useAuth } from '@/features/auth/model/use-auth';
-import { useState, useEffect } from 'react';
+import { useAuth } from '@/presentation/features/auth/model/use-auth';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { AuthModal } from '@/features/auth';
+import { AuthModal } from '@/presentation/features/auth';
+import { useState, useEffect } from 'react';
+
 
 export default function LoginPage() {
   const { isAuthenticated, isLoading } = useAuth();

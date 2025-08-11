@@ -2,7 +2,7 @@ import {
   TLoginData,
   TRegisterData,
   TResetData,
-} from "@/features/auth/schemas/auth-schemas";
+} from "@/presentation/features/auth/schemas/auth-schemas";
 import { ClientHttpClient } from "@/shared/api/http-client-client";
 import { SimpleApiResponse } from "@/shared/api/types";
 import { AuthTokens, User } from "../model/types";

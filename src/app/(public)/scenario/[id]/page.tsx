@@ -3,8 +3,8 @@ import {
   ScenarioNotFoundError,
   ScenarioAccessDeniedError 
 } from '@/entities/scenario/domain/scenario-detail.domain';
-import { ScenarioDetailPage } from '@/features/scenarios/detail/components/pages/ScenarioDetailPage';
-import { createScenarioDetailContainer } from '@/features/scenarios/detail/di';
+import { ScenarioDetailPage } from '@/presentation/features/scenarios/detail/components/pages/ScenarioDetailPage';
+import { createScenarioDetailContainer } from '@/presentation/features/scenarios/detail/di';
 import { redirect, notFound } from 'next/navigation';
 interface PageProps {
   params: { id: string };

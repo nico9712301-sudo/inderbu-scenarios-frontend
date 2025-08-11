@@ -1,6 +1,6 @@
-import { createDashboardReservationsContainer } from '@/features/dashboard/reservations/di/DashboardReservationsContainer.server';
-import { DashboardReservationsResponse } from '@/features/dashboard/reservations/application/GetDashboardReservationsUseCase';
-import { DashboardReservationsPage } from '@/features/dashboard/reservations/components/DashboardReservationsPage';
+import { createDashboardReservationsContainer } from '@/presentation/features/dashboard/reservations/di/DashboardReservationsContainer.server';
+import { DashboardReservationsResponse } from '@/presentation/features/dashboard/reservations/application/GetDashboardReservationsUseCase';
+import { DashboardReservationsPage } from '@/presentation/features/dashboard/reservations/components/DashboardReservationsPage';
 
 interface DashboardPageProps {
   searchParams: {

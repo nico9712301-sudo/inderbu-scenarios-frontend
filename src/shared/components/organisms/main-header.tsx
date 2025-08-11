@@ -12,10 +12,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { PermissionGuard } from "../molecules/permission-guard";
-import { useAuth } from "@/features/auth";
-import { AuthModal } from "@/features/auth/components/organisms/auth-modal";
-// import { AuthModal } from "@/features/auth/components";
-// import { AuthModal } from "@/features/auth"; // AuthModal not implemented yet
+import { useAuth } from "@/presentation/features/auth";
+import { AuthModal } from "@/presentation/features/auth/components/organisms/auth-modal";
+// import { AuthModal } from "@/presentation/features/auth/components";
+// import { AuthModal } from "@/presentation/features/auth"; // AuthModal not implemented yet
 
 
 export function MainHeader() {

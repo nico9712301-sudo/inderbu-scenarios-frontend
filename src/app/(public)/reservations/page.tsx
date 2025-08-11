@@ -4,7 +4,7 @@ import { MainHeader } from "@/shared/components/organisms/main-header";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
-import { useAuth } from "@/features/auth";
+import { useAuth } from "@/presentation/features/auth";
 
 
 export default function ReservationsPage() {

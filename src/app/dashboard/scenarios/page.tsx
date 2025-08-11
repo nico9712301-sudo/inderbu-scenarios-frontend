@@ -1,50 +1,61 @@
-import { IScenariosDataResponse } from "@/features/dashboard/scenarios/application/GetScenariosDataUseCase";
-import { IScenariosFilters } from "@/features/dashboard/scenarios/domain/repositories/IScenarioRepository";
-import { createScenariosContainer } from "@/features/dashboard/scenarios/di/ScenariosContainer.server";
-import { ScenariosPage } from "@/features/dashboard/scenarios/components/ScenariosPage";
+import { TYPES } from '@/infrastructure/config/di/types';
+// import { ScenariosPage } from '@/presentation/features/dashboard/scenarios/scenarios.page';
+import { ScenarioFilters } from '@/domain/scenario/repositories/IScenarioRepository';
+import { GetScenariosDataUseCase, IScenariosDataResponse } from '@/application/dashboard/scenarios/GetScenariosDataUseCase';
+import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
+import { ScenariosPage } from '@/presentation/features/dashboard/scenarios/pages/scenarios.page';
 
-interface ScenariosPageProps {
-  searchParams: {
+interface ScenariosRouteProps {
+  searchParams: Promise<{
     page?: string;
     limit?: string;
     search?: string;
     neighborhoodId?: string;
-    active?: string
-  };
+    active?: string;
+  }>;
 }
 
-export default async function ScenariosRoute(props: ScenariosPageProps) {
+/**
+ * Scenarios Page Route (Server Component)
+ * 
+ * Next.js App Router page that handles scenarios listing.
+ * Uses dependency injection to get data and render the presentation layer.
+ */
+export default async function ScenariosRoute(props: ScenariosRouteProps) {
   const searchParams = await props.searchParams;
 
-  // DDD: Dependency injection - build complete container
-  const { scenariosService } = createScenariosContainer();
-
   try {
-    // Parse search params with defaults
-    const filters = {
+    // Dependency Injection: Get container and resolve use case
+    const container = ContainerFactory.createContainer();
+    const getScenariosDataUseCase = container.get<GetScenariosDataUseCase>(TYPES.GetScenariosDataUseCase);
+
+    // Parse and validate search params
+    const filters: ScenarioFilters = {
       page: searchParams.page ? parseInt(searchParams.page) : 1,
       limit: searchParams.limit ? parseInt(searchParams.limit) : 7,
       search: searchParams.search || "",
       neighborhoodId: searchParams.neighborhoodId
         ? parseInt(searchParams.neighborhoodId)
         : undefined,
-      active: searchParams.active !== undefined 
-        ? searchParams.active === 'true' 
+      active: searchParams.active !== undefined
+        ? searchParams.active === 'true'
         : undefined,
     };
 
-    // DDD: Execute use case through service layer
-    // All business logic, validation, and data fetching happens in domain/application layers
-    const result: IScenariosDataResponse =
-      await scenariosService.getScenariosData(filters);
+    // Execute Use Case through Application Layer
+    const result: IScenariosDataResponse = await getScenariosDataUseCase.execute(filters);
 
-    // Atomic Design: Render page template with clean separation
-    return <ScenariosPage initialData={result} />;
+    // Render Presentation Layer with server-side data
+    return (
+      <ScenariosPage
+        initialData={result}
+      />
+    );
+
   } catch (error) {
-    console.error("SSR Error in ScenariosRoute:", error);
-
-    // For unexpected errors, let Next.js error boundary handle it
-    console.error("Unexpected error in ScenariosRoute:", error);
+    console.error('Error in ScenariosRoute:', error);
+    
+    // TODO: Render proper error page/component
     throw error;
   }
 }

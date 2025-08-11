@@ -1,5 +1,5 @@
 import { DomainEvent } from "@/entities/reservation/domain/reservation.domain";
-import { IActivityArea } from "@/features/home/types/filters.types";
+import { IActivityArea } from "@/presentation/features/home/types/filters.types";
 
 export interface ActivityAreaRepository {
   findAll(): Promise<IActivityArea[]>;

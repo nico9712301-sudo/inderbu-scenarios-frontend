@@ -20,13 +20,15 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@/features/*": ["./src/features/*"],
+      "@/presentation/*": ["./src/presentation/*"],
       "@/shared/*": ["./src/shared/*"],
       "@/lib/*": ["./src/lib/*"],
       "@/core/*": ["./src/core/*"],
       "@/config/*": ["./src/config/*"],
       "@/server/*": ["./src/server/*"]
-    }
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": [
     "next-env.d.ts",

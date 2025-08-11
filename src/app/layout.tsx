@@ -1,3 +1,5 @@
+import 'reflect-metadata'; // MUST be first import for Inversify
+
 import { Providers } from "@/shared/providers/Providers";
 import { Toaster } from "@/shared/ui/sonner";
 import { Inter } from "next/font/google";

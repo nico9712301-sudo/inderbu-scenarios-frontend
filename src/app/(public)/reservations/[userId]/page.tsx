@@ -1,7 +1,7 @@
-import { GetUserReservationsResponse } from '@/features/reservations/use-cases/list/application/GetUserReservationsUseCase';
-import { createUserReservationsContainer } from '@/features/reservations/di/ReservationsContainer.server';
+import { GetUserReservationsResponse } from '@/presentation/features/reservations/use-cases/list/application/GetUserReservationsUseCase';
+import { createUserReservationsContainer } from '@/presentation/features/reservations/di/ReservationsContainer.server';
 import { AccessDeniedError, InvalidUserIdError } from '@/entities/user/domain/user-access.policy';
-import { ReservationsPage } from '@/features/reservations/components/pages/reservations.page';
+import { ReservationsPage } from '@/presentation/features/reservations/components/pages/reservations.page';
 import { redirect } from 'next/navigation';
 
 interface PageProps {

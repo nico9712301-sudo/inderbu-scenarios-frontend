@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/utils/utils";
+import { cn } from "@/shared/utils/utils";
 import { useIsMobile } from "@/shared/hooks/use-mobile.hook";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";

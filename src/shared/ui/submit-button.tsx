@@ -2,7 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 import { Button } from "./button";
-import { cn } from "@/utils/utils";
+import { cn } from "@/shared/utils/utils";
 
 interface SubmitButtonProps {
   isLoading: boolean;

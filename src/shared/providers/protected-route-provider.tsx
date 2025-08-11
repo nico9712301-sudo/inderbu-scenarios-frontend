@@ -1,11 +1,12 @@
 "use client";
 
-import { useAuth } from "@/features/auth";
-import { EUserRole } from "@/shared/enums/user-role.enum";
-import { getRedirectPath } from "@/utils/utils";
-import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { EUserRole } from "@/shared/enums/user-role.enum";
+import { useAuth } from "@/presentation/features/auth";
+import { getRedirectPath } from "../utils/utils";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+
 
 interface ProtectedRouteProviderProps {
   children: React.ReactNode;

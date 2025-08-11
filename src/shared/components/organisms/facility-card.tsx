@@ -1,4 +1,4 @@
-import { SubScenario } from "@/features/home/types/filters.types";
+import { SubScenario } from "@/presentation/features/home/types/filters.types";
 import Image from "next/image";
 import Link from "next/link";
 

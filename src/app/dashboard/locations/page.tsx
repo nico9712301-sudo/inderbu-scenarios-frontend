@@ -1,5 +1,5 @@
-import { createLocationsContainer } from '@/features/dashboard/locations/di/LocationsContainer.server';
-import { LocationsPage } from '@/features/dashboard/locations/components/LocationsPage';
+import { createLocationsContainer } from '@/presentation/features/dashboard/locations/di/LocationsContainer.server';
+import { LocationsPage } from '@/presentation/features/dashboard/locations/components/LocationsPage';
 
 interface LocationsPageProps {
   searchParams: {

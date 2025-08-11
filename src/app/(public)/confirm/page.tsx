@@ -17,7 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import { ResendConfirmationForm } from "@/features/confirm/components/organisms/resend-confirmation-form";
+import { ResendConfirmationForm } from "@/presentation/features/confirm/components/organisms/resend-confirmation-form";
 import { Button } from "@/shared/ui/button";
 import React, { Suspense } from "react";
 import Image from "next/image";

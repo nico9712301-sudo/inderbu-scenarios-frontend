@@ -2,7 +2,7 @@
 
 import { OTPInput, OTPInputContext } from "input-otp";
 import { Dot } from "lucide-react";
-import { cn } from "@/utils/utils";
+import { cn } from "@/shared/utils/utils";
 import * as React from "react";
 
 

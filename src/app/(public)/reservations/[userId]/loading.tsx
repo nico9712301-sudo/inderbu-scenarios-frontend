@@ -1,7 +1,7 @@
 "use client";
 
 import { MainHeader } from "@/shared/components/organisms/main-header";
-import Footer from "@/features/home/components/organisms/footer";
+import Footer from "@/presentation/features/home/components/organisms/footer";
 
 // Componente de animación shimmer moderna
 const ShimmerEffect = ({ className }: { className?: string }) => (

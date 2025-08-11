@@ -111,7 +111,7 @@ UI components are located in:
 TypeScript paths are configured for clean imports:
 
 - `@/*` → `./src/*`
-- `@/features/*` → `./src/features/*`
+- `@/presentation/features/*` → `./src/features/*`
 - `@/shared/*` → `./src/shared/*`
 - `@/config/*` → `./src/config/*`
 

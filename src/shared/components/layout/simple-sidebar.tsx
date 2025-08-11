@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/utils/utils";
+import { cn } from "@/shared/utils/utils";
 import { useSidebar } from "@/shared/providers/dashboard-sidebar.provider";
 import { Button } from "@/shared/ui/button";
 import { ChevronLeft, ChevronRight, LogOut, Settings, LucideIcon } from "lucide-react";

@@ -1,4 +1,4 @@
-import Footer from "@/features/home/components/organisms/footer";
+import Footer from "@/presentation/features/home/components/organisms/footer";
 
 export default function PublicLayout({
   children,
