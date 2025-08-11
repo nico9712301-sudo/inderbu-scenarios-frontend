@@ -34,7 +34,7 @@ export const SubScenariosFiltersCard = ({
   onChange,
   onToggle,
 }: SubScenariosFiltersCardProps) => {
-  // ⚠️ TODOS LOS HOOKS DEBEN IR AL INICIO - ANTES DE CUALQUIER RETURN CONDICIONAL
+  //  TODOS LOS HOOKS DEBEN IR AL INICIO - ANTES DE CUALQUIER RETURN CONDICIONAL
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
   const [localSearchValue, setLocalSearchValue] = useState(

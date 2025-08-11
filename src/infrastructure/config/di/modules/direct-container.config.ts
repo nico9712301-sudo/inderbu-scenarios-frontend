@@ -3,7 +3,7 @@ import { TYPES } from '../types';
 
 // Repository Interfaces
 import { IScenarioRepository } from '@/domain/scenario/repositories/IScenarioRepository';
-import { INeighborhoodRepository } from '@/domain/neighborhood/repositories/INeighborhoodRepository';
+import { INeighborhoodRepository } from '@/entities/neighborhood/infrastructure/INeighborhoodRepository';
 
 // Repository Implementations
 import { ScenarioRepository } from '@/infrastructure/repositories/scenario-repository.adapter';

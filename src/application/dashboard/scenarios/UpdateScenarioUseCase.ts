@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify';
-import { Scenario, UpdateScenarioData } from '@/domain/scenario/entities/Scenario';
+import { Scenario, UpdateScenarioData } from '@/entities/scenario/domain/Scenario';
 import type { IScenarioRepository } from '@/domain/scenario/repositories/IScenarioRepository';
 import { TYPES } from '@/infrastructure/config/di/types';
 

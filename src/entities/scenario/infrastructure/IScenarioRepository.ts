@@ -1,5 +1,5 @@
 import { PageMeta } from '@/services/api';
-import { Scenario, CreateScenarioData, UpdateScenarioData } from '../entities/Scenario';
+import { Scenario, CreateScenarioData, UpdateScenarioData } from '../../../entities/scenario/domain/Scenario';
 
 export interface ScenarioFilters {
   page?: number;

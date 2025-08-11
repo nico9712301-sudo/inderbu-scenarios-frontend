@@ -1,4 +1,4 @@
-import { Neighborhood, CreateNeighborhoodData, UpdateNeighborhoodData } from '../entities/Neighborhood';
+import { Neighborhood, CreateNeighborhoodData, UpdateNeighborhoodData } from '../domain/Neighborhood';
 
 export interface NeighborhoodFilters {
   communeId?: number;

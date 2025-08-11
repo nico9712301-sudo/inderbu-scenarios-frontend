@@ -189,7 +189,7 @@ export class GetHomeDataUseCaseImpl implements GetHomeDataUseCase {
 
       console.log("Domain events published successfully");
     } catch (error) {
-      console.warn("⚠️ Failed to publish domain events:", error);
+      console.warn(" Failed to publish domain events:", error);
       // Don't fail the main operation if events fail
     }
   }

@@ -1,4 +1,4 @@
-# 🏗️ Architecture Guide - Inderbu Scenarios Frontend
+# Architecture Guide - Inderbu Scenarios Frontend
 
 ## 📐 Clean Architecture Principles
 
@@ -143,7 +143,7 @@ src/
 └─────────────────┘
 ```
 
-## 📋 Layer Responsibilities
+## Layer Responsibilities
 
 ### 🎪 **Domain Layer** (`entities/`)
 
@@ -151,7 +151,7 @@ src/
 - **Repository Interfaces** - Contracts for data access (IScenarioRepository)
 - **Value Objects** - Immutable objects representing business concepts
 - **Domain Services** - Complex business logic that doesn't belong to a single entity
-- **❌ NO Dependencies** - Pure business rules, framework-agnostic
+- **NO Dependencies** - Pure business rules, framework-agnostic
 
 ### 🎯 **Application Layer** (`application/`)
 
@@ -159,7 +159,7 @@ src/
 - **Commands** - Write operation contracts (CreateScenarioCommand)
 - **Queries** - Read operation contracts (GetScenariosQuery)
 - **Application Services** - Coordination between multiple use cases
-- **❌ NO Framework Dependencies** - Pure business logic orchestration
+- **NO Framework Dependencies** - Pure business logic orchestration
 
 ### 🎨 **Presentation Layer** (`presentation/` + `app/`)
 
@@ -167,9 +167,9 @@ src/
 - **React Components** (`presentation/components/`) - UI Components organized by Atomic Design
 - **React Hooks** - UI state management and side effects
 - **Event Handlers** - User interactions and form submissions
-- **❌ NO Business Logic** - Only UI concerns and user interactions
+- **NO Business Logic** - Only UI concerns and user interactions
 
-### 🔧 **Infrastructure Layer** (`infrastructure/`)
+### **Infrastructure Layer** (`infrastructure/`)
 
 **🎯 Key Principle**: The Infrastructure layer is the **ONLY** layer that knows about external concerns and framework-specific implementations. It implements domain contracts and provides the DI Container.
 
@@ -285,7 +285,7 @@ src/
 - Presentation → Application (calls use cases)
 - Infrastructure/Web → Application (server actions call use cases)
 
-### **❌ Forbidden Dependencies:**
+### **Forbidden Dependencies:**
 
 - Domain → Any other layer
 - Application → Infrastructure
@@ -532,30 +532,30 @@ export function CreateScenarioModal({ isOpen, onClose, onScenarioCreated }) {
 
 ## 🚨 Common Anti-patterns to Avoid
 
-### **❌ Domain depending on Infrastructure**
+### **Domain depending on Infrastructure**
 
 ```typescript
-// ❌ BAD - Domain importing from infrastructure
+// BAD - Domain importing from infrastructure
 import { HttpClient } from "../../infrastructure/api/http-client";
 ```
 
-### **❌ Use Cases with UI Logic**
+### **Use Cases with UI Logic**
 
 ```typescript
-// ❌ BAD - Use case with UI concerns
+// BAD - Use case with UI concerns
 export class CreateScenarioUseCase {
   async execute() {
     const result = await this.repository.create();
-    toast.success("Created!"); // ❌ UI Logic in Use Case
+    toast.success("Created!"); // UI Logic in Use Case
     return result;
   }
 }
 ```
 
-### **❌ Manual Dependency Instantiation**
+### **Manual Dependency Instantiation**
 
 ```typescript
-// ❌ BAD - Hardcoded dependencies in containers
+// BAD - Hardcoded dependencies in containers
 export function createContainer() {
   const repository = new ScenarioRepository(); // Hardcoded!
   const useCase = new CreateScenarioUseCase(repository); // Manual wiring!
@@ -563,10 +563,10 @@ export function createContainer() {
 }
 ```
 
-### **❌ God Containers**
+### **God Containers**
 
 ```typescript
-// ❌ BAD - One container for everything
+// BAD - One container for everything
 export interface MegaContainer {
   // Scenarios
   createScenarioUseCase: CreateScenarioUseCase;
@@ -578,20 +578,20 @@ export interface MegaContainer {
 }
 ```
 
-### **❌ No Environment Separation**
+### **No Environment Separation**
 
 ```typescript
-// ❌ BAD - Same container for all environments
+// BAD - Same container for all environments
 // Production uses same dependencies as tests!
 export function createContainer() {
   return new UniversalContainer(); // No env-specific config
 }
 ```
 
-### **❌ Features importing from other Features**
+### **Features importing from other Features**
 
 ```typescript
-// ❌ BAD - Cross-feature dependencies
+// BAD - Cross-feature dependencies
 import { ScenarioComponent } from "../scenarios/components/";
 ```
 
@@ -657,7 +657,7 @@ import { ScenarioComponent } from "../scenarios/components/";
 │     │                                                  │
 │     │ creates DI Container                           │
 │     ↓                                                  │
-│  🏗️ ContainerFactory.createContainer()                │
+│   ContainerFactory.createContainer()                │
 │     │                                                  │
 │     │ resolves dependencies with Inversify          │
 │     ↓                                                  │

@@ -2,8 +2,8 @@ import { injectable } from 'inversify';
 import { 
   INeighborhoodRepository, 
   NeighborhoodFilters 
-} from '@/domain/neighborhood/repositories/INeighborhoodRepository';
-import { Neighborhood, CreateNeighborhoodData, UpdateNeighborhoodData } from '@/domain/neighborhood/entities/Neighborhood';
+} from '@/entities/neighborhood/infrastructure/INeighborhoodRepository';
+import { Neighborhood, CreateNeighborhoodData, UpdateNeighborhoodData } from '@/entities/neighborhood/domain/Neighborhood';
 
 /**
  * Mock Neighborhood Repository for Testing

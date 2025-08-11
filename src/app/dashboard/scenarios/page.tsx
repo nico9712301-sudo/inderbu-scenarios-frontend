@@ -1,9 +1,10 @@
+import { GetScenariosDataUseCase, IScenariosDataResponse } from '@/application/dashboard/scenarios/GetScenariosDataUseCase';
+import { ScenariosPage } from '@/presentation/features/dashboard/scenarios/pages/scenarios.page';
+import { ScenarioFilters } from '@/domain/scenario/repositories/IScenarioRepository';
+import { IContainer } from '@/infrastructure/config/di/containers/base.container';
+import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
 import { TYPES } from '@/infrastructure/config/di/types';
 // import { ScenariosPage } from '@/presentation/features/dashboard/scenarios/scenarios.page';
-import { ScenarioFilters } from '@/domain/scenario/repositories/IScenarioRepository';
-import { GetScenariosDataUseCase, IScenariosDataResponse } from '@/application/dashboard/scenarios/GetScenariosDataUseCase';
-import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
-import { ScenariosPage } from '@/presentation/features/dashboard/scenarios/pages/scenarios.page';
 
 interface ScenariosRouteProps {
   searchParams: Promise<{
@@ -26,7 +27,7 @@ export default async function ScenariosRoute(props: ScenariosRouteProps) {
 
   try {
     // Dependency Injection: Get container and resolve use case
-    const container = ContainerFactory.createContainer();
+    const container: IContainer = ContainerFactory.createContainer();
     const getScenariosDataUseCase = container.get<GetScenariosDataUseCase>(TYPES.GetScenariosDataUseCase);
 
     // Parse and validate search params

@@ -3,7 +3,7 @@ import {
   ScenarioFilters, 
   PaginatedScenarios 
 } from '@/domain/scenario/repositories/IScenarioRepository';
-import { Scenario, CreateScenarioData, UpdateScenarioData } from '@/domain/scenario/entities/Scenario';
+import { Scenario, CreateScenarioData, UpdateScenarioData } from '@/entities/scenario/domain/Scenario';
 import { injectable } from 'inversify';
 
 /**

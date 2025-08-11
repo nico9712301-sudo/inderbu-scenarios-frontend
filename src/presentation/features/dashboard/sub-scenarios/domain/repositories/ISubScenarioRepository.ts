@@ -31,7 +31,7 @@ export interface IScenarioRepository {
   getAllWithPagination(filters: IScenariosFilters): Promise<PaginatedScenarios>
 }
 
-// ❌ REMOVIDAS: Estas interfaces no pertenecen aquí
+// REMOVIDAS: Estas interfaces no pertenecen aquí
 // export interface IActivityAreaRepository {
 //   getAll(): Promise<ActivityArea[]>;
 // }

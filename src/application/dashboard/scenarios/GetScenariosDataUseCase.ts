@@ -1,8 +1,8 @@
 import { injectable, inject } from 'inversify';
 import { GetScenariosUseCase } from './GetScenariosUseCase';
 import { GetNeighborhoodsUseCase } from './GetNeighborhoodsUseCase';
-import { ScenarioFilters } from '@/domain/scenario/repositories/IScenarioRepository';
 import { TYPES } from '@/infrastructure/config/di/types';
+import { ScenarioFilters } from '@/entities/scenario/infrastructure/IScenarioRepository';
 
 export interface IScenariosDataResponse {
   scenarios: any[]; // Using any temporarily until we unify types

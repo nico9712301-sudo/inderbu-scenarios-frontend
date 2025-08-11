@@ -90,7 +90,7 @@ export class GetScenarioDetailUseCaseImpl implements GetScenarioDetailUseCase {
       try {
         await this.publishNotFoundEvent(input.id);
       } catch (eventError) {
-        console.warn('⚠️ Failed to publish error event:', eventError);
+        console.warn(' Failed to publish error event:', eventError);
       }
       
       throw error; // Re-throw domain exceptions
@@ -135,7 +135,7 @@ export class GetScenarioDetailUseCaseImpl implements GetScenarioDetailUseCase {
 
       console.log('Domain events published successfully');
     } catch (error) {
-      console.warn('⚠️ Failed to publish success events:', error);
+      console.warn(' Failed to publish success events:', error);
       // Don't fail the main operation if events fail
     }
   }
@@ -145,7 +145,7 @@ export class GetScenarioDetailUseCaseImpl implements GetScenarioDetailUseCase {
       await this.eventBus.publish(new ScenarioDetailNotFoundEvent(attemptedId));
       console.log('Not found event published');
     } catch (error) {
-      console.warn('⚠️ Failed to publish not found event:', error);
+      console.warn(' Failed to publish not found event:', error);
       // Don't fail the main operation if events fail
     }
   }

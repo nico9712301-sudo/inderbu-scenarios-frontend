@@ -19,7 +19,7 @@ export class ContainerFactory {
    * Create or get the singleton container instance based on environment
    */
   static createContainer(): IContainer {
-    const environment = ContainerFactory.detectEnvironment();
+    const environment: Environment = ContainerFactory.detectEnvironment();
 
     // Return existing instance if environment hasn't changed
     if (
@@ -98,7 +98,7 @@ export class ContainerFactory {
    * Create the appropriate container based on environment
    */
   private static createEnvironmentContainer(environment: Environment): IContainer {
-    console.log(`🏗️  Creating ${environment} container...`);
+    console.log(`  Creating ${environment} container...`);
 
     switch (environment) {
       case Environment.PRODUCTION:
@@ -199,7 +199,7 @@ export interface ContainerInfo {
 /**
  * Global function to get the current container
  * 
- * ⚠️  WARNING: Use this sparingly and prefer dependency injection.
+ *   WARNING: Use this sparingly and prefer dependency injection.
  * This is mainly for framework integration points where DI isn't available.
  */
 export function getGlobalContainer(): IContainer {
@@ -209,7 +209,7 @@ export function getGlobalContainer(): IContainer {
 /**
  * Global function to get a dependency
  * 
- * ⚠️  WARNING: Use this sparingly and prefer dependency injection.
+ *   WARNING: Use this sparingly and prefer dependency injection.
  * This is mainly for framework integration points where DI isn't available.
  */
 export function getGlobalDependency<T>(identifier: symbol): T {

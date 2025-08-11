@@ -1,9 +1,9 @@
+import { INeighborhoodRepository } from '@/entities/neighborhood/infrastructure/INeighborhoodRepository';
+import { IScenarioRepository } from '@/domain/scenario/repositories/IScenarioRepository';
+import { MockNeighborhoodRepository } from '../mocks/mock-neighborhood-repository';
+import { MockScenarioRepository } from '../mocks/mock-scenario-repository';
 import { ScenarioContainer } from './scenario.container';
 import { TYPES } from '../types';
-import { IScenarioRepository } from '@/domain/scenario/repositories/IScenarioRepository';
-import { INeighborhoodRepository } from '@/domain/neighborhood/repositories/INeighborhoodRepository';
-import { MockScenarioRepository } from '../mocks/mock-scenario-repository';
-import { MockNeighborhoodRepository } from '../mocks/mock-neighborhood-repository';
 
 /**
  * Testing Container
@@ -52,7 +52,7 @@ export class TestingContainer extends ScenarioContainer {
     
     if (process.env.DEBUG_TEST_CONTAINER === 'true') {
       console.log('🧪 Testing Container initialized with mocks');
-      console.log('📊 Test Container Health:', this.getHealthStatus());
+      console.log('Test Container Health:', this.getHealthStatus());
     }
   }
 

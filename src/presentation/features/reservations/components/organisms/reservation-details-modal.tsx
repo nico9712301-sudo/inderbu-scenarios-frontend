@@ -28,7 +28,7 @@ import { format, parseISO } from "date-fns";
 import { getStatusBadgeClass } from "@/shared/utils/utils";
 
 /* ------------------------------------------------------------------
-   🔧  Utilidades de formato y helpers visuales
+    Utilidades de formato y helpers visuales
 -------------------------------------------------------------------*/
 
 const weekdayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];

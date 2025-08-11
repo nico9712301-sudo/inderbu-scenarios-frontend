@@ -26,7 +26,7 @@ export class AlternativeScenarioContainer extends BaseContainer {
       configureContainer(this.container);
       console.log('✅ Container configured successfully with direct approach');
     } catch (error) {
-      console.error('❌ Error configuring container:', error);
+      console.error('Error configuring container:', error);
       throw error;
     }
   }
@@ -141,10 +141,8 @@ export class AlternativeScenarioContainer extends BaseContainer {
    * Get count of bound dependencies (useful for monitoring)
    */
   private getBoundDependencyCount(): number {
-    let count = 0;
-    const bindings = this.container.getBindingDictionary();
-    bindings.traverse(() => count++);
-    return count;
+    const bindings = this.container.getAll(Symbol.for(''));
+    return bindings.length;
   }
 }
 

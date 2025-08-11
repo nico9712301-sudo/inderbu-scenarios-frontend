@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify';
-import type { INeighborhoodRepository } from '@/domain/neighborhood/repositories/INeighborhoodRepository';
+import type { INeighborhoodRepository } from '@/entities/neighborhood/infrastructure/INeighborhoodRepository';
 import { TYPES } from '@/infrastructure/config/di/types';
 
 @injectable()

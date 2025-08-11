@@ -58,7 +58,7 @@ toast.success("¡Bienvenido! Inicio de sesión correcto");
 // Error de login - Rojo
 toast.error("Credenciales incorrectas");
 
-// ⚠️ Advertencia - Amarillo
+//  Advertencia - Amarillo
 toast.warning("Máximo 3 intentos de login");
 
 // ℹ️ Información - Azul
@@ -126,7 +126,7 @@ Después de la configuración, los toasts aparecen así:
 - **Botón cerrar**: Habilitado
 - **Animaciones**: Suaves y fluidas
 
-## 🔧 Configuración Aplicada
+## Configuración Aplicada
 
 ```typescript
 // En shared/ui/sonner.tsx

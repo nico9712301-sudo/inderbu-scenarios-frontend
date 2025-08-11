@@ -89,7 +89,7 @@ export class ProductionContainer extends ScenarioContainer {
     }
 
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('⚠️  ProductionContainer is being used in non-production environment');
+      console.warn('  ProductionContainer is being used in non-production environment');
     }
   }
 
@@ -167,7 +167,7 @@ export class ProductionContainer extends ScenarioContainer {
    * Should be called during application shutdown
    */
   async gracefulShutdown(): Promise<void> {
-    console.log('🛑 Initiating graceful shutdown of ProductionContainer...');
+    console.log('Initiating graceful shutdown of ProductionContainer...');
     
     try {
       // TODO: Cleanup production resources
@@ -178,7 +178,7 @@ export class ProductionContainer extends ScenarioContainer {
       
       console.log('✅ ProductionContainer shutdown completed successfully');
     } catch (error) {
-      console.error('❌ Error during ProductionContainer shutdown:', error);
+      console.error('Error during ProductionContainer shutdown:', error);
       throw error;
     }
   }

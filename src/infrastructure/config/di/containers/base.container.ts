@@ -1,4 +1,4 @@
-import { Container, interfaces } from 'inversify';
+import { BindingScope, Container, ServiceIdentifier } from 'inversify';
 
 /**
  * Base Container Interface
@@ -10,22 +10,22 @@ export interface IContainer {
   /**
    * Get a single instance of a dependency
    */
-  get<T>(serviceIdentifier: interfaces.ServiceIdentifier<T>): T;
+  get<T>(serviceIdentifier: ServiceIdentifier<T>): T;
 
   /**
    * Get all instances of a dependency (useful for multiple implementations)
    */
-  getAll<T>(serviceIdentifier: interfaces.ServiceIdentifier<T>): T[];
+  getAll<T>(serviceIdentifier: ServiceIdentifier<T>): T[];
 
   /**
    * Check if a dependency is bound in the container
    */
-  isBound(serviceIdentifier: interfaces.ServiceIdentifier): boolean;
+  isBound(serviceIdentifier: ServiceIdentifier): boolean;
 
   /**
    * Get optional dependency (returns undefined if not bound)
    */
-  getOptional<T>(serviceIdentifier: interfaces.ServiceIdentifier<T>): T | undefined;
+  getOptional<T>(serviceIdentifier: ServiceIdentifier<T>): T | undefined;
 }
 
 /**
@@ -65,7 +65,7 @@ export abstract class BaseContainer implements IContainer {
   /**
    * Get a single instance of a dependency
    */
-  get<T>(serviceIdentifier: interfaces.ServiceIdentifier<T>): T {
+  get<T>(serviceIdentifier: ServiceIdentifier<T>): T {
     try {
       return this.container.get<T>(serviceIdentifier);
     } catch (error) {
@@ -79,7 +79,7 @@ export abstract class BaseContainer implements IContainer {
   /**
    * Get all instances of a dependency
    */
-  getAll<T>(serviceIdentifier: interfaces.ServiceIdentifier<T>): T[] {
+  getAll<T>(serviceIdentifier: ServiceIdentifier<T>): T[] {
     try {
       return this.container.getAll<T>(serviceIdentifier);
     } catch (error) {
@@ -93,14 +93,14 @@ export abstract class BaseContainer implements IContainer {
   /**
    * Check if a dependency is bound
    */
-  isBound(serviceIdentifier: interfaces.ServiceIdentifier): boolean {
+  isBound(serviceIdentifier: ServiceIdentifier): boolean {
     return this.container.isBound(serviceIdentifier);
   }
 
   /**
    * Get optional dependency
    */
-  getOptional<T>(serviceIdentifier: interfaces.ServiceIdentifier<T>): T | undefined {
+  getOptional<T>(serviceIdentifier: ServiceIdentifier<T>): T | undefined {
     if (this.isBound(serviceIdentifier)) {
       return this.get<T>(serviceIdentifier);
     }
@@ -110,7 +110,7 @@ export abstract class BaseContainer implements IContainer {
   /**
    * Unbind a dependency (useful for testing)
    */
-  unbind(serviceIdentifier: interfaces.ServiceIdentifier): void {
+  unbind(serviceIdentifier: ServiceIdentifier): void {
     if (this.isBound(serviceIdentifier)) {
       this.container.unbind(serviceIdentifier);
     }
@@ -119,7 +119,7 @@ export abstract class BaseContainer implements IContainer {
   /**
    * Rebind a dependency (useful for testing and environment-specific overrides)
    */
-  rebind<T>(serviceIdentifier: interfaces.ServiceIdentifier<T>) {
+  rebind<T>(serviceIdentifier: ServiceIdentifier<T>) {
     return this.container.rebind<T>(serviceIdentifier);
   }
 
@@ -128,12 +128,18 @@ export abstract class BaseContainer implements IContainer {
    */
   getContainerSnapshot(): string {
     // Useful for debugging - shows all bound dependencies
-    const bindings = this.container.getBindingDictionary();
+    // Accessing _bindingDictionary is not part of the public API and may break in future versions.
+    // This is for debugging purposes only.
+    const bindingDictionary = (this.container as any)._bindingDictionary;
     const boundServices: string[] = [];
 
-    bindings.traverse((key, value) => {
-      boundServices.push(`${String(key)} -> ${value.length} binding(s)`);
-    });
+    if (bindingDictionary && typeof bindingDictionary.traverse === 'function') {
+      bindingDictionary.traverse((key: any, value: any) => {
+        boundServices.push(`${String(key)} -> ${value.length} binding(s)`);
+      });
+    } else {
+      boundServices.push('Unable to access binding dictionary.');
+    }
 
     return `Container Snapshot:\n${boundServices.join('\n')}`;
   }
@@ -157,7 +163,7 @@ export class ContainerResolutionError extends Error {
  * Container configuration options
  */
 export interface ContainerOptions {
-  defaultScope?: interfaces.BindingScope;
+  defaultScope?: BindingScope;
   autoBindInjectable?: boolean;
   skipBaseClassChecks?: boolean;
 }

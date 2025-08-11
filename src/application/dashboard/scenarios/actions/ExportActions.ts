@@ -53,7 +53,7 @@ export async function checkExportStatusAction(
     const httpClient = ClientHttpClientFactory.createClient(authContext);
 
     const response = await httpClient.get<any>(`/scenarios/export/${jobId}/status`);
-    console.log('📊 Export status response:', JSON.stringify(response, null, 2));
+    console.log('Export status response:', JSON.stringify(response, null, 2));
 
     // Construir downloadUrl usando el endpoint /file cuando esté completed
     const isCompleted = response.status === 'completed' || response.data?.status === 'completed';

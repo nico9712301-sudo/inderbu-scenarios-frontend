@@ -62,7 +62,7 @@ export function usePermissions(): IPermission {
 
     const userPermissions = ROLE_PERMISSIONS[user.role];
     if (!userPermissions) {
-      console.warn(`⚠️ Unknown user role: ${user.role}, using default USER permissions`);
+      console.warn(` Unknown user role: ${user.role}, using default USER permissions`);
       return ROLE_PERMISSIONS[EUserRole.INDEPENDIENTE]; // Retorna permisos de usuario independiente por defecto
     }
 

@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify';
-import type { IScenarioRepository, ScenarioFilters } from '@/domain/scenario/repositories/IScenarioRepository';
 import { TYPES } from '@/infrastructure/config/di/types';
+import type { IScenarioRepository, ScenarioFilters } from '@/entities/scenario/infrastructure/IScenarioRepository';
 
 export interface PaginatedScenariosResponse {
   data: any[]; // Using any temporarily until we unify types
@@ -12,7 +12,7 @@ export class GetScenariosUseCase {
   constructor(
     @inject(TYPES.IScenarioRepository)
     private readonly scenarioRepository: IScenarioRepository
-  ) {}
+  ) { }
 
   async execute(filters: ScenarioFilters = {}): Promise<PaginatedScenariosResponse> {
     try {
@@ -20,7 +20,7 @@ export class GetScenariosUseCase {
       if (filters.page !== undefined && filters.page <= 0) {
         throw new Error('Page number must be greater than 0');
       }
-      
+
       if (filters.limit !== undefined && (filters.limit <= 0 || filters.limit > 100)) {
         throw new Error('Limit must be between 1 and 100');
       }

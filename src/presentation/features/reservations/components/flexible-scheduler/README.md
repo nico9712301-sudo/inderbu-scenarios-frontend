@@ -1,6 +1,6 @@
 # Flexible Scheduler - Refactorización Modular
 
-## 📋 Descripción
+## Descripción
 
 Este módulo ha sido refactorizado desde un archivo monolítico de más de 800 líneas a una arquitectura modular siguiendo los principios de **Single Responsibility** y **Atomic Design**. Ahora incluye **persistencia inteligente en URL** para mejorar la experiencia del usuario.
 
@@ -38,7 +38,7 @@ Este módulo ha sido refactorizado desde un archivo monolítico de más de 800 l
 - **⏪ Navigation**: Back/Forward funciona intuitivamente
 - **🔄 Refresh**: No se pierde estado al refrescar
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 La nueva estructura sigue el patrón **Feature-Sliced Design + Atomic Design**:
 

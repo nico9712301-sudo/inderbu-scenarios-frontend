@@ -77,7 +77,7 @@ export class ScenarioDetailPolicy {
   }
 
   static hasValidRecommendations(scenario: ScenarioDetail): boolean {
-    return scenario.recommendations && 
+    return !!scenario.recommendations && 
            scenario.recommendations.trim().length > 0 &&
            scenario.recommendations !== "No hay recomendaciones disponibles.";
   }
