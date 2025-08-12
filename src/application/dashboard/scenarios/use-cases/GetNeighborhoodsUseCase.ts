@@ -1,11 +1,9 @@
 import { injectable, inject } from 'inversify';
 import type { INeighborhoodRepository } from '@/entities/neighborhood/infrastructure/INeighborhoodRepository';
-import { TYPES } from '@/infrastructure/config/di/types';
 
 @injectable()
 export class GetNeighborhoodsUseCase {
   constructor(
-    @inject(TYPES.INeighborhoodRepository)
     private readonly neighborhoodRepository: INeighborhoodRepository
   ) {}
 

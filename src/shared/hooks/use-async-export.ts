@@ -268,7 +268,7 @@ export function useAsyncExport({
       return;
     }
     
-    // No permitir exportar si el componente se desmontó
+    // No permitir exportar si el componente se desmontó por safety check
     if (isUnmountedRef.current) {
       return;
     }

@@ -1,10 +1,9 @@
-import { GetScenariosDataUseCase, IScenariosDataResponse } from '@/application/dashboard/scenarios/GetScenariosDataUseCase';
+import { GetScenariosDataUseCase, IScenariosDataResponse } from '@/application/dashboard/scenarios/use-cases/GetScenariosDataUseCase';
 import { ScenariosPage } from '@/presentation/features/dashboard/scenarios/pages/scenarios.page';
-import { ScenarioFilters } from '@/domain/scenario/repositories/IScenarioRepository';
-import { IContainer } from '@/infrastructure/config/di/containers/base.container';
+import { ScenarioFilters } from '@/entities/scenario/infrastructure/IScenarioRepository';
 import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
-import { TYPES } from '@/infrastructure/config/di/types';
-// import { ScenariosPage } from '@/presentation/features/dashboard/scenarios/scenarios.page';
+import { IContainer } from '@/infrastructure/config/di/simple-container';
+import { TOKENS } from '@/infrastructure/config/di/tokens';
 
 interface ScenariosRouteProps {
   searchParams: Promise<{
@@ -28,8 +27,8 @@ export default async function ScenariosRoute(props: ScenariosRouteProps) {
   try {
     // Dependency Injection: Get container and resolve use case
     const container: IContainer = ContainerFactory.createContainer();
-    const getScenariosDataUseCase = container.get<GetScenariosDataUseCase>(TYPES.GetScenariosDataUseCase);
-
+    const getScenariosDataUseCase = container.get<GetScenariosDataUseCase>(TOKENS.GetScenariosDataUseCase);
+    
     // Parse and validate search params
     const filters: ScenarioFilters = {
       page: searchParams.page ? parseInt(searchParams.page) : 1,

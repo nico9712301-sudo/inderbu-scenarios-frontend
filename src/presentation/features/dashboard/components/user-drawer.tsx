@@ -52,7 +52,7 @@ interface IRoleOption {
   name: string;
 }
 
-interface INeighborhoodOption {
+interface IINeighborhoodOptionDTO {
   id: number;
   name: string;
 }
@@ -72,7 +72,7 @@ const API_BASE_URL =
 export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
   const [form, setForm] = useState<Partial<IUser>>({});
   const [roles, setRoles] = useState<IRoleOption[]>([]);
-  const [neighborhoods, setNeighborhoods] = useState<INeighborhoodOption[]>([]);
+  const [neighborhoods, setNeighborhoods] = useState<IINeighborhoodOptionDTO[]>([]);
   const [loading, setLoading] = useState(false);
 
   /* Cargar roles y barrios */

@@ -1,5 +1,3 @@
-import { injectable, inject } from 'inversify';
-import { TYPES } from '@/infrastructure/config/di/types';
 import type { IScenarioRepository, ScenarioFilters } from '@/entities/scenario/infrastructure/IScenarioRepository';
 
 export interface PaginatedScenariosResponse {
@@ -7,10 +5,8 @@ export interface PaginatedScenariosResponse {
   meta: any;   // Using any temporarily until we unify types
 }
 
-@injectable()
 export class GetScenariosUseCase {
   constructor(
-    @inject(TYPES.IScenarioRepository)
     private readonly scenarioRepository: IScenarioRepository
   ) { }
 

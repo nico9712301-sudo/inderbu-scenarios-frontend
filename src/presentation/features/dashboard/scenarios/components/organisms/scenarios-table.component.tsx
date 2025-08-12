@@ -25,7 +25,7 @@ interface Props {
   onPageChange(page: number): void;
   onLimitChange?(limit: number): void;
   onEdit(row: any): void;
-  onToggleStatus?(row: any): void;
+  onToggleStatus(row: any): void;
 }
 
 export function ScenariosTable({
@@ -67,7 +67,7 @@ export function ScenariosTable({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-32">
             <DropdownMenuItem
-              onClick={() => onToggleStatus?.(r)}
+              onClick={() => onToggleStatus(r)}
               disabled={!onToggleStatus}
               className={r.active ? "text-gray-600" : "text-orange-600"}
             >

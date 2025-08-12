@@ -11,7 +11,7 @@ export interface ActivityAreaOption {
   name: string;
 }
 
-export interface NeighborhoodOption {
+export interface INeighborhoodOptionDTO {
   id: number;
   name: string;
 }
@@ -103,7 +103,7 @@ export async function searchActivityAreas(
 
 export async function searchNeighborhoods(
   search: string = "",
-): Promise<NeighborhoodOption[]> {
+): Promise<INeighborhoodOptionDTO[]> {
   try {
     const params = new URLSearchParams();
     if (search.trim()) {

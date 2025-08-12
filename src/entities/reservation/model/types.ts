@@ -295,7 +295,7 @@ export const getReservationStatusColor = (state: string) => {
 export const getReservationStatusIcon = (state: string) => {
   switch (state) {
     case "CONFIRMADA":
-      return "✅";
+      return "";
     case "PENDIENTE":
       return "⏳";
     case "CANCELADA":

@@ -31,7 +31,7 @@ export interface IActivityAreaOption {
   name: string;
 }
 
-export interface INeighborhoodOption {
+export interface IINeighborhoodOptionDTO {
   id: number;
   name: string;
 }

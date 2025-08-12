@@ -1,72 +1,81 @@
 /**
- * Dependency Injection Types & Symbols
+ * Dependency Injection Tokens
  * 
- * Centralized registry of all dependency identifiers for type-safe injection.
- * Uses Symbol.for() to ensure uniqueness across the application.
+ * Simple string-based tokens for type-safe dependency injection.
+ * Using strings instead of Symbols for simplicity and debuggability.
  */
 
-export const TYPES = {
+export const TOKENS = {
   // =============================================================================
   // REPOSITORIES (Infrastructure Layer)
   // =============================================================================
-  IScenarioRepository: Symbol.for("IScenarioRepository"),
-  INeighborhoodRepository: Symbol.for("INeighborhoodRepository"),
-  IActivityAreaRepository: Symbol.for("IActivityAreaRepository"),
-  ISubScenarioRepository: Symbol.for("ISubScenarioRepository"),
+  IScenarioRepository: 'IScenarioRepository',
+  INeighborhoodRepository: 'INeighborhoodRepository',
+  IActivityAreaRepository: 'IActivityAreaRepository',
+  ISubScenarioRepository: 'ISubScenarioRepository',
+  IUserRepository: 'IUserRepository',
+  IReservationRepository: 'IReservationRepository',
 
   // =============================================================================
   // USE CASES - SCENARIO (Application Layer)
   // =============================================================================
-  CreateScenarioUseCase: Symbol.for("CreateScenarioUseCase"),
-  UpdateScenarioUseCase: Symbol.for("UpdateScenarioUseCase"),
-  GetScenariosUseCase: Symbol.for("GetScenariosUseCase"),
-  GetScenarioByIdUseCase: Symbol.for("GetScenarioByIdUseCase"),
-  DeleteScenarioUseCase: Symbol.for("DeleteScenarioUseCase"),
+  CreateScenarioUseCase: 'CreateScenarioUseCase',
+  UpdateScenarioUseCase: 'UpdateScenarioUseCase',
+  GetScenariosUseCase: 'GetScenariosUseCase',
+  GetScenarioByIdUseCase: 'GetScenarioByIdUseCase',
+  DeleteScenarioUseCase: 'DeleteScenarioUseCase',
 
   // =============================================================================
   // USE CASES - NEIGHBORHOOD (Application Layer)
   // =============================================================================
-  GetNeighborhoodsUseCase: Symbol.for("GetNeighborhoodsUseCase"),
-  CreateNeighborhoodUseCase: Symbol.for("CreateNeighborhoodUseCase"),
-  UpdateNeighborhoodUseCase: Symbol.for("UpdateNeighborhoodUseCase"),
+  GetNeighborhoodsUseCase: 'GetNeighborhoodsUseCase',
+  CreateNeighborhoodUseCase: 'CreateNeighborhoodUseCase',
+  UpdateNeighborhoodUseCase: 'UpdateNeighborhoodUseCase',
 
   // =============================================================================
   // USE CASES - ACTIVITY AREA (Application Layer)
   // =============================================================================
-  GetActivityAreasUseCase: Symbol.for("GetActivityAreasUseCase"),
-  CreateActivityAreaUseCase: Symbol.for("CreateActivityAreaUseCase"),
+  GetActivityAreasUseCase: 'GetActivityAreasUseCase',
+  CreateActivityAreaUseCase: 'CreateActivityAreaUseCase',
 
   // =============================================================================
   // USE CASES - SUB SCENARIO (Application Layer)
   // =============================================================================
-  GetSubScenariosUseCase: Symbol.for("GetSubScenariosUseCase"),
-  CreateSubScenarioUseCase: Symbol.for("CreateSubScenarioUseCase"),
-  UpdateSubScenarioUseCase: Symbol.for("UpdateSubScenarioUseCase"),
+  GetSubScenariosUseCase: 'GetSubScenariosUseCase',
+  CreateSubScenarioUseCase: 'CreateSubScenarioUseCase',
+  UpdateSubScenarioUseCase: 'UpdateSubScenarioUseCase',
 
   // =============================================================================
   // COMPOSITE USE CASES (Cross-Domain Operations)
   // =============================================================================
-  GetScenariosDataUseCase: Symbol.for("GetScenariosDataUseCase"),
+  GetScenariosDataUseCase: 'GetScenariosDataUseCase',
+  GetSubScenariosDataUseCase: 'GetSubScenariosDataUseCase',
 
   // =============================================================================
   // INFRASTRUCTURE SERVICES
   // =============================================================================
-  HttpClient: Symbol.for("HttpClient"),
-  AuthContext: Symbol.for("AuthContext"),
-  Logger: Symbol.for("Logger"),
-  ErrorHandler: Symbol.for("ErrorHandler"),
+  HttpClient: 'HttpClient',
+  AuthContext: 'AuthContext',
+  Logger: 'Logger',
+  ErrorHandler: 'ErrorHandler',
 
   // =============================================================================
   // CONFIGURATION
   // =============================================================================
-  Environment: Symbol.for("Environment"),
-  ApiConfig: Symbol.for("ApiConfig"),
+  Environment: 'Environment',
+  ApiConfig: 'ApiConfig',
 } as const;
 
 /**
  * Type helper to ensure type safety when requesting dependencies
  */
-export type DependencyIdentifier<T> = symbol;
+export type TokenKey = keyof typeof TOKENS;
+export type TokenValue = typeof TOKENS[TokenKey];
+
+/**
+ * Type helper for dependency identifiers
+ */
+export type DependencyToken<T> = string;
 
 /**
  * Environment types for container configuration

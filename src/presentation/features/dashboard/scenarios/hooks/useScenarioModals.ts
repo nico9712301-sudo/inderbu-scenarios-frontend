@@ -40,6 +40,7 @@ export function useScenarioModals(): UseScenarioModalsReturn {
 
   // Edit modal actions
   const openEditModal = useCallback((scenario: any) => {
+    console.log("Opening edit modal for scenario:", scenario);
     setSelectedScenario(scenario);
     setIsEditModalOpen(true);
   }, []);

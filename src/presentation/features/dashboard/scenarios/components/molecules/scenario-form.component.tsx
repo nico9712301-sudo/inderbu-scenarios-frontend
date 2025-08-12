@@ -13,16 +13,12 @@ import {
   ScenarioFormErrors,
 } from "../../hooks/useScenarioForm";
 import { searchNeighborhoods } from "@/presentation/features/home/services/home.service";
-
-interface NeighborhoodOption {
-  id: number;
-  name: string;
-}
+import { INeighborhoodOptionDTO } from "../../types/scenario.types";
 
 interface ScenarioFormProps {
   formData: ScenarioFormData;
   errors: ScenarioFormErrors;
-  neighborhoods: NeighborhoodOption[];
+  neighborhoods: INeighborhoodOptionDTO[];
   onFieldChange: (field: keyof ScenarioFormData, value: string) => void;
   onNeighborhoodChange: (id: string, name?: string) => void;
   onErrorClear: (field: keyof ScenarioFormErrors) => void;
@@ -128,16 +124,6 @@ export const ScenarioForm = memo(({
             error={errors.name}
             placeholder="Ingrese nombre del escenario"
             required
-          />
-
-          {/* Description Input */}
-          <ValidatedTextarea
-            id="scenario-description"
-            label="Descripción"
-            value={formData.description || ""}
-            onChange={(value) => onFieldChange("description", value)}
-            error={errors.description}
-            placeholder="Descripción opcional del escenario"
           />
         </div>
       </div>

@@ -4,13 +4,13 @@ import { useDebouncedSearch } from "@/shared/hooks/use-debounced-search";
 import { Filter, Plus } from "lucide-react";
 import { useCallback, } from "react";
 
-import { IScenariosDataResponse } from "@/application/dashboard/scenarios/GetScenariosDataUseCase";
+import { IScenariosDataResponse } from "@/application/dashboard/scenarios/use-cases/GetScenariosDataUseCase";
 import { CreateScenarioModal } from "../components/organisms/create-scenario-modal.component";
 import { EditScenarioModal } from "../components/organisms/edit-scenario-modal.component";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { ScenariosTable } from "../components/organisms/scenarios-table.component";
-import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { ExportButton } from "../components/atoms/export-button.component";
+import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
 import { useScenarioModals } from "../hooks/useScenarioModals";
 import { useScenariosData } from "../hooks/useScenariosData";
 import { NavValues } from "../constants/NavValues";
@@ -18,8 +18,10 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 
 // Import shared filters component
+import { updateScenarioAction } from "@/infrastructure/web/controllers/dashboard/scenario.actions";
 import { ScenariosFiltersCard } from "@/presentation/components/molecules/ScenariosFiltersCard";
-import { updateScenarioAction } from "@/application/dashboard/scenarios/actions/ScenarioActions";
+import { ErrorHandlerResult } from "@/shared/api/error-handler";
+import { Scenario } from "@/entities/scenario/domain/Scenario";
 import { toast } from "sonner";
 
 interface ScenariosPageProps {
@@ -95,20 +97,35 @@ export function ScenariosPage({
     [router]
   );
 
-  const handleToggleStatus = async () => {
-    const updatedScenario = await updateScenarioAction(
-      selectedScenario.id,
-      selectedScenario
-    )
-    if (updatedScenario.success) {
-      handleScenarioCreatedOrUpdated();
-    } else {
-      toast.error(
-        updatedScenario.error || 'Error al actualizar el escenario'
-      );
-    }
+  const handleToggleStatus = async (scenario: Scenario) => {
+    
+    // Log the element to debug
+    if (!scenario) return;
 
-  }
+    try {
+      const newActiveState = !scenario.active;
+      
+      const result: ErrorHandlerResult<Scenario> = await updateScenarioAction(scenario.id, {
+        active: newActiveState,
+      });
+
+      if (result.success) {
+        handleScenarioCreatedOrUpdated();
+        toast.success("Estado del escenario actualizado", {
+          description: `${result.data.name} ha sido ${newActiveState ? "activado" : "desactivado"}.`,
+        });
+      } else {
+        toast.error("Error al actualizar el estado del escenario", {
+          description: result.error || "Ocurrió un error al cambiar el estado.",
+        });
+      }
+    } catch (error) {
+      console.error("CLIENT: Unexpected toggle error:", error);
+      toast.error("Error al actualizar el estado del escenario", {
+        description: "Ocurrió un error inesperado de conexión.",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">

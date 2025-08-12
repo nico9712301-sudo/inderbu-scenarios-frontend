@@ -1,14 +1,9 @@
-import { injectable } from 'inversify';
-import { 
-  IScenarioRepository, 
-  ScenarioFilters, 
-  PaginatedScenarios 
-} from '@/domain/scenario/repositories/IScenarioRepository';
 import { Scenario, CreateScenarioData, UpdateScenarioData } from '@/entities/scenario/domain/Scenario';
+import { IScenarioRepository, PaginatedScenarios, ScenarioFilters } from '@/entities/scenario/infrastructure/IScenarioRepository';
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
+import { BackendResponse } from '@/shared/api/backend-types';
 
-@injectable()
 export class ScenarioRepository implements IScenarioRepository {
   
   async findAll(): Promise<Scenario[]> {
@@ -77,8 +72,13 @@ export class ScenarioRepository implements IScenarioRepository {
         ...(data.description && { description: data.description }),
       };
 
-      const result = await httpClient.post<Scenario>('/scenarios', createPayload);
-      return result;
+      const result = await httpClient.post<BackendResponse<Scenario>>('/scenarios', createPayload);
+      
+      // Unwrap backend response to get the actual Scenario
+      console.log('Repository: Backend response:', result);
+      console.log('Repository: Unwrapped scenario:', result.data);
+      
+      return result.data;
     } catch (error) {
       console.error('Error in ScenarioRepository.create:', error);
       throw error;
@@ -94,13 +94,17 @@ export class ScenarioRepository implements IScenarioRepository {
       const updatePayload = {
         ...(data.name && { name: data.name }),
         ...(data.address && { address: data.address }),
-        ...(data.description !== undefined && { description: data.description }),
         ...(data.neighborhoodId && { neighborhoodId: data.neighborhoodId }),
         ...(data.active !== undefined && { isActive: data.active }),
       };
 
-      const result = await httpClient.put<Scenario>(`/scenarios/${id}`, updatePayload);
-      return result;
+      const result = await httpClient.put<BackendResponse<Scenario>>(`/scenarios/${id}`, updatePayload);
+      
+      // Unwrap backend response to get the actual Scenario  
+      console.log('Repository: Update backend response:', result);
+      console.log('Repository: Unwrapped updated scenario:', result.data);
+      
+      return result.data;
     } catch (error) {
       console.error('Error in ScenarioRepository.update:', error);
       throw error;

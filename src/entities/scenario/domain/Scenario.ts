@@ -22,7 +22,6 @@ export interface CreateScenarioData {
 export interface UpdateScenarioData {
   name?: string;
   address?: string;
-  description?: string;
   neighborhoodId?: number;
   active?: boolean;
 }

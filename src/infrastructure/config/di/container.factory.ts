@@ -1,14 +1,27 @@
-import { IContainer } from './containers/base.container';
-import { ScenarioContainer } from './containers/scenario.container';
-import { DevelopmentContainer } from './containers/development.container';
-import { TestingContainer } from './containers/testing.container';
-import { ProductionContainer } from './containers/production.container';
-import { Environment } from './types';
+import { SimpleContainer, IContainer } from './simple-container';
+import { TOKENS, Environment } from './tokens';
+
+// Repository imports
+import { ScenarioRepository } from '@/infrastructure/repositories/scenario-repository.adapter';
+import { NeighborhoodRepository } from '@/infrastructure/repositories/neighborhood-repository.adapter';
+import type { INeighborhoodRepository } from '@/entities/neighborhood/domain/INeighborhoodRepository';
+
+// Use Case imports
+import { CreateScenarioUseCase } from '@/application/dashboard/scenarios/use-cases/CreateScenarioUseCase';
+import { UpdateScenarioUseCase } from '@/application/dashboard/scenarios/use-cases/UpdateScenarioUseCase';
+import { GetScenariosDataUseCase } from '@/application/dashboard/scenarios/use-cases/GetScenariosDataUseCase';
+import { GetScenariosUseCase } from '@/application/dashboard/scenarios/use-cases/GetScenariosUseCase';
+import { GetNeighborhoodsUseCase } from '@/application/dashboard/scenarios/use-cases/GetNeighborhoodsUseCase';
+
+// HTTP Client imports  
+import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
+import { createServerAuthContext } from '@/shared/api/server-auth';
+import { IScenarioRepository } from '@/entities/scenario/infrastructure/IScenarioRepository';
 
 /**
  * Container Factory
  * 
- * Environment-aware factory for creating appropriate DI containers.
+ * Environment-aware factory for creating Simple DI containers.
  * Implements singleton pattern to ensure one container instance per environment.
  */
 export class ContainerFactory {
@@ -98,120 +111,124 @@ export class ContainerFactory {
    * Create the appropriate container based on environment
    */
   private static createEnvironmentContainer(environment: Environment): IContainer {
-    console.log(`  Creating ${environment} container...`);
+    console.log(` Creating ${environment} container...`);
 
+    const container = new SimpleContainer();
+    
+    // Configure base dependencies
+    ContainerFactory.configureRepositories(container);
+    ContainerFactory.configureUseCases(container);
+    
+    // Environment-specific overrides
     switch (environment) {
       case Environment.PRODUCTION:
-        return new ProductionContainer();
-
+        ContainerFactory.configureProduction(container);
+        break;
       case Environment.TEST:
-        return new TestingContainer();
-
+        ContainerFactory.configureTesting(container);
+        break;
       case Environment.DEVELOPMENT:
       default:
-        return new DevelopmentContainer();
-    }
-  }
-
-  // =========================================================================
-  // CONVENIENCE METHODS FOR COMMON OPERATIONS
-  // =========================================================================
-
-  /**
-   * Get a dependency from the current container
-   */
-  static getDependency<T>(identifier: symbol): T {
-    const container = ContainerFactory.createContainer();
-    return container.get<T>(identifier as any);
-  }
-
-  /**
-   * Check if a dependency is available in the current container
-   */
-  static hasDependency(identifier: symbol): boolean {
-    const container = ContainerFactory.createContainer();
-    return container.isBound(identifier as any);
-  }
-
-  /**
-   * Get container information for debugging/monitoring
-   */
-  static getContainerInfo(): ContainerInfo {
-    const environment = ContainerFactory.detectEnvironment();
-    const hasInstance = ContainerFactory.instance !== null;
-    
-    let health: any = null;
-    if (hasInstance && 'getHealthStatus' in ContainerFactory.instance!) {
-      health = (ContainerFactory.instance as any).getHealthStatus();
+        ContainerFactory.configureDevelopment(container);
+        break;
     }
 
-    return {
-      environment,
-      hasInstance,
-      currentEnvironment: ContainerFactory.currentEnvironment,
-      containerType: ContainerFactory.getContainerType(),
-      health,
-      timestamp: new Date().toISOString(),
+    console.log('Container created successfully');
+    return container;
+  }
+
+  /**
+   * Configure repository dependencies (singletons for performance)
+   */
+  private static configureRepositories(container: SimpleContainer): void {
+    // Create shared HTTP client
+    const createHttpClient = () => {
+      const authContext = createServerAuthContext();
+      return ClientHttpClientFactory.createClient(authContext);
     };
+
+    // Scenario Repository (singleton)
+    container.bind<IScenarioRepository>(TOKENS.IScenarioRepository)
+      .to(() => new ScenarioRepository(createHttpClient()))
+      .singleton();
+
+    // Neighborhood Repository (singleton)
+    container.bind<INeighborhoodRepository>(TOKENS.INeighborhoodRepository)
+      .to(() => new NeighborhoodRepository(createHttpClient()))
+      .singleton();
   }
 
   /**
-   * Get the type of the current container
+   * Configure use case dependencies (transient for isolation)
    */
-  private static getContainerType(): string {
-    if (!ContainerFactory.instance) {
-      return 'none';
-    }
+  private static configureUseCases(container: SimpleContainer): void {
+    // Create Scenario Use Case
+    container.bind<CreateScenarioUseCase>(TOKENS.CreateScenarioUseCase)
+      .to(() => new CreateScenarioUseCase(
+        container.get<IScenarioRepository>(TOKENS.IScenarioRepository)
+      ));
 
-    if (ContainerFactory.instance instanceof ProductionContainer) {
-      return 'production';
-    }
-    if (ContainerFactory.instance instanceof TestingContainer) {
-      return 'testing';
-    }
-    if (ContainerFactory.instance instanceof DevelopmentContainer) {
-      return 'development';
-    }
-    if (ContainerFactory.instance instanceof ScenarioContainer) {
-      return 'base';
-    }
+    // Update Scenario Use Case
+    container.bind<UpdateScenarioUseCase>(TOKENS.UpdateScenarioUseCase)
+      .to(() => new UpdateScenarioUseCase(
+        container.get<IScenarioRepository>(TOKENS.IScenarioRepository)
+      ));
 
-    return 'unknown';
+    // Get Scenarios Use Case
+    container.bind<GetScenariosUseCase>(TOKENS.GetScenariosUseCase)
+      .to(() => new GetScenariosUseCase(
+        container.get<IScenarioRepository>(TOKENS.IScenarioRepository)
+      ));
+
+    // Get Neighborhoods Use Case
+    container.bind<GetNeighborhoodsUseCase>(TOKENS.GetNeighborhoodsUseCase)
+      .to(() => new GetNeighborhoodsUseCase(
+        container.get<INeighborhoodRepository>(TOKENS.INeighborhoodRepository)
+      ));
+
+    // Get Scenarios Data Use Case (composite)
+    container.bind<GetScenariosDataUseCase>(TOKENS.GetScenariosDataUseCase)
+      .to(() => new GetScenariosDataUseCase(
+        container.get<GetScenariosUseCase>(TOKENS.GetScenariosUseCase),
+        container.get<GetNeighborhoodsUseCase>(TOKENS.GetNeighborhoodsUseCase)
+      ));
+  }
+
+  /**
+   * Configure development-specific dependencies
+   */
+  private static configureDevelopment(container: SimpleContainer): void {
+    // Development-specific logging, monitoring, etc.
+    console.log('🔧 Development environment configured');
+  }
+
+  /**
+   * Configure production-specific dependencies
+   */
+  private static configureProduction(container: SimpleContainer): void {
+    // Production optimizations
+    console.log('🚀 Production environment configured');
+  }
+
+  /**
+   * Configure testing-specific dependencies (mocks)
+   */
+  private static configureTesting(container: SimpleContainer): void {
+    // Override with mocks for testing
+    console.log('🧪 Testing environment configured with mocks');
   }
 }
 
 /**
- * Container information interface for monitoring/debugging
+ * Convenience function to get the current container
  */
-export interface ContainerInfo {
-  environment: Environment;
-  hasInstance: boolean;
-  currentEnvironment: string | null;
-  containerType: string;
-  health: any;
-  timestamp: string;
-}
-
-// ============================================================================= 
-// GLOBAL CONTAINER ACCESS (USE SPARINGLY)
-// =============================================================================
-
-/**
- * Global function to get the current container
- * 
- *   WARNING: Use this sparingly and prefer dependency injection.
- * This is mainly for framework integration points where DI isn't available.
- */
-export function getGlobalContainer(): IContainer {
+export function getContainer(): IContainer {
   return ContainerFactory.createContainer();
 }
 
 /**
- * Global function to get a dependency
- * 
- *   WARNING: Use this sparingly and prefer dependency injection.
- * This is mainly for framework integration points where DI isn't available.
+ * Convenience function to get a dependency
  */
-export function getGlobalDependency<T>(identifier: symbol): T {
-  return ContainerFactory.getDependency<T>(identifier);
+export function getDependency<T>(token: string): T {
+  return getContainer().get<T>(token);
 }

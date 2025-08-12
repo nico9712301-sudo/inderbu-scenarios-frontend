@@ -4,8 +4,7 @@ import { useCallback, useState } from "react";
 import { useAsyncExport } from "@/shared/hooks/use-async-export";
 import { 
   startScenariosExportAction, 
-  checkExportStatusAction, 
-  getExportDownloadUrlAction 
+  checkExportStatusAction 
 } from "@/application/dashboard/scenarios/actions/ExportActions";
 
 export interface ExportScenariosOptions {
@@ -61,24 +60,10 @@ export function useScenariosExport({ defaultOptions = {} }: UseScenariosExportPr
     return result.job;
   }, []);
 
-  // Download function
-  const handleDownload = useCallback(async (jobId: string) => {
-    const result = await getExportDownloadUrlAction(jobId);
-    
-    if (!result.success || !result.downloadUrl || !result.fileName) {
-      throw new Error(result.error || 'Failed to get download URL');
-    }
-
-    return { 
-      downloadUrl: result.downloadUrl, 
-      fileName: result.fileName 
-    };
-  }, []);
-
   const asyncExport = useAsyncExport({
     onStartExport: handleStartExport,
     onCheckStatus: handleCheckStatus,
-    onDownload: handleDownload,
+    // Remove onDownload - let useAsyncExport handle it with the default implementation
     pollingInterval: 3000, // Check every 3 seconds
     maxRetries: 20, // 1 minute timeout
   });

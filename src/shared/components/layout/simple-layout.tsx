@@ -60,7 +60,7 @@ export function SimpleLayout({ children }: SimpleLayoutProps) {
 
       <footer
         className={cn(
-          "p-4 text-xs text-gray-400 transition-all duration-300",
+          "p-4 text-xs text-gray-400 transition-all duration-300 ml-5",
           collapsed ? "pl-[72px]" : "pl-[240px]",
         )}
       >

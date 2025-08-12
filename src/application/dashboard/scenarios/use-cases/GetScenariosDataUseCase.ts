@@ -1,8 +1,6 @@
-import { injectable, inject } from 'inversify';
 import { GetScenariosUseCase } from './GetScenariosUseCase';
-import { GetNeighborhoodsUseCase } from './GetNeighborhoodsUseCase';
-import { TYPES } from '@/infrastructure/config/di/types';
 import { ScenarioFilters } from '@/entities/scenario/infrastructure/IScenarioRepository';
+import { GetNeighborhoodsUseCase } from './GetNeighborhoodsUseCase';
 
 export interface IScenariosDataResponse {
   scenarios: any[]; // Using any temporarily until we unify types
@@ -11,12 +9,9 @@ export interface IScenariosDataResponse {
   filters: ScenarioFilters;
 }
 
-@injectable()
 export class GetScenariosDataUseCase {
   constructor(
-    @inject(TYPES.GetScenariosUseCase)
     private readonly getScenariosUseCase: GetScenariosUseCase,
-    @inject(TYPES.GetNeighborhoodsUseCase)
     private readonly getNeighborhoodsUseCase: GetNeighborhoodsUseCase
   ) {}
 

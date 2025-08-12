@@ -7,25 +7,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { ScenarioCommandFactory } from "@/application/dashboard/scenarios/commands/ScenarioCommands";
+import { createScenarioAction } from "@/infrastructure/web/controllers/dashboard/scenario.actions";
+import { IScenarioFormDataDTO, INeighborhoodOptionDTO } from "../../types/scenario.types";
 import { ScenarioForm } from "../molecules/scenario-form.component";
+import { ErrorHandlerResult } from "@/shared/api/error-handler";
+import { Scenario } from "@/entities/scenario/domain/Scenario";
 import { useScenarioForm } from "../../hooks/useScenarioForm";
 import { Button } from "@/shared/ui/button";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-
-
-interface NeighborhoodOption {
-  id: number;
-  name: string;
-}
-
 interface CreateScenarioModalProps {
   isOpen: boolean;
   onClose: () => void;
-  neighborhoods: NeighborhoodOption[];
-  onScenarioCreated: (scenario: any) => void;
+  neighborhoods: INeighborhoodOptionDTO[];
+  onScenarioCreated: () => void;
 }
 
 export function CreateScenarioModal({
@@ -36,32 +32,39 @@ export function CreateScenarioModal({
 }: CreateScenarioModalProps) {
 
   const form = useScenarioForm({
-    onSubmit: async (formData) => {
-      // ✅ MANTENER EL COMMAND PATTERN
-      const command = ScenarioCommandFactory.createScenario(formData, neighborhoods, {
-        onSuccess: (newScenario) => {
-          form.reset();
-          onClose();
-          onScenarioCreated(newScenario);
-        },
-        onError: (error) => {
-          console.error('Create scenario error:', error);
-        }
-      });
-
-      const result = await command.execute();
-
-      if (result.success) {
-        toast.success("Escenario creado exitosamente", {
-          description: `${result.data.name} ha sido registrado en el sistema.`,
+    onSubmit: async (formData: IScenarioFormDataDTO) => {
+      try {
+        const result: ErrorHandlerResult<Scenario> = await createScenarioAction({
+          name: formData.name,
+          address: formData.address,
+          neighborhoodId: formData.neighborhoodId,
         });
-      } else {
+
+        if (result.success) {
+          // Build scenario object for UI callback
+          const newScenario = {
+            ...result.data,
+            neighborhood: neighborhoods.find(n => n.id === formData.neighborhoodId),
+          };
+
+          form.reset();
+          onScenarioCreated(newScenario);  // ✅ Callback primero (router.refresh())
+          onClose();                       // ✅ Cierre después del callback
+
+          toast.success("Escenario creado exitosamente", {
+            description: `${result.data.name} ha sido registrado en el sistema.`,
+          });
+        } else {
+          toast.error("Error al crear escenario", {
+            description: result.error || "Ocurrió un error al crear el escenario.",
+          });
+        }
+      } catch (error: any) {
+        console.error('CLIENT: Unexpected error:', error);
         toast.error("Error al crear escenario", {
-          description: result.error,
+          description: "Ocurrió un error inesperado de conexión.",
         });
       }
-
-      return Promise.resolve();
     },
   });
 

@@ -2,12 +2,14 @@
 
 import { revalidatePath } from 'next/cache';
 import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
-import { TYPES } from '@/infrastructure/config/di/types';
-import { CreateScenarioUseCase } from '@/application/dashboard/scenarios/CreateScenarioUseCase';
-import { UpdateScenarioUseCase } from '@/application/dashboard/scenarios/UpdateScenarioUseCase';
-import { GetScenariosUseCase } from '@/application/dashboard/scenarios/GetScenariosUseCase';
-import { GetScenariosDataUseCase } from '@/application/dashboard/scenarios/GetScenariosDataUseCase';
+import { TOKENS } from '@/infrastructure/config/di/tokens';
+import { CreateScenarioUseCase } from '@/application/dashboard/scenarios/use-cases/CreateScenarioUseCase';
+import { UpdateScenarioUseCase } from '@/application/dashboard/scenarios/use-cases/UpdateScenarioUseCase';
+import { GetScenariosUseCase } from '@/application/dashboard/scenarios/use-cases/GetScenariosUseCase';
+import { GetScenariosDataUseCase } from '@/application/dashboard/scenarios/use-cases/GetScenariosDataUseCase';
 import { ErrorHandlerComposer } from '@/shared/api/error-handler';
+import { IContainer } from '@/infrastructure/config/di/simple-container';
+import { Scenario } from '@/entities/scenario/domain/Scenario';
 
 /**
  * Scenario Server Actions
@@ -28,33 +30,31 @@ import { ErrorHandlerComposer } from '@/shared/api/error-handler';
 export interface CreateScenarioRequest {
   name: string;
   address: string;
-  description?: string;
   neighborhoodId: number;
 }
 
 export async function createScenarioAction(request: CreateScenarioRequest) {
   return await ErrorHandlerComposer.withErrorHandling(async () => {
-    // Get dependencies from DI container
-    const container = ContainerFactory.createContainer();
+    // Get dependencies from Simple DI container
+    const container: IContainer = ContainerFactory.createContainer();
     const createScenarioUseCase = container.get<CreateScenarioUseCase>(
-      TYPES.CreateScenarioUseCase
+      TOKENS.CreateScenarioUseCase
     );
 
     // Execute use case
-    const result = await createScenarioUseCase.execute({
+    const result: Scenario = await createScenarioUseCase.execute({
       name: request.name,
       address: request.address,
-      description: request.description,
       neighborhoodId: request.neighborhoodId,
     });
 
+    console.log('Create scenario result:', result);
+    
+    
     // Invalidate Next.js cache
     revalidatePath('/dashboard/scenarios');
 
-    return {
-      success: true,
-      data: result,
-    };
+    return result
   }, 'createScenarioAction');
 }
 
@@ -80,17 +80,16 @@ export async function updateScenarioAction(
       throw new Error('Valid scenario ID is required');
     }
 
-    // Get dependencies from DI container
+    // Get dependencies from Simple DI container
     const container = ContainerFactory.createContainer();
     const updateScenarioUseCase = container.get<UpdateScenarioUseCase>(
-      TYPES.UpdateScenarioUseCase
+      TOKENS.UpdateScenarioUseCase
     );
 
     // Execute use case
-    const result = await updateScenarioUseCase.execute(id, {
+    const result: Scenario = await updateScenarioUseCase.execute(id, {
       name: request.name,
       address: request.address,
-      description: request.description,
       neighborhoodId: request.neighborhoodId,
       active: request.active,
     });
@@ -99,10 +98,7 @@ export async function updateScenarioAction(
     revalidatePath('/dashboard/scenarios');
     revalidatePath(`/dashboard/scenarios/${id}`);
 
-    return {
-      success: true,
-      data: result,
-    };
+    return result;
   }, 'updateScenarioAction');
 }
 
@@ -120,10 +116,10 @@ export interface GetScenariosRequest {
 
 export async function getScenariosAction(request: GetScenariosRequest = {}) {
   return await ErrorHandlerComposer.withErrorHandling(async () => {
-    // Get dependencies from DI container
+    // Get dependencies from Simple DI container
     const container = ContainerFactory.createContainer();
     const getScenariosUseCase = container.get<GetScenariosUseCase>(
-      TYPES.GetScenariosUseCase
+      TOKENS.GetScenariosUseCase
     );
 
     // Execute use case
@@ -156,10 +152,10 @@ export async function getScenariosDataAction(
   request: GetScenariosDataRequest = {}
 ) {
   return await ErrorHandlerComposer.withErrorHandling(async () => {
-    // Get dependencies from DI container
+    // Get dependencies from Simple DI container
     const container = ContainerFactory.createContainer();
     const getScenariosDataUseCase = container.get<GetScenariosDataUseCase>(
-      TYPES.GetScenariosDataUseCase
+      TOKENS.GetScenariosDataUseCase
     );
 
     // Execute composite use case

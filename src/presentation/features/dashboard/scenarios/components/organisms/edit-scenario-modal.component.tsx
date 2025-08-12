@@ -2,6 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 import {
   Dialog,
@@ -13,19 +14,16 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Scenario } from "@/services/api";
 import { useScenarioForm } from "../../hooks/useScenarioForm";
-import { ScenarioCommandFactory } from "@/application/dashboard/scenarios/commands/ScenarioCommands";
+import { updateScenarioAction } from "@/infrastructure/web/controllers/dashboard/scenario.actions";
 import { ScenarioForm } from "../molecules/scenario-form.component";
+import { IScenarioFormDataDTO, INeighborhoodOptionDTO } from "../../types/scenario.types";
+import { ErrorHandlerResult } from "@/shared/api/error-handler";
 
-interface NeighborhoodOption {
-  id: number;
-  name: string;
-}
-
-interface EditScenarioModalProps {
+interface IProps {
   isOpen: boolean;
   onClose: () => void;
   scenario: Scenario | null;
-  neighborhoods: NeighborhoodOption[];
+  neighborhoods: INeighborhoodOptionDTO[];
   onScenarioUpdated: () => void;
 }
 
@@ -35,31 +33,42 @@ export function EditScenarioModal({
   scenario,
   neighborhoods,
   onScenarioUpdated,
-}: EditScenarioModalProps) {
+}: IProps) {
 
   console.log({ scenarioToEdit: scenario });
 
   const form = useScenarioForm({
-    onSubmit: async (formData) => {
+    onSubmit: async (formData: IScenarioFormDataDTO) => {
       if (!scenario) return;
       
-      // ✅ MANTENER EL COMMAND PATTERN
-      const command = ScenarioCommandFactory.updateScenario(
-        formData,
-        scenario,
-        neighborhoods,
-        {
-          onSuccess: (updatedScenario) => {
-            onScenarioUpdated();
-            onClose();
-          },
-          onError: (error) => {
-            console.error("Update scenario error:", error);
-          },
-        }
-      );
+      try {
 
-      await command.execute();
+        const result = await updateScenarioAction(scenario.id, {
+          name: formData.name,
+          address: formData.address,
+          neighborhoodId: formData.neighborhoodId,
+          active: formData.active,
+        });
+
+        if (result.success) {
+          onScenarioUpdated();
+          onClose();
+          
+          toast.success("Escenario actualizado exitosamente", {
+            description: `${result.data.name} ha sido actualizado.`,
+          });
+        } else {
+          toast.error("Error al actualizar escenario", {
+            description: result.error || "Ocurrió un error al actualizar el escenario.",
+          });
+        }
+      } catch (error) {
+        console.error("CLIENT: Unexpected update error:", error);
+        toast.error("Error al actualizar escenario", {
+          description: "Ocurrió un error inesperado de conexión.",
+        });
+      }
+
       return Promise.resolve();
     },
   });

@@ -92,9 +92,14 @@ export async function getExportDownloadUrlAction(
     const authContext = createServerAuthContext();
     const httpClient = ClientHttpClientFactory.createClient(authContext);
 
+    console.log('CLIENT: Getting download URL for job:', jobId);
+    
+
     const response = await httpClient.get<{ downloadUrl: string; fileName: string }>(
       `/scenarios/export/${jobId}/download`
     );
+
+    console.log('Download URL response:', response);
 
     return { 
       success: true, 

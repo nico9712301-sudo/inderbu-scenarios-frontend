@@ -1,5 +1,5 @@
-import { IScenarioFormData } from "@/application/dashboard/scenarios/commands/ScenarioCommands";
 import { useCallback, useState } from "react";
+import { IScenarioFormDataDTO } from "../types/scenario.types";
 
 // Types
 export interface ScenarioFormData {
@@ -21,7 +21,7 @@ export interface ScenarioFormErrors {
 
 export interface UseScenarioFormProps {
   initialData?: ScenarioFormData;
-  onSubmit?: (data: IScenarioFormData) => Promise<void>;
+  onSubmit?: (data: IScenarioFormDataDTO) => Promise<void>;
 }
 
 // Default form data

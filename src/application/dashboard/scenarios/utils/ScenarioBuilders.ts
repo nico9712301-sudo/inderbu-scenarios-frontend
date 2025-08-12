@@ -11,11 +11,6 @@ export interface ScenarioFormData {
   };
 }
 
-export interface NeighborhoodOption {
-  id: number;
-  name: string;
-}
-
 /**
  * Construye un DTO para crear un escenario desde los datos del formulario
  */
@@ -62,7 +57,7 @@ export function buildUpdateScenarioDto(
  */
 export function buildNewScenario(
   formData: ScenarioFormData,
-  neighborhoods: NeighborhoodOption[],
+  neighborhoods: INeighborhoodOptionDTO[],
   tempId?: number
 ): any {
   const selectedNeighborhood = neighborhoods.find(
@@ -88,7 +83,7 @@ export function buildNewScenario(
 export function buildUpdatedScenario(
   formData: ScenarioFormData,
   originalScenario: any,
-  neighborhoods: NeighborhoodOption[]
+  neighborhoods: INeighborhoodOptionDTO[]
 ): any {
   const getNeighborhoodName = (): string => {
     // Si el neighborhood no cambió, mantener el nombre original
@@ -136,7 +131,7 @@ export function buildFormDataFromScenario(scenario: any): ScenarioFormData {
 export function updateFormDataWithNeighborhood(
   formData: ScenarioFormData,
   neighborhoodId: string,
-  neighborhoods: NeighborhoodOption[]
+  neighborhoods: INeighborhoodOptionDTO[]
 ): ScenarioFormData {
   const selectedNeighborhood = neighborhoods.find(n => n.id === Number(neighborhoodId));
   

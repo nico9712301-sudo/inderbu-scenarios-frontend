@@ -1,21 +1,22 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, useEffect } from "react";
-import { Form } from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
+import { getNeighborhoods } from "@/presentation/features/home/services/home.service";
+import { IFormNavigation } from "../../interfaces/form-navigation.interface";
+import { registerSchema, TRegisterData } from "../../schemas/auth-schemas";
+import { getRoleOptions, type RoleOption } from "../../utils/role-helpers";
+import { IFormHandler } from "../../interfaces/form-handler.interface";
+import { FormNavigation } from "../molecules/form-navigation";
 import { AuthFormField } from "@/shared/ui/auth-form-field";
 import { PasswordInput } from "@/shared/ui/password-input";
 import { SubmitButton } from "@/shared/ui/submit-button";
-import { FormNavigation } from "../molecules/form-navigation";
 import { SelectField } from "../molecules/select-field";
-import { registerSchema, TRegisterData } from "../../schemas/auth-schemas";
-import { IFormHandler } from "../../interfaces/form-handler.interface";
-import { IFormNavigation } from "../../interfaces/form-navigation.interface";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { Input } from "@/shared/ui/input";
+import { Form } from "@/shared/ui/form";
+
 // NEW DDD ARCHITECTURE
-import { getRoleOptions, type RoleOption } from "../../utils/role-helpers";
-import { getNeighborhoods } from "@/presentation/features/home/services/home.service";
 
 interface RegisterFormProps {
   onSubmit: IFormHandler<TRegisterData>["onSubmit"];
@@ -23,7 +24,7 @@ interface RegisterFormProps {
   navigation: IFormNavigation;
 }
 
-interface NeighborhoodOption {
+interface INeighborhoodOptionDTO {
   id: number;
   name: string;
 }
@@ -49,7 +50,7 @@ export function RegisterForm({ onSubmit, isLoading, navigation }: RegisterFormPr
   const roles: RoleOption[] = getRoleOptions();
 
   // NEW DDD ARCHITECTURE: Neighborhoods from repository
-  const [neighborhoods, setNeighborhoods] = useState<NeighborhoodOption[]>([]);
+  const [neighborhoods, setNeighborhoods] = useState<INeighborhoodOptionDTO[]>([]);
   const [isLoadingNeighborhoods, setIsLoadingNeighborhoods] = useState(true);
 
   useEffect(() => {

@@ -1,20 +1,15 @@
-import { injectable, inject } from 'inversify';
 import { Scenario, UpdateScenarioData } from '@/entities/scenario/domain/Scenario';
-import type { IScenarioRepository } from '@/domain/scenario/repositories/IScenarioRepository';
-import { TYPES } from '@/infrastructure/config/di/types';
+import { IScenarioRepository } from '@/entities/scenario/infrastructure/IScenarioRepository';
 
 export interface UpdateScenarioCommand {
   name?: string;
   address?: string;
-  description?: string;
   neighborhoodId?: number;
   active?: boolean;
 }
 
-@injectable()
 export class UpdateScenarioUseCase {
   constructor(
-    @inject(TYPES.IScenarioRepository)
     private readonly scenarioRepository: IScenarioRepository
   ) {}
 
@@ -53,7 +48,6 @@ export class UpdateScenarioUseCase {
       const domainData: UpdateScenarioData = {
         ...(updateData.name && { name: updateData.name.trim() }),
         ...(updateData.address && { address: updateData.address.trim() }),
-        ...(updateData.description !== undefined && { description: updateData.description?.trim() }),
         ...(updateData.neighborhoodId && { neighborhoodId: updateData.neighborhoodId }),
         ...(updateData.active !== undefined && { active: updateData.active }),
       };

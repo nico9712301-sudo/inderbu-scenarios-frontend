@@ -1,14 +1,14 @@
 // API Services para search de filtros de escenarios
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-export interface NeighborhoodOption {
+export interface INeighborhoodOptionDTO {
   id: number;
   name: string;
 }
 
 export async function searchNeighborhoodsForScenarios(
   search: string = "",
-): Promise<NeighborhoodOption[]> {
+): Promise<INeighborhoodOptionDTO[]> {
   try {
     const params = new URLSearchParams();
     if (search.trim()) {
