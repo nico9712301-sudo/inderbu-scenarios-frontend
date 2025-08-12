@@ -1,68 +1,46 @@
-import { injectable } from 'inversify';
-import { 
-  INeighborhoodRepository, 
-  NeighborhoodFilters 
-} from '@/entities/neighborhood/infrastructure/INeighborhoodRepository';
-import { Neighborhood, CreateNeighborhoodData, UpdateNeighborhoodData } from '@/entities/neighborhood/domain/Neighborhood';
-import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
-import { createServerAuthContext } from '@/shared/api/server-auth';
+import { INeighborhoodRepository } from '@/entities/neighborhood/domain/INeighborhoodRepository';
+import { Neighborhood } from '@/services/api';
+import { ClientHttpClient } from '@/shared/api/http-client-client';
 
-@injectable()
 export class NeighborhoodRepository implements INeighborhoodRepository {
+  constructor(private readonly httpClient: ClientHttpClient) {}
   
-  async findAll(filters: NeighborhoodFilters = {}): Promise<Neighborhood[]> {
+  async getAll(): Promise<Neighborhood[]> {
     try {
-      const authContext = createServerAuthContext();
-      const httpClient = ClientHttpClientFactory.createClient(authContext);
-
-      // Build query params
-      const params = new URLSearchParams();
-      if (filters.communeId) params.append('communeId', filters.communeId.toString());
-      if (filters.search) params.append('search', filters.search);
-
-      const queryString = params.toString();
-      const endpoint = queryString ? `/neighborhoods?${queryString}` : '/neighborhoods';
-
-      const result = await httpClient.get<{ data: Neighborhood[] } | Neighborhood[]>(endpoint);
+      const result = await this.httpClient.get<{ data: Neighborhood[] } | Neighborhood[]>('/neighborhoods');
       return Array.isArray(result) ? result : result.data;
     } catch (error) {
-      console.error('Error in NeighborhoodRepository.findAll:', error);
+      console.error('Error in NeighborhoodRepository.getAll:', error);
       throw error;
     }
   }
 
-  async findById(id: number): Promise<Neighborhood | null> {
+  async getById(id: number): Promise<Neighborhood | null> {
     try {
-      const authContext = createServerAuthContext();
-      const httpClient = ClientHttpClientFactory.createClient(authContext);
-
-      const result = await httpClient.get<Neighborhood>(`/neighborhoods/${id}`);
+      const result = await this.httpClient.get<Neighborhood>(`/neighborhoods/${id}`);
       return result;
     } catch (error: any) {
       if (error.status === 404) {
         return null;
       }
-      console.error('Error in NeighborhoodRepository.findById:', error);
+      console.error('Error in NeighborhoodRepository.getById:', error);
       throw error;
     }
   }
 
-  async findByCommuneId(communeId: number): Promise<Neighborhood[]> {
-    return await this.findAll({ communeId });
+  async getByCommuneId(communeId: number): Promise<Neighborhood[]> {
+    try {
+      const result = await this.httpClient.get<{ data: Neighborhood[] } | Neighborhood[]>(`/neighborhoods?communeId=${communeId}`);
+      return Array.isArray(result) ? result : result.data;
+    } catch (error) {
+      console.error('Error in NeighborhoodRepository.getByCommuneId:', error);
+      throw error;
+    }
   }
 
-  async create(data: CreateNeighborhoodData): Promise<Neighborhood> {
+  async create(data: Omit<Neighborhood, 'id'>): Promise<Neighborhood> {
     try {
-      const authContext = createServerAuthContext();
-      const httpClient = ClientHttpClientFactory.createClient(authContext);
-
-      // Map domain data to API format
-      const createPayload = {
-        name: data.name,
-        communeId: data.communeId,
-      };
-
-      const result = await httpClient.post<Neighborhood>('/neighborhoods', createPayload);
+      const result = await this.httpClient.post<Neighborhood>('/neighborhoods', data);
       return result;
     } catch (error) {
       console.error('Error in NeighborhoodRepository.create:', error);
@@ -70,18 +48,9 @@ export class NeighborhoodRepository implements INeighborhoodRepository {
     }
   }
 
-  async update(id: number, data: UpdateNeighborhoodData): Promise<Neighborhood> {
+  async update(id: number, data: Partial<Neighborhood>): Promise<Neighborhood> {
     try {
-      const authContext = createServerAuthContext();
-      const httpClient = ClientHttpClientFactory.createClient(authContext);
-
-      // Map domain data to API format
-      const updatePayload = {
-        ...(data.name && { name: data.name }),
-        ...(data.communeId && { communeId: data.communeId }),
-      };
-
-      const result = await httpClient.put<Neighborhood>(`/neighborhoods/${id}`, updatePayload);
+      const result = await this.httpClient.put<Neighborhood>(`/neighborhoods/${id}`, data);
       return result;
     } catch (error) {
       console.error('Error in NeighborhoodRepository.update:', error);
@@ -91,10 +60,7 @@ export class NeighborhoodRepository implements INeighborhoodRepository {
 
   async delete(id: number): Promise<void> {
     try {
-      const authContext = createServerAuthContext();
-      const httpClient = ClientHttpClientFactory.createClient(authContext);
-
-      await httpClient.delete(`/neighborhoods/${id}`);
+      await this.httpClient.delete(`/neighborhoods/${id}`);
     } catch (error) {
       console.error('Error in NeighborhoodRepository.delete:', error);
       throw error;

@@ -30,11 +30,11 @@ export class ClientHttpClient implements HttpClient {
     const headers: Record<string, string> = {};
 
     console.log('HTTP CLIENT: Getting auth headers...');
-    
+
     if (this.authContext) {
       console.log('HTTP CLIENT: Auth context found, getting token...');
       const token = await this.authContext.getToken();
-      
+
       if (token) {
         console.log(`HTTP CLIENT: Token obtained (length: ${token.length}), adding Authorization header`);
         headers.Authorization = `Bearer ${token}`;
@@ -71,7 +71,11 @@ export class ClientHttpClient implements HttpClient {
 
     const url = `${this.baseURL}${endpoint}`;
     const headers = await this.buildHeaders(config.headers);
- 
+
+    if (body instanceof FormData) {
+      delete headers['Content-Type'];
+    }
+
     if (body) {
       console.log('HTTP CLIENT: Request body:', typeof body === 'string' ? 'JSON string' : typeof body);
     }
@@ -100,12 +104,12 @@ export class ClientHttpClient implements HttpClient {
       const response = await fetch(url, fetchOptions);
 
       console.log(`HTTP CLIENT: Response status: ${response.status} ${response.statusText}`);
-      
+
       clearTimeout(timeoutId);
 
       if (!response.ok) {
         console.log('HTTP CLIENT: Request failed, parsing error response...');
-        
+
         const errorData = await response.json().catch(() => ({
           statusCode: response.status,
           message: 'Network error',

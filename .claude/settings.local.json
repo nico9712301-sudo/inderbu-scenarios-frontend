@@ -12,7 +12,8 @@
       "Bash(npx tsc:*)",
       "Bash(rm:*)",
       "Bash(pnpm run lint:*)",
-      "Bash(pnpm run:*)"
+      "Bash(pnpm run:*)",
+      "WebFetch(domain:)"
     ]
   },
   "enableAllProjectMcpServers": false

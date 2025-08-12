@@ -4,7 +4,12 @@ import { TOKENS, Environment } from './tokens';
 // Repository imports
 import { ScenarioRepository } from '@/infrastructure/repositories/scenario-repository.adapter';
 import { NeighborhoodRepository } from '@/infrastructure/repositories/neighborhood-repository.adapter';
+import { ActivityAreaRepositoryAdapter } from '@/infrastructure/repositories/activity-area-repository.adapter';
+import { activityAreaApiService } from '@/presentation/features/home/services/home.service';
+import { SubScenarioRepository } from '@/presentation/features/dashboard/sub-scenarios/infrastructure/SubScenarioRepository';
 import type { INeighborhoodRepository } from '@/entities/neighborhood/domain/INeighborhoodRepository';
+import type { IActivityAreaRepository } from '@/entities/activity-area/domain/IActivityAreaRepository';
+import type { ISubScenarioRepository } from '@/presentation/features/dashboard/sub-scenarios/domain/repositories/ISubScenarioRepository';
 
 // Use Case imports
 import { CreateScenarioUseCase } from '@/application/dashboard/scenarios/use-cases/CreateScenarioUseCase';
@@ -12,6 +17,10 @@ import { UpdateScenarioUseCase } from '@/application/dashboard/scenarios/use-cas
 import { GetScenariosDataUseCase } from '@/application/dashboard/scenarios/use-cases/GetScenariosDataUseCase';
 import { GetScenariosUseCase } from '@/application/dashboard/scenarios/use-cases/GetScenariosUseCase';
 import { GetNeighborhoodsUseCase } from '@/application/dashboard/scenarios/use-cases/GetNeighborhoodsUseCase';
+import { GetSubScenariosDataUseCase } from '@/presentation/features/dashboard/sub-scenarios/application/GetSubScenariosDataUseCase';
+import { CreateSubScenarioUseCase } from '@/application/dashboard/sub-scenarios/use-cases/CreateSubScenarioUseCase';
+import { UpdateSubScenarioUseCase } from '@/application/dashboard/sub-scenarios/use-cases/UpdateSubScenarioUseCase';
+import { UploadSubScenarioImagesUseCase } from '@/application/dashboard/sub-scenarios/use-cases/UploadSubScenarioImagesUseCase';
 
 // HTTP Client imports  
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
@@ -156,6 +165,16 @@ export class ContainerFactory {
     container.bind<INeighborhoodRepository>(TOKENS.INeighborhoodRepository)
       .to(() => new NeighborhoodRepository(createHttpClient()))
       .singleton();
+
+    // Activity Area Repository (singleton)
+    container.bind<IActivityAreaRepository>(TOKENS.IActivityAreaRepository)
+      .to(() => new ActivityAreaRepositoryAdapter(activityAreaApiService))
+      .singleton();
+
+    // Sub Scenario Repository (singleton)
+    container.bind<ISubScenarioRepository>(TOKENS.ISubScenarioRepository)
+      .to(() => new SubScenarioRepository())
+      .singleton();
   }
 
   /**
@@ -192,6 +211,31 @@ export class ContainerFactory {
         container.get<GetScenariosUseCase>(TOKENS.GetScenariosUseCase),
         container.get<GetNeighborhoodsUseCase>(TOKENS.GetNeighborhoodsUseCase)
       ));
+
+    // Get Sub-Scenarios Data Use Case (composite)
+    container.bind<GetSubScenariosDataUseCase>(TOKENS.GetSubScenariosDataUseCase)
+      .to(() => new GetSubScenariosDataUseCase(
+        container.get<ISubScenarioRepository>(TOKENS.ISubScenarioRepository),
+        container.get<IScenarioRepository>(TOKENS.IScenarioRepository),
+        container.get<IActivityAreaRepository>(TOKENS.IActivityAreaRepository),
+        container.get<INeighborhoodRepository>(TOKENS.INeighborhoodRepository)
+      ));
+
+    // Create Sub-Scenario Use Case
+    container.bind<CreateSubScenarioUseCase>(TOKENS.CreateSubScenarioUseCase)
+      .to(() => new CreateSubScenarioUseCase(
+        container.get<ISubScenarioRepository>(TOKENS.ISubScenarioRepository)
+      ));
+
+    // Update Sub-Scenario Use Case
+    container.bind<UpdateSubScenarioUseCase>(TOKENS.UpdateSubScenarioUseCase)
+      .to(() => new UpdateSubScenarioUseCase(
+        container.get<ISubScenarioRepository>(TOKENS.ISubScenarioRepository)
+      ));
+
+    // Upload Sub-Scenario Images Use Case
+    container.bind<UploadSubScenarioImagesUseCase>(TOKENS.UploadSubScenarioImagesUseCase)
+      .to(() => new UploadSubScenarioImagesUseCase());
   }
 
   /**

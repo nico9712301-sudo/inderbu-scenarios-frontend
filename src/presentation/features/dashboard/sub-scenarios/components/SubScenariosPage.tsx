@@ -14,7 +14,9 @@ import { NavValues } from "../utils/nav-values";
 import { SubScenario } from "@/services/api";
 import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/button";
-import { SubScenarioCommandFactory } from "../commands/sub-scenario-commands";
+import { updateSubScenarioAction } from "@/infrastructure/web/controllers/dashboard/sub-scenario.actions";
+import { ErrorHandlerResult } from "@/shared/api/error-handler";
+import { toast } from "sonner";
 
 interface SubScenariosPageProps {
   initialData: ISubScenariosDataResponse;
@@ -37,20 +39,44 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
     fieldSurfaceTypes,
   } = useSubScenarioData(initialData);
 
-  const toggleSubScenarioStatus = async (subScenario: SubScenario, onSuccess?: () => void, onError?: (error: string) => void) => {
-    const command = SubScenarioCommandFactory.toggleSubScenarioStatus(subScenario, {
-      onSuccess: (updatedSubScenario) => {
-        // Execute callback provided
-        onSuccess?.();
-      },
-      onError: (error) => {
-        console.error("Toggle status error:", error);
-        onError?.(error);
-      },
-    });
+  const handleSubScenarioCreatedOrUpdated = useCallback(
+    () => {
+      router.refresh();
+      setCreateOpen(false);
+      setEditOpen(false);
+      setSelected(null);
+    },
+    [router]
+  );
 
-    return await command.execute();
-  }
+
+  const toggleSubScenarioStatus = async (subScenario: SubScenario) => {
+    if (!subScenario) return;
+
+    try {
+      const newActiveState = !subScenario.active;
+
+      const result: ErrorHandlerResult<SubScenario> = await updateSubScenarioAction(subScenario.id, {
+        active: newActiveState,
+      });
+
+      if (result.success) {
+        toast.success("Estado del sub-escenario actualizado", {
+          description: `${result.data.name} ha sido ${newActiveState ? "activado" : "desactivado"}.`,
+        });
+        handleSubScenarioCreatedOrUpdated();
+      } else {
+        toast.error("Error al actualizar el estado del sub-escenario", {
+          description: result.error || "Ocurrió un error al cambiar el estado.",
+        });
+      }
+    } catch (error) {
+      console.error("Unexpected toggle error:", error);
+      toast.error("Error al actualizar el estado del sub-escenario", {
+        description: "Ocurrió un error inesperado de conexión.",
+      });
+    }
+  };
 
   // Determine current tab based on active filter
   const getCurrentTab = useCallback(() => {
@@ -92,21 +118,8 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
     setEditOpen(true);
   };
 
-  const handleSubScenarioCreatedOrUpdated = useCallback(
-    () => {
-      router.refresh();
-      setCreateOpen(false);
-      setEditOpen(false);
-      setSelected(null);
-    },
-    [router]
-  );
-
   const handleToggleStatus = useCallback(async (subScenario: SubScenario) => {
-    await toggleSubScenarioStatus(subScenario,
-      () => router.refresh(), // onSuccess
-      (error) => console.error("Toggle error:", error) // onError
-    );
+    await toggleSubScenarioStatus(subScenario);
   }, [toggleSubScenarioStatus, router]);
 
   return (

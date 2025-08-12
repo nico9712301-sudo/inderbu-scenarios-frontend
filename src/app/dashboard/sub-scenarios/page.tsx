@@ -1,9 +1,11 @@
-import { createSubScenariosContainer } from '@/presentation/features/dashboard/sub-scenarios/di/SubScenariosContainer.server';
+import { GetSubScenariosDataUseCase, ISubScenariosDataResponse } from '@/presentation/features/dashboard/sub-scenarios/application/GetSubScenariosDataUseCase';
 import { SubScenariosPage } from '@/presentation/features/dashboard/sub-scenarios/components/SubScenariosPage';
-import { ISubScenariosDataResponse } from '@/presentation/features/dashboard/sub-scenarios/application/GetSubScenariosDataUseCase';
+import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
+import { IContainer } from '@/infrastructure/config/di/simple-container';
+import { TOKENS } from '@/infrastructure/config/di/tokens';
 
-interface SubScenariosPageProps {
-  searchParams: {
+interface SubScenariosRouteProps {
+  searchParams: Promise<{
     page?: string;
     limit?: string;
     search?: string;
@@ -11,17 +13,24 @@ interface SubScenariosPageProps {
     activityAreaId?: string;
     neighborhoodId?: string;
     active?: string;
-  };
+  }>;
 }
 
-export default async function SubScenariosRoute(props: SubScenariosPageProps) {
+/**
+ * Sub-Scenarios Page Route (Server Component)
+ * 
+ * Next.js App Router page that handles sub-scenarios listing.
+ * Uses dependency injection to get data and render the presentation layer.
+ */
+export default async function SubScenariosRoute(props: SubScenariosRouteProps) {
   const searchParams = await props.searchParams;
 
-  // DDD: Dependency injection - build complete container
-  const { subScenariosService } = createSubScenariosContainer();
-
   try {
-    // Parse search params with defaults
+    // Dependency Injection: Get container and resolve use case
+    const container: IContainer = ContainerFactory.createContainer();
+    const getSubScenariosDataUseCase = container.get<GetSubScenariosDataUseCase>(TOKENS.GetSubScenariosDataUseCase);
+    
+    // Parse and validate search params
     const filters = {
       page: searchParams.page ? parseInt(searchParams.page) : 1,
       limit: searchParams.limit ? parseInt(searchParams.limit) : 7,
@@ -34,20 +43,20 @@ export default async function SubScenariosRoute(props: SubScenariosPageProps) {
         : undefined,
     };
 
-    // DDD: Execute use case through service layer
-    // All business logic, validation, and data fetching happens in domain/application layers
-    const result: ISubScenariosDataResponse = await subScenariosService.getSubScenariosData(filters);
-    console.log("SSR SubScenariosRoute fetched data:", result);
-    
+    // Execute Use Case through Application Layer
+    const result: ISubScenariosDataResponse = await getSubScenariosDataUseCase.execute(filters);   
 
-    // Atomic Design: Render page template with clean separation
-    return <SubScenariosPage initialData={result} />;
+    // Render Presentation Layer with server-side data
+    return (
+      <SubScenariosPage
+        initialData={result}
+      />
+    );
 
   } catch (error) {
-    console.error('SSR Error in SubScenariosRoute:', error);
-
-    // For unexpected errors, let Next.js error boundary handle it
-    console.error('Unexpected error in SubScenariosRoute:', error);
+    console.error('Error in SubScenariosRoute:', error);
+    
+    // TODO: Render proper error page/component
     throw error;
   }
 }

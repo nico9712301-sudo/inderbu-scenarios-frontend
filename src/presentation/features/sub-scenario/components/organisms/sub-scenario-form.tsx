@@ -1,11 +1,12 @@
 "use client";
 
-import { ImageUploader } from "@/shared/components/organisms/image-uploader";
 import { ActivityArea, Scenario } from "@/services/api";
 import { Textarea } from "@/shared/ui/textarea";
 import { Switch } from "@/shared/ui/switch";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { SubScenarioImagesSection } from "./sub-scenario-images-section";
+import { ImageUploadData } from "@/application/dashboard/sub-scenarios/use-cases/UploadSubScenarioImagesUseCase";
 
 
 interface Props {
@@ -14,6 +15,8 @@ interface Props {
   activityAreas: ActivityArea[];
   fieldSurfaceTypes: { id: number; name: string }[];
   onChange(v: any): void;
+  onImagesChange?: (images: ImageUploadData[]) => void;
+  images?: ImageUploadData[];
   showImages?: boolean;
 }
 
@@ -23,6 +26,8 @@ export function SubScenarioForm({
   activityAreas,
   fieldSurfaceTypes,
   onChange,
+  onImagesChange,
+  images = [],
   showImages = false,
 }: Props) {
   const set = (k: string, v: any) => onChange({ ...value, [k]: v });
@@ -152,13 +157,17 @@ export function SubScenarioForm({
       </section>
 
       {showImages && (
-        <section className="bg-gray-50 p-3 rounded-md space-y-3">
-          <h3 className="font-medium text-sm text-gray-800">Imágenes</h3>
-          <ImageUploader
-            maxImages={3}
-            onChange={(imgs) => set("images", imgs)}
-          />
-        </section>
+        <SubScenarioImagesSection
+          images={images}
+          onChange={(imgs) => {
+            // Use onImagesChange if provided, otherwise fallback to set
+            if (onImagesChange) {
+              onImagesChange(imgs);
+            } else {
+              set("images", imgs);
+            }
+          }}
+        />
       )}
     </>
   );

@@ -8,11 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { updateSubScenarioAction } from "@/presentation/features/dashboard/sub-scenarios/actions/sub-scenario.actions";
 import { ActivityArea, FieldSurfaceType, Scenario, SubScenario } from "@/services/api";
 import { SubScenarioForm } from "./sub-scenario-form";
 import { Button } from "@/shared/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useSubScenarioForm } from "@/presentation/features/dashboard/sub-scenarios/hooks/useSubScenarioForm";
+import { toast } from "sonner";
 
 
 interface Props {
@@ -34,19 +35,45 @@ export function EditSubScenarioDialog({
   activityAreas,
   fieldSurfaceTypes,
 }: Props) {
-  const [form, setForm] = useState<any>({});
+  
+  const {
+    formData,
+    errors,
+    isSubmitting,
+    updateField,
+    updateScenario,
+    updateActivityArea,
+    updateFieldSurfaceType,
+    updateImages,
+    handleUpdate,
+    loadSubScenario,
+    hasError,
+    getError
+  } = useSubScenarioForm({
+    onSuccess: (subScenario) => {
+      toast.success("Sub-escenario actualizado exitosamente", {
+        description: `${subScenario.name} ha sido actualizado correctamente.`,
+      });
+      handleSubScenarioCreatedOrUpdated();
+    },
+    onError: (error) => {
+      toast.error("Error al actualizar sub-escenario", {
+        description: error,
+      });
+    }
+  });
 
+  // Load sub-scenario data when dialog opens
   useEffect(() => {
-    if (subScenario) setForm({ ...subScenario });
-  }, [subScenario]);
+    if (subScenario && open) {
+      loadSubScenario(subScenario);
+    }
+  }, [subScenario, open, loadSubScenario]);
 
-  const save = async () => {
+  const handleSave = async () => {
     if (!subScenario) return;
-    await updateSubScenarioAction(subScenario.id, form);
-    handleSubScenarioCreatedOrUpdated
+    await handleUpdate(subScenario.id);
   };
-
-  console.log({ subScenario });
 
 
   return (
@@ -60,8 +87,41 @@ export function EditSubScenarioDialog({
         </DialogHeader>
 
         <SubScenarioForm
-          value={form}
-          onChange={setForm}
+          value={{
+            name: formData.name,
+            hasCost: formData.hasCost,
+            numberOfSpectators: formData.numberOfSpectators,
+            numberOfPlayers: formData.numberOfPlayers,
+            recommendations: formData.recommendations,
+            scenarioId: formData.scenario.id ? parseInt(formData.scenario.id) : undefined,
+            activityAreaId: formData.activityArea.id ? parseInt(formData.activityArea.id) : undefined,
+            fieldSurfaceTypeId: formData.fieldSurfaceType.id ? parseInt(formData.fieldSurfaceType.id) : undefined,
+          }}
+          onChange={(newValue) => {
+            // Transform the flat structure back to the hook structure
+            updateField('name', newValue.name || '');
+            updateField('hasCost', newValue.hasCost || false);
+            updateField('numberOfSpectators', newValue.numberOfSpectators || 0);
+            updateField('numberOfPlayers', newValue.numberOfPlayers || 0);
+            updateField('recommendations', newValue.recommendations || '');
+            
+            if (newValue.scenarioId) {
+              const scenario = scenarios.find(s => s.id === newValue.scenarioId);
+              updateScenario(newValue.scenarioId.toString(), scenario?.name);
+            }
+            
+            if (newValue.activityAreaId) {
+              const activityArea = activityAreas.find(a => a.id === newValue.activityAreaId);
+              updateActivityArea(newValue.activityAreaId.toString(), activityArea?.name);
+            }
+            
+            if (newValue.fieldSurfaceTypeId) {
+              const fieldSurfaceType = fieldSurfaceTypes.find(f => f.id === newValue.fieldSurfaceTypeId);
+              updateFieldSurfaceType(newValue.fieldSurfaceTypeId.toString(), fieldSurfaceType?.name);
+            }
+          }}
+          onImagesChange={updateImages}
+          images={formData.images}
           scenarios={scenarios}
           activityAreas={activityAreas}
           fieldSurfaceTypes={fieldSurfaceTypes}
@@ -79,9 +139,10 @@ export function EditSubScenarioDialog({
           <Button
             className="bg-teal-600 hover:bg-teal-700"
             size="sm"
-            onClick={save}
+            onClick={handleSave}
+            disabled={isSubmitting}
           >
-            Guardar
+            {isSubmitting ? "Guardando..." : "Guardar"}
           </Button>
         </DialogFooter>
       </DialogContent>

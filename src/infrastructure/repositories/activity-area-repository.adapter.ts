@@ -1,18 +1,18 @@
 // Infrastructure: Activity Area Repository Adapter (bridges existing API to domain interface)
 
-import { ActivityAreaRepository } from '@/entities/activity-area/domain/activity-area.domain';
-import { IActivityArea } from '@/presentation/features/home/types/filters.types';
+import { IActivityAreaRepository } from '@/entities/activity-area/domain/IActivityAreaRepository';
+import { ActivityArea } from '@/services/api';
 
 // Existing API interface (what currently exists)
 interface ActivityAreaApiService {
-  getActivityAreas(): Promise<IActivityArea[]>;
+  getActivityAreas(): Promise<ActivityArea[]>;
 }
 
 // Infrastructure: Adapter Pattern - Bridge existing API to domain interface
-export class ActivityAreaRepositoryAdapter implements ActivityAreaRepository {
+export class ActivityAreaRepositoryAdapter implements IActivityAreaRepository {
   constructor(private readonly apiService: ActivityAreaApiService) { }
 
-  async findAll(): Promise<IActivityArea[]> {
+  async getAll(): Promise<ActivityArea[]> {
 
     try {
       // Call existing API service
@@ -25,9 +25,9 @@ export class ActivityAreaRepositoryAdapter implements ActivityAreaRepository {
     }
   }
 
-  async findById(id: number): Promise<IActivityArea | null> {
+  async getById(id: number): Promise<ActivityArea | null> {
     try {
-      const allActivityAreas = await this.findAll();
+      const allActivityAreas = await this.getAll();
       const found = allActivityAreas.find(area => +area.id === id);
 
       return found || null;
@@ -38,9 +38,22 @@ export class ActivityAreaRepositoryAdapter implements ActivityAreaRepository {
     }
   }
 
-  async findByName(name: string): Promise<IActivityArea[]> {
+  async create(data: Omit<ActivityArea, 'id'>): Promise<ActivityArea> {
+    throw new Error('Create not implemented');
+  }
+
+  async update(id: number, data: Partial<ActivityArea>): Promise<ActivityArea> {
+    throw new Error('Update not implemented');
+  }
+
+  async delete(id: number): Promise<void> {
+    throw new Error('Delete not implemented');
+  }
+
+  // Additional helper methods
+  async findByName(name: string): Promise<ActivityArea[]> {
     try {
-      const allActivityAreas = await this.findAll();
+      const allActivityAreas = await this.getAll();
       const filtered = allActivityAreas.filter(area =>
         area.name.toLowerCase().includes(name.toLowerCase())
       );
@@ -55,6 +68,6 @@ export class ActivityAreaRepositoryAdapter implements ActivityAreaRepository {
 }
 
 // Factory function for DI container
-export function createActivityAreaRepositoryAdapter(apiService: ActivityAreaApiService): ActivityAreaRepository {
+export function createActivityAreaRepositoryAdapter(apiService: ActivityAreaApiService): IActivityAreaRepository {
   return new ActivityAreaRepositoryAdapter(apiService);
 }

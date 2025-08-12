@@ -48,8 +48,8 @@ export function CreateScenarioModal({
           };
 
           form.reset();
-          onScenarioCreated(newScenario);  // ✅ Callback primero (router.refresh())
-          onClose();                       // ✅ Cierre después del callback
+          onScenarioCreated();
+          onClose();
 
           toast.success("Escenario creado exitosamente", {
             description: `${result.data.name} ha sido registrado en el sistema.`,

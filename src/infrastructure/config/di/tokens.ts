@@ -44,6 +44,7 @@ export const TOKENS = {
   GetSubScenariosUseCase: 'GetSubScenariosUseCase',
   CreateSubScenarioUseCase: 'CreateSubScenarioUseCase',
   UpdateSubScenarioUseCase: 'UpdateSubScenarioUseCase',
+  UploadSubScenarioImagesUseCase: 'UploadSubScenarioImagesUseCase',
 
   // =============================================================================
   // COMPOSITE USE CASES (Cross-Domain Operations)

@@ -8,13 +8,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { useSubScenarioData } from "../../hooks/use-sub-scenario-data";
 import { SubScenarioForm } from "./sub-scenario-form";
 import { Button } from "@/shared/ui/button";
-import { useState } from "react";
 import { ActivityArea, FieldSurfaceType, Scenario, SubScenario } from "@/services/api";
-import { useRouter } from "next/navigation";
-import { createSubScenarioAction } from "@/presentation/features/dashboard/sub-scenarios/actions/sub-scenario.actions";
+import { useSubScenarioForm } from "@/presentation/features/dashboard/sub-scenarios/hooks/useSubScenarioForm";
+import { toast } from "sonner";
 
 
 interface Props {
@@ -28,23 +26,36 @@ interface Props {
 
 export function CreateSubScenarioDialog({ open, onOpenChange, handleSubScenarioCreatedOrUpdated, scenarios, activityAreas, fieldSurfaceTypes }: Props) {
 
-  const [form, setForm] = useState<Omit<SubScenario, "id">>({
-    name: "",
-    active: true,
-    hasCost: false,
-    numberOfSpectators: 0,
-    numberOfPlayers: 0,
-    recommendations: "",
-    scenarioId: undefined,
-    activityAreaId: undefined,
-    fieldSurfaceTypeId: undefined,
-    images: [],
+  const {
+    formData,
+    errors,
+    isSubmitting,
+    updateField,
+    updateScenario,
+    updateActivityArea,
+    updateFieldSurfaceType,
+    updateImages,
+    handleCreate,
+    reset,
+    hasError,
+    getError
+  } = useSubScenarioForm({
+    onSuccess: (subScenario) => {
+      toast.success("Sub-escenario creado exitosamente", {
+        description: `${subScenario.name} ha sido creado correctamente.`,
+      });
+      handleSubScenarioCreatedOrUpdated();
+      reset();
+    },
+    onError: (error) => {
+      toast.error("Error al crear sub-escenario", {
+        description: error,
+      });
+    }
   });
 
-  const save = async () => {
-    console.log("Saving sub-scenario with data:", form);
-    await createSubScenarioAction(form);
-    handleSubScenarioCreatedOrUpdated();
+  const handleSave = async () => {
+    await handleCreate();
   };
 
   return (
@@ -60,8 +71,51 @@ export function CreateSubScenarioDialog({ open, onOpenChange, handleSubScenarioC
         </DialogHeader>
 
         <SubScenarioForm
-          value={form}
-          onChange={setForm}
+          value={{
+            name: formData.name,
+            hasCost: formData.hasCost,
+            numberOfSpectators: formData.numberOfSpectators,
+            numberOfPlayers: formData.numberOfPlayers,
+            recommendations: formData.recommendations,
+            scenarioId: formData.scenario.id ? parseInt(formData.scenario.id) : undefined,
+            activityAreaId: formData.activityArea.id ? parseInt(formData.activityArea.id) : undefined,
+            fieldSurfaceTypeId: formData.fieldSurfaceType.id ? parseInt(formData.fieldSurfaceType.id) : undefined,
+          }}
+          onChange={(newValue) => {
+            // Update each field individually through the form hook
+            if (newValue.name !== formData.name) {
+              updateField('name', newValue.name || '');
+            }
+            if (newValue.hasCost !== formData.hasCost) {
+              updateField('hasCost', newValue.hasCost || false);
+            }
+            if (newValue.numberOfSpectators !== formData.numberOfSpectators) {
+              updateField('numberOfSpectators', newValue.numberOfSpectators || 0);
+            }
+            if (newValue.numberOfPlayers !== formData.numberOfPlayers) {
+              updateField('numberOfPlayers', newValue.numberOfPlayers || 0);
+            }
+            if (newValue.recommendations !== formData.recommendations) {
+              updateField('recommendations', newValue.recommendations || '');
+            }
+            
+            if (newValue.scenarioId && newValue.scenarioId !== parseInt(formData.scenario.id || '0')) {
+              const scenario = scenarios.find(s => s.id === newValue.scenarioId);
+              updateScenario(newValue.scenarioId.toString(), scenario?.name);
+            }
+            
+            if (newValue.activityAreaId && newValue.activityAreaId !== parseInt(formData.activityArea.id || '0')) {
+              const activityArea = activityAreas.find(a => a.id === newValue.activityAreaId);
+              updateActivityArea(newValue.activityAreaId.toString(), activityArea?.name);
+            }
+            
+            if (newValue.fieldSurfaceTypeId && newValue.fieldSurfaceTypeId !== parseInt(formData.fieldSurfaceType.id || '0')) {
+              const fieldSurfaceType = fieldSurfaceTypes.find(f => f.id === newValue.fieldSurfaceTypeId);
+              updateFieldSurfaceType(newValue.fieldSurfaceTypeId.toString(), fieldSurfaceType?.name);
+            }
+          }}
+          onImagesChange={updateImages}
+          images={formData.images}
           scenarios={scenarios}
           activityAreas={activityAreas}
           fieldSurfaceTypes={fieldSurfaceTypes}
@@ -79,9 +133,10 @@ export function CreateSubScenarioDialog({ open, onOpenChange, handleSubScenarioC
           <Button
             className="bg-teal-600 hover:bg-teal-700"
             size="sm"
-            onClick={save}
+            onClick={handleSave}
+            disabled={isSubmitting}
           >
-            Guardar
+            {isSubmitting ? "Guardando..." : "Guardar"}
           </Button>
         </DialogFooter>
       </DialogContent>

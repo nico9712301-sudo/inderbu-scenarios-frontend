@@ -1,8 +1,8 @@
-import { SubScenario, Scenario, ActivityArea, Neighborhood, PageMeta } from '@/services/api';
 import { ISubScenarioRepository, SubScenariosFilters } from '../domain/repositories/ISubScenarioRepository';
-import { IScenarioRepository } from '../../scenarios/domain/repositories/IScenarioRepository';
 import { IActivityAreaRepository } from '@/entities/activity-area/domain/IActivityAreaRepository';
 import { INeighborhoodRepository } from '@/entities/neighborhood/domain/INeighborhoodRepository';
+import { SubScenario, Scenario, ActivityArea, Neighborhood, PageMeta } from '@/services/api';
+import { IScenarioRepository } from '@/entities/scenario/infrastructure/IScenarioRepository';
 
 export interface ISubScenariosDataResponse {
   subScenarios: SubScenario[];

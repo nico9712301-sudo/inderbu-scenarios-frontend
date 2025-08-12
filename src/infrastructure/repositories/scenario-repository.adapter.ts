@@ -132,7 +132,7 @@ export class ScenarioRepository implements IScenarioRepository {
       params.append('limit', limit.toString());
 
       const result = await httpClient.get<{ data: Scenario[] } | Scenario[]>(
-        `/scenarios/all?${params.toString()}`
+        `/scenarios?${params.toString()}`
       );
       
       return Array.isArray(result) ? result : result.data;
