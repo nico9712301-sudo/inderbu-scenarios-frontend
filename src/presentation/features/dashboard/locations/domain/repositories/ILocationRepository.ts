@@ -40,8 +40,8 @@ export interface NeighborhoodFilters {
 
 // Repository interfaces
 export interface ICommuneRepository {
-  getAllWithPagination(filters: CommuneFilters): Promise<PaginatedCommunes>;
-  getAll(): Promise<Commune[]>;
+  getAll(filters?: CommuneFilters): Promise<PaginatedCommunes>;
+  getAllSimple(): Promise<Commune[]>;
   create(data: CreateCommuneDto): Promise<Commune>;
   update(id: number, data: UpdateCommuneDto): Promise<Commune>;
 }

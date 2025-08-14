@@ -1,8 +1,10 @@
-import { GetUserReservationsResponse } from '@/presentation/features/reservations/use-cases/list/application/GetUserReservationsUseCase';
-import { createUserReservationsContainer } from '@/presentation/features/reservations/di/ReservationsContainer.server';
-import { AccessDeniedError, InvalidUserIdError } from '@/entities/user/domain/user-access.policy';
+import { GetUserReservationsUseCase, IUserReservationsDataResponse } from '@/application/reservations/use-cases/GetUserReservationsUseCase';
+import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
+import { IContainer } from '@/infrastructure/config/di/simple-container';
+import { TOKENS } from '@/infrastructure/config/di/tokens';
 import { ReservationsPage } from '@/presentation/features/reservations/components/pages/reservations.page';
 import { redirect } from 'next/navigation';
+import { serializeUserReservationsData } from '@/presentation/utils/serialization.utils';
 
 interface PageProps {
   params: Promise<{ userId: string }>;
@@ -17,41 +19,45 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
+/**
+ * User Reservations Page Route (Server Component)
+ * 
+ * Next.js App Router page that handles user reservations listing.
+ * Uses dependency injection to get data and render the presentation layer.
+ */
 export default async function UserReservationsPage({ params }: PageProps) {
   const { userId } = await params;
 
-  // Dependency injection - build the complete DDD container
-  const { reservationService } = createUserReservationsContainer();
-
   try {
-    // Execute use case through service layer
-    // All business logic, validation, and authorization happens in domain/application layers
-    const result: GetUserReservationsResponse = await reservationService.getUserReservations(userId);
+    // Dependency Injection: Get container and resolve use case
+    const container: IContainer = ContainerFactory.createContainer();
+    const getUserReservationsUseCase = container.get<GetUserReservationsUseCase>(TOKENS.GetUserReservationsUseCase);
+    
+    // Parse and validate user ID
+    const userIdNumber = parseInt(userId);
+    if (isNaN(userIdNumber) || userIdNumber <= 0) {
+      console.warn(`Invalid user ID: ${userId}`);
+      redirect('/404');
+    }
 
-    // Render page component with clean separation
+    // Execute Use Case - returns pure Domain Entities
+    const domainResult: IUserReservationsDataResponse = await getUserReservationsUseCase.execute(userIdNumber);
+    
+    // Presentation Layer responsibility: Serialize domain entities for client components
+    const serializedResult = serializeUserReservationsData(domainResult);
+    
+    // Render Presentation Layer with serialized data (plain objects)
     return (
       <ReservationsPage
-        userId={result.metadata.userId}
-        initialData={result.reservations}
+        userId={domainResult.metadata.userId}
+        initialData={serializedResult}
       />
     );
 
   } catch (error) {
     console.error(`SSR Error for user ${userId}:`, error);
-
-    // Handle domain-specific errors with proper redirects
-    if (error instanceof InvalidUserIdError) {
-      console.warn(`Invalid user ID: ${userId}`);
-      redirect('/404');
-    }
-
-    if (error instanceof AccessDeniedError) {
-      console.warn(`Access denied for user: ${userId}`);
-      redirect('/auth/login?redirect=' + encodeURIComponent(`/reservations/${userId}`));
-    }
-
-    // For unexpected errors, let Next.js error boundary handle it
-    console.error('Unexpected error in UserReservationsRoute:', error);
+    
+    // TODO: Handle domain-specific errors and render proper error page
     throw error;
   }
 }

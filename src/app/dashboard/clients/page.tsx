@@ -1,46 +1,69 @@
-import { createClientsContainer } from '@/presentation/features/dashboard/clients/di/ClientsContainer.server';
+import { GetClientsDataService, IClientsDataResponse } from '@/application/dashboard/clients/services/GetClientsDataService';
 import { ClientsPage } from '@/presentation/features/dashboard/clients/components/ClientsPage';
+import { UserFilters } from '@/entities/user/infrastructure/IUserRepository';
+import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
+import { IContainer } from '@/infrastructure/config/di/simple-container';
+import { TOKENS } from '@/infrastructure/config/di/tokens';
+import { serializeClientsData } from '@/presentation/utils/serialization.utils';
 
-interface ClientsPageProps {
-  searchParams: {
+interface ClientsRouteProps {
+  searchParams: Promise<{
     page?: string;
     limit?: string;
     search?: string;
     roleId?: string;
     neighborhoodId?: string;
     isActive?: string;
-  };
+  }>;
 }
 
-export default async function ClientsRoute(props: ClientsPageProps) {
+/**
+ * Clients Page Route (Server Component)
+ * 
+ * Next.js App Router page that handles clients listing.
+ * Uses dependency injection to get data and render the presentation layer.
+ */
+export default async function ClientsRoute(props: ClientsRouteProps) {
   const searchParams = await props.searchParams;
-  
-  // DDD: Dependency injection - build complete container
-  const { clientsService } = createClientsContainer();
 
   try {
-    // Parse search params with defaults
-    const filters = {
+    // Dependency Injection: Get container and resolve use case
+    const container: IContainer = ContainerFactory.createContainer();
+    const getClientsDataService = container.get<GetClientsDataService>(TOKENS.GetClientsDataService);
+    
+    // Parse and validate search params
+    const filters: UserFilters = {
       page: searchParams.page ? parseInt(searchParams.page) : 1,
       limit: searchParams.limit ? parseInt(searchParams.limit) : 10,
       search: searchParams.search || "",
-      roleId: searchParams.roleId ? parseInt(searchParams.roleId) : undefined,
-      neighborhoodId: searchParams.neighborhoodId ? parseInt(searchParams.neighborhoodId) : undefined,
-      isActive: searchParams.isActive ? searchParams.isActive === 'true' : undefined,
+      roleId: searchParams.roleId
+        ? parseInt(searchParams.roleId)
+        : undefined,
+      neighborhoodId: searchParams.neighborhoodId
+        ? parseInt(searchParams.neighborhoodId)
+        : undefined,
+      isActive: searchParams.isActive !== undefined
+        ? searchParams.isActive === 'true'
+        : undefined,
     };
 
-    // DDD: Execute use case through service layer
-    // All business logic, validation, and data fetching happens in domain/application layers
-    const result = await clientsService.getClientsData(filters);
+    // Execute Use Case through Application Layer - returns pure Domain Entities
+    const domainResult: IClientsDataResponse = await getClientsDataService.execute(filters);
+    
+    // Presentation Layer responsibility: Serialize domain entities for client components
+    const serializedResult = serializeClientsData(domainResult);
 
-    // Atomic Design: Render page template with clean separation
-    return <ClientsPage initialData={result} />;
+    // Render Presentation Layer with serialized data (plain objects)
+    return (
+      <ClientsPage
+        initialData={serializedResult}
+      />
+    );
 
   } catch (error) {
-    console.error('SSR Error in ClientsRoute:', error);
-
-    // For unexpected errors, let Next.js error boundary handle it
-    console.error('Unexpected error in ClientsRoute:', error);
+    console.error('Error in ClientsRoute:', error);
+    
+    // TODO: Render proper error page/component
     throw error;
   }
 }

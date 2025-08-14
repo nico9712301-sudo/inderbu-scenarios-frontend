@@ -1,5 +1,5 @@
 import { SubScenario } from '@/services/api';
-import { ISubScenarioRepository } from '@/presentation/features/dashboard/sub-scenarios/domain/repositories/ISubScenarioRepository';
+import { ISubScenarioRepository } from '@/entities/sub-scenario/infrastructure/ISubScenarioRepository';
 
 export class CreateSubScenarioUseCase {
   constructor(

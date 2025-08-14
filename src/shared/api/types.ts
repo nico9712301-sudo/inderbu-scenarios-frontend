@@ -61,7 +61,7 @@ export interface RequestConfig {
 }
 
 // Common HTTP Client interface (compatible with both Client and Server implementations)
-export interface HttpClient {
+export interface IHttpClient {
   get<T>(endpoint: string, config?: RequestConfig): Promise<T>;
   post<T>(endpoint: string, body?: any, config?: RequestConfig): Promise<T>;
   put<T>(endpoint: string, body?: any, config?: RequestConfig): Promise<T>;

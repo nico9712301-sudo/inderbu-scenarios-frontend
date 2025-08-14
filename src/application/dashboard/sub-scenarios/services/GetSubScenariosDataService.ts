@@ -1,4 +1,4 @@
-import { SubScenariosFilters } from '@/presentation/features/dashboard/sub-scenarios/domain/repositories/ISubScenarioRepository';
+import { SubScenariosFilters } from '@/entities/sub-scenario/infrastructure/ISubScenarioRepository';
 import { PageMeta } from '@/services/api';
 import { ScenarioEntity } from '@/entities/scenario/domain/ScenarioEntity';
 import { SubScenarioEntity } from '@/entities/sub-scenario/domain/SubScenarioEntity';

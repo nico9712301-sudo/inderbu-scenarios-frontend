@@ -32,7 +32,7 @@ function normalizeReservation(api: any): ReservationDto {
 
 export class ReservationRepository implements IReservationRepository {
   
-  async getAllWithPagination(filters: ReservationFilters): Promise<PaginatedReservations> {
+  async getAll(filters: ReservationFilters): Promise<PaginatedReservations> {
     try {
       // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
@@ -66,12 +66,12 @@ export class ReservationRepository implements IReservationRepository {
         meta: response.meta,
       };
     } catch (error) {
-      console.error('Error in ReservationRepository.getAllWithPagination:', error);
+      console.error('Error in ReservationRepository.getAll:', error);
       throw error;
     }
   }
 
-  async getAll(filters: Record<string, any> = {}): Promise<ReservationDto[]> {
+  async getAllSimple(filters: Record<string, any> = {}): Promise<ReservationDto[]> {
     try {
       // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
@@ -93,7 +93,7 @@ export class ReservationRepository implements IReservationRepository {
       // CORRECTO - Normalizar datos igual que el service original
       return response.data.map(normalizeReservation);
     } catch (error) {
-      console.error('Error in ReservationRepository.getAll:', error);
+      console.error('Error in ReservationRepository.getAllSimple:', error);
       throw error;
     }
   }

@@ -5,11 +5,16 @@ import { TOKENS, Environment } from './tokens';
 import { ScenarioRepository } from '@/infrastructure/repositories/scenario-repository.adapter';
 import { NeighborhoodRepositoryAdapter } from '@/infrastructure/repositories/neighborhood-repository.adapter';
 import { ActivityAreaRepositoryAdapter } from '@/infrastructure/repositories/activity-area-repository.adapter';
-import { SubScenarioRepository } from '@/presentation/features/dashboard/sub-scenarios/infrastructure/SubScenarioRepository';
+import { ReservationRepository } from '@/infrastructure/repositories/reservation-repository.adapter';
 import { FieldSurfaceTypeRepositoryAdapter } from '@/infrastructure/repositories/field-surface-type-repository.adapter';
+import { UserRepositoryAdapter } from '@/infrastructure/repositories/user-repository.adapter';
+import { RoleRepositoryAdapter } from '@/infrastructure/repositories/role-repository.adapter';
 import type { IActivityAreaRepository } from '@/entities/activity-area/domain/IActivityAreaRepository';
-import type { ISubScenarioRepository } from '@/presentation/features/dashboard/sub-scenarios/domain/repositories/ISubScenarioRepository';
+import type { ISubScenarioRepository } from '@/entities/sub-scenario/infrastructure/ISubScenarioRepository';
 import type { IFieldSurfaceTypeRepository } from '@/entities/field-surface-type/domain/IFieldSurfaceTypeRepository';
+import type { IReservationRepository } from '@/entities/reservation/infrastructure/IReservationRepository';
+import type { IUserRepository } from '@/entities/user/infrastructure/IUserRepository';
+import type { IRoleRepository } from '@/entities/role/infrastructure/IRoleRepository';
 
 // Use Case imports
 import { CreateScenarioUseCase } from '@/application/dashboard/scenarios/use-cases/CreateScenarioUseCase';
@@ -24,12 +29,20 @@ import { GetSubScenariosDataService } from '@/application/dashboard/sub-scenario
 import { CreateSubScenarioUseCase } from '@/application/dashboard/sub-scenarios/use-cases/CreateSubScenarioUseCase';
 import { UpdateSubScenarioUseCase } from '@/application/dashboard/sub-scenarios/use-cases/UpdateSubScenarioUseCase';
 import { UploadSubScenarioImagesUseCase } from '@/application/dashboard/sub-scenarios/use-cases/UploadSubScenarioImagesUseCase';
+import { GetHomeDataService } from '@/application/home/services/GetHomeDataService';
+import { GetHomeDataUseCase } from '@/application/home/use-cases/GetHomeDataUseCase';
+import { GetUserReservationsDataService } from '@/application/reservations/services/GetUserReservationsDataService';
+import { GetUserReservationsUseCase as AppGetUserReservationsUseCase } from '@/application/reservations/use-cases/GetUserReservationsUseCase';
+import { GetClientsDataService } from '@/application/dashboard/clients/services/GetClientsDataService';
+import { GetUsersUseCase } from '@/application/dashboard/clients/use-cases/GetUsersUseCase';
+import { GetRolesUseCase } from '@/application/dashboard/clients/use-cases/GetRolesUseCase';
 
 // HTTP Client imports  
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
 import { IScenarioRepository } from '@/entities/scenario/infrastructure/IScenarioRepository';
 import { INeighborhoodRepository } from '@/entities/neighborhood/infrastructure/INeighborhoodRepository';
+import { SubScenarioRepository } from '@/infrastructure/repositories/sub-scenario-repository.adapter';
 
 /**
  * Container Factory
@@ -184,6 +197,21 @@ export class ContainerFactory {
     container.bind<IFieldSurfaceTypeRepository>(TOKENS.IFieldSurfaceTypeRepository)
       .to(() => new FieldSurfaceTypeRepositoryAdapter(createHttpClient()))
       .singleton();
+
+    // Reservation Repository (singleton)
+    container.bind<IReservationRepository>(TOKENS.IReservationRepository)
+      .to(() => new ReservationRepository(createHttpClient()))
+      .singleton();
+
+    // User Repository (singleton)
+    container.bind<IUserRepository>(TOKENS.IUserRepository)
+      .to(() => new UserRepositoryAdapter(createHttpClient()))
+      .singleton();
+
+    // Role Repository (singleton)
+    container.bind<IRoleRepository>(TOKENS.IRoleRepository)
+      .to(() => new RoleRepositoryAdapter(createHttpClient()))
+      .singleton();
   }
 
   /**
@@ -264,6 +292,53 @@ export class ContainerFactory {
     // Upload Sub-Scenario Images Use Case
     container.bind<UploadSubScenarioImagesUseCase>(TOKENS.UploadSubScenarioImagesUseCase)
       .to(() => new UploadSubScenarioImagesUseCase());
+
+    // Home Data Service (application service)
+    container.bind<GetHomeDataService>(TOKENS.GetHomeDataService)
+      .to(() => new GetHomeDataService(
+        container.get<GetSubScenariosUseCase>(TOKENS.GetSubScenariosUseCase),
+        container.get<GetActivityAreasUseCase>(TOKENS.GetActivityAreasUseCase),
+        container.get<GetNeighborhoodsUseCase>(TOKENS.GetNeighborhoodsUseCase),
+        container.get<GetFieldSurfaceTypesUseCase>(TOKENS.GetFieldSurfaceTypesUseCase)
+      ));
+
+    // Home Data Use Case
+    container.bind<GetHomeDataUseCase>(TOKENS.GetHomeDataUseCase)
+      .to(() => new GetHomeDataUseCase(
+        container.get<GetHomeDataService>(TOKENS.GetHomeDataService)
+      ));
+
+    // User Reservations Data Service (application service)
+    container.bind<GetUserReservationsDataService>(TOKENS.GetUserReservationsDataService)
+      .to(() => new GetUserReservationsDataService(
+        container.get<IReservationRepository>(TOKENS.IReservationRepository)
+      ));
+
+    // User Reservations Use Case
+    container.bind<AppGetUserReservationsUseCase>(TOKENS.GetUserReservationsUseCase)
+      .to(() => new AppGetUserReservationsUseCase(
+        container.get<GetUserReservationsDataService>(TOKENS.GetUserReservationsDataService)
+      ));
+
+    // Get Users Use Case
+    container.bind<GetUsersUseCase>(TOKENS.GetUsersUseCase)
+      .to(() => new GetUsersUseCase(
+        container.get<IUserRepository>(TOKENS.IUserRepository)
+      ));
+
+    // Get Roles Use Case
+    container.bind<GetRolesUseCase>(TOKENS.GetRolesUseCase)
+      .to(() => new GetRolesUseCase(
+        container.get<IRoleRepository>(TOKENS.IRoleRepository)
+      ));
+
+    // Get Clients Data Service (application service)
+    container.bind<GetClientsDataService>(TOKENS.GetClientsDataService)
+      .to(() => new GetClientsDataService(
+        container.get<GetUsersUseCase>(TOKENS.GetUsersUseCase),
+        container.get<GetRolesUseCase>(TOKENS.GetRolesUseCase),
+        container.get<GetNeighborhoodsUseCase>(TOKENS.GetNeighborhoodsUseCase)
+      ));
   }
 
   /**

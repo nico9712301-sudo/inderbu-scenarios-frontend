@@ -6,10 +6,9 @@ import { DashboardPagination } from "@/shared/components/organisms/dashboard-pag
 import { useDashboardPagination } from "@/shared/hooks/use-dashboard-pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { ClientsDataResponse } from "../application/GetClientsDataUseCase";
+import { IClientsDataClientResponse } from "@/presentation/utils/serialization.utils";
 import { UserDrawer } from "@/presentation/features/dashboard/components/user-drawer";
 import { Download, FileEdit, Plus, Search } from "lucide-react";
-import { User } from "../domain/repositories/IUserRepository";
 import { StatusBadge } from "@/shared/ui/status-badge";
 import { Button } from "@/shared/ui/button";
 import { useRouter } from "next/navigation";
@@ -20,7 +19,7 @@ import { toast } from "sonner";
 
 
 interface ClientsPageProps {
-  initialData: ClientsDataResponse;
+  initialData: IClientsDataClientResponse;
 }
 
 export function ClientsPage({ initialData }: ClientsPageProps) {

@@ -1,4 +1,5 @@
 import { DomainEvent } from "@/entities/reservation/domain/reservation.domain";
+import { SubScenarioEntity } from "./SubScenarioEntity";
 
 // DDD: Sub-Scenario Domain Logic & Repository Interface
 export interface ISubScenario {
@@ -32,7 +33,7 @@ export interface ISubScenario {
 }
 
 export interface PaginatedSubScenarios {
-  data: ISubScenario[];
+  data: SubScenarioEntity[];
   meta: {
     page: number;
     limit: number;

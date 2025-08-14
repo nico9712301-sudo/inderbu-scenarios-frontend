@@ -1,50 +1,65 @@
-import { InvalidFiltersError, SearchLimitExceededError } from '@/entities/sub-scenario/domain/sub-scenario.domain';
-import { HomeDataResponse } from '@/presentation/features/home/data/application/get-home-data-use-case';
-import { createHomeContainer } from '@/presentation/features/home/di/home.container';
+import { GetHomeDataUseCase } from '@/application/home/use-cases/GetHomeDataUseCase';
 import { HomePage } from '@/presentation/features/home/components/pages/home.page';
-import { redirect } from 'next/navigation';
+import { IHomeDataResponse } from '@/application/home/services/GetHomeDataService';
+import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
+import { serializeHomeData } from '@/presentation/utils/serialization.utils';
+import { IContainer } from '@/infrastructure/config/di/simple-container';
+import { TOKENS } from '@/infrastructure/config/di/tokens';
 
 interface HomePageProps {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
     limit?: string;
     search?: string;
     activityAreaId?: string;
     neighborhoodId?: string;
     hasCost?: string;
-  };
+  }>;
 }
 
+/**
+ * Home Page Route (Server Component)
+ * 
+ * Next.js App Router page that handles home page data loading.
+ * Uses dependency injection to get data and render the presentation layer.
+ */
 export default async function HomeRoute(props: HomePageProps) {
   const searchParams = await props.searchParams;
-  
-  // DDD: Dependency injection - build complete container
-  const { homeService } = createHomeContainer();
 
   try {
-    // DDD: Execute use case through service layer
-    // All business logic, validation, and data fetching happens in domain/application layers
-    const result: HomeDataResponse = await homeService.getHomeData(searchParams);
+    // Dependency Injection: Get container and resolve use case
+    const container: IContainer = ContainerFactory.createContainer();
+    const getHomeDataUseCase = container.get<GetHomeDataUseCase>(TOKENS.GetHomeDataUseCase);
+    
+    // Parse and validate search params
+    const filters = {
+      page: searchParams.page ? parseInt(searchParams.page) : 1,
+      limit: searchParams.limit ? parseInt(searchParams.limit) : 6,
+      search: searchParams.search || "",
+      activityAreaId: searchParams.activityAreaId ? parseInt(searchParams.activityAreaId) : undefined,
+      neighborhoodId: searchParams.neighborhoodId ? parseInt(searchParams.neighborhoodId) : undefined,
+      hasCost: searchParams.hasCost !== undefined
+        ? searchParams.hasCost === 'true'
+        : undefined,
+    };
 
-    // Atomic Design: Render page template with clean separation
-    return <HomePage initialData={result} />;
+    // Execute Use Case - returns pure Domain Entities
+    const domainResult: IHomeDataResponse = await getHomeDataUseCase.execute(filters);
+    
+    // Presentation Layer responsibility: Serialize domain entities for client components
+    const serializedResult = serializeHomeData(domainResult);
+    
+    // Render Presentation Layer with serialized data (plain objects)
+    return (
+      <HomePage
+        initialData={serializedResult}
+      />
+    );
 
   } catch (error) {
-    console.error('SSR Error in HomeRoute:', error);
-
-    // DDD: Handle domain-specific errors with proper redirects
-    if (error instanceof InvalidFiltersError) {
-      console.warn('Invalid filters provided:', error.message);
-      redirect('/?error=invalid-filters');
-    }
-
-    if (error instanceof SearchLimitExceededError) {
-      console.warn('Search limit exceeded:', error.message);
-      redirect('/?error=search-limit-exceeded');
-    }
-
-    // For unexpected errors, let Next.js error boundary handle it
-    console.error('Unexpected error in HomeRoute:', error);
+    console.error('Error in HomeRoute:', error);
+    
+    // TODO: Handle domain-specific errors and render proper error page
     throw error;
   }
 }

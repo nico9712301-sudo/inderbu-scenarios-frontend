@@ -19,7 +19,6 @@ export interface PaginatedSubScenarios {
 export interface ISubScenarioRepository {
   getAll(filters?: SubScenariosFilters): Promise<PaginatedSubScenarios>;
   getById(id: number): Promise<SubScenarioEntity | null>;
-  search(criteria: SubScenarioSearchCriteria): Promise<SubScenarioEntity[]>;
   create(data: Omit<SubScenarioEntity, "id"> & { images?: any[] }): Promise<SubScenarioEntity>;
   update(id: number, data: Partial<SubScenarioEntity>): Promise<SubScenarioEntity>;
   delete(id: number): Promise<void>;

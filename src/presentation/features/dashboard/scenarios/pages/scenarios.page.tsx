@@ -4,7 +4,7 @@ import { useDebouncedSearch } from "@/shared/hooks/use-debounced-search";
 import { Filter, Plus } from "lucide-react";
 import { useCallback, } from "react";
 
-import { IScenariosDataResponse } from "@/application/dashboard/scenarios/services/GetScenariosDataService";
+import { IScenariosDataClientResponse } from "@/presentation/utils/serialization.utils";
 import { CreateScenarioModal } from "../components/organisms/create-scenario-modal.component";
 import { EditScenarioModal } from "../components/organisms/edit-scenario-modal.component";
 import { ScenariosTable } from "../components/organisms/scenarios-table.component";
@@ -25,7 +25,7 @@ import { Scenario } from "@/entities/scenario/domain/Scenario";
 import { toast } from "sonner";
 
 interface ScenariosPageProps {
-  initialData: IScenariosDataResponse;
+  initialData: IScenariosDataClientResponse;
 }
 
 export function ScenariosPage({

@@ -32,10 +32,10 @@ export class GetDashboardReservationsUseCase {
       };
 
       // Get paginated reservations with filters
-      const paginatedResult = await this.reservationRepository.getAllWithPagination(defaultFilters);
+      const paginatedResult = await this.reservationRepository.getAll(defaultFilters);
 
       // Get all reservations for stats calculation (without pagination)
-      const allReservations = await this.reservationRepository.getAll();
+      const allReservations = await this.reservationRepository.getAllSimple();
 
       // Calculate stats
       const today = new Date().toISOString().split('T')[0];

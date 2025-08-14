@@ -52,10 +52,10 @@ export class GetLocationsDataUseCase {
         cities,
         allCommunes, // For select options
       ] = await Promise.all([
-        this.communeRepository.getAllWithPagination(defaultCommuneFilters),
-        this.neighborhoodRepository.getAllWithPagination(defaultNeighborhoodFilters),
+        this.communeRepository.getAll(defaultCommuneFilters),
+        this.neighborhoodRepository.getAll(defaultNeighborhoodFilters),
         this.cityRepository.getAll(),
-        this.communeRepository.getAll(), // For neighborhood creation/editing
+        this.communeRepository.getAllSimple(), // For neighborhood creation/editing
       ]);
 
       return {

@@ -1,6 +1,6 @@
-import { GetScenariosUseCase } from './GetScenariosUseCase';
 import { ScenarioFilters } from '@/entities/scenario/infrastructure/IScenarioRepository';
-import { GetNeighborhoodsUseCase } from './GetNeighborhoodsUseCase';
+import { GetScenariosUseCase } from '../use-cases/GetScenariosUseCase';
+import { GetNeighborhoodsUseCase } from '../use-cases/GetNeighborhoodsUseCase';
 
 export interface IScenariosDataResponse {
   scenarios: any[]; // Using any temporarily until we unify types
@@ -41,7 +41,7 @@ export class GetScenariosDataService {
 
       // Compose using dedicated use cases
       const [
-        scenariosResult,
+        scenarios,
         neighborhoods,
       ] = await Promise.all([
         this.getScenariosUseCase.execute(defaultFilters),
@@ -49,9 +49,9 @@ export class GetScenariosDataService {
       ]);
 
       return {
-        scenarios: scenariosResult.data,
-        neighborhoods,
-        meta: scenariosResult.meta,
+        scenarios: scenarios.data,
+        neighborhoods: neighborhoods.data,
+        meta: scenarios.meta,
         filters: defaultFilters,
       };
 

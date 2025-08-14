@@ -8,20 +8,18 @@ import {
 } from '@/services/api';
 import {
   ICommuneRepository,
-  INeighborhoodRepository,
   ICityRepository,
   PaginatedCommunes,
-  PaginatedNeighborhoods,
   CommuneFilters,
-  NeighborhoodFilters,
   City,
 } from '../domain/repositories/ILocationRepository';
+import { INeighborhoodRepository, PaginatedNeighborhoods, NeighborhoodFilters } from '@/entities/neighborhood/infrastructure/INeighborhoodRepository';
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
 
 export class CommuneRepository implements ICommuneRepository {
   
-  async getAllWithPagination(filters: CommuneFilters): Promise<PaginatedCommunes> {
+  async getAll(filters: CommuneFilters = {}): Promise<PaginatedCommunes> {
     try {
       // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
@@ -55,12 +53,12 @@ export class CommuneRepository implements ICommuneRepository {
       
       return result;
     } catch (error) {
-      console.error('Error in CommuneRepository.getAllWithPagination:', error);
+      console.error('Error in CommuneRepository.getAll:', error);
       throw error;
     }
   }
 
-  async getAll(): Promise<Commune[]> {
+  async getAllSimple(): Promise<Commune[]> {
     try {
       // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
@@ -71,7 +69,7 @@ export class CommuneRepository implements ICommuneRepository {
       
       return Array.isArray(result) ? result : result.data;
     } catch (error) {
-      console.error('Error in CommuneRepository.getAll:', error);
+      console.error('Error in CommuneRepository.getAllSimple:', error);
       throw error;
     }
   }
@@ -107,9 +105,9 @@ export class CommuneRepository implements ICommuneRepository {
   }
 }
 
-export class NeighborhoodRepository implements INeighborhoodRepository {
+export class NeighborhoodRepository {
   
-  async getAllWithPagination(filters: NeighborhoodFilters): Promise<PaginatedNeighborhoods> {
+  async getAll(filters: NeighborhoodFilters = {}): Promise<PaginatedNeighborhoods> {
     try {
       // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
@@ -143,7 +141,7 @@ export class NeighborhoodRepository implements INeighborhoodRepository {
       
       return result;
     } catch (error) {
-      console.error('Error in NeighborhoodRepository.getAllWithPagination:', error);
+      console.error('Error in NeighborhoodRepository.getAll:', error);
       throw error;
     }
   }

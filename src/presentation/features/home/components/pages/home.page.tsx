@@ -1,7 +1,7 @@
 "use client";
 
 import { IUseHomeDataParams } from '@/presentation/features/home/interfaces/use-home-data-params.interface';
-import { HomeDataResponse } from '@/presentation/features/home/data/application/get-home-data-use-case';
+import { IHomeDataClientResponse } from '@/presentation/utils/serialization.utils';
 import { LoadingIndicator } from "@/presentation/features/home/components/molecules/loading-indicator";
 import { ErrorMessage } from "@/presentation/features/home/components/organisms/error-message";
 import { HeroSection } from "@/presentation/features/home/components/organisms/hero-section";
@@ -13,25 +13,26 @@ import Footer from "@/presentation/features/home/components/organisms/footer";
 import { MainHeader } from "@/shared/components/organisms/main-header";
 import { Pagination } from "@/shared/components/organisms/pagination";
 import { useMemo } from "react";
+import { IActivityArea, INeighborhood, ISubScenario } from '../../types/filters.types';
 
 
 // Template Props (Atomic Design Page Level)
 export interface HomePageProps {
-  initialData: HomeDataResponse;
+  initialData: IHomeDataClientResponse;
 }
 
 // Atomic Design: Home Page Template
 export function HomePage({ initialData }: HomePageProps) {
   const homeDataInput: IUseHomeDataParams = {
-    initialSubScenarios: initialData.subScenarios.data,
-    initialMeta: initialData.subScenarios.meta,
+    initialSubScenarios: initialData.subScenarios as ISubScenario[],     // Already serialized plain objects
+    initialMeta: initialData.meta,                     // Pagination metadata from main content
     initialFilters: {
-      searchQuery: initialData.appliedFilters.searchQuery,
-      activityAreaId: initialData.appliedFilters.activityAreaId,
-      neighborhoodId: initialData.appliedFilters.neighborhoodId,
-      hasCost: initialData.appliedFilters.hasCost,
+      searchQuery: initialData.filters.search || "",
+      activityAreaId: initialData.filters.activityAreaId,
+      neighborhoodId: initialData.filters.neighborhoodId,
+      hasCost: initialData.filters.hasCost,
     },
-    initialPage: initialData.subScenarios.meta.page,
+    initialPage: initialData.meta.page,
   };
 
   const {
@@ -109,8 +110,8 @@ export function HomePage({ initialData }: HomePageProps) {
         
         {/* Filters Organism */}
         <HomeFilters
-          activityAreas={initialData.activityAreas}
-          neighborhoods={initialData.neighborhoods}
+          activityAreas={initialData.activityAreas as IActivityArea[]}
+          neighborhoods={initialData.neighborhoods as INeighborhood[]}
           filters={filters}
           setFilters={setFilters}
           activeFilters={activeFilters}

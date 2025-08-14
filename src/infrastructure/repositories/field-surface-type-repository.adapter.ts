@@ -24,7 +24,9 @@ export class FieldSurfaceTypeRepositoryAdapter implements IFieldSurfaceTypeRepos
       );
       
       // Transform backend data to domain entities
-      const transformedData = FieldSurfaceTypeTransformer.toDomain(result.data);
+      const transformedData: FieldSurfaceTypeEntity[] = result.data.map(fieldSurfaceTypeData => 
+        FieldSurfaceTypeTransformer.toDomain(fieldSurfaceTypeData)
+      );
 
       return {
         data: transformedData,

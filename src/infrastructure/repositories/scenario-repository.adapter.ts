@@ -1,13 +1,13 @@
 // Infrastructure: Scenario Repository Adapter
 import { ScenarioEntity, ScenarioSearchCriteria, ScenarioDomainError } from '@/entities/scenario/domain/ScenarioEntity';
 import { IScenarioRepository, PaginatedScenarios, ScenarioFilters } from '@/entities/scenario/infrastructure/IScenarioRepository';
-import { HttpClient } from '@/shared/api/types';
+import { IHttpClient } from '@/shared/api/types';
 import { BackendResponse, BackendPaginatedResponse } from '@/shared/api/backend-types';
 import { ScenarioTransformer, ScenarioBackend } from '@/infrastructure/transformers/ScenarioTransformer';
 
 export class ScenarioRepository implements IScenarioRepository {
-  constructor(private readonly httpClient: HttpClient) {}
-  
+  constructor(private readonly httpClient: IHttpClient) { }
+
   async getAll(filters?: ScenarioFilters): Promise<PaginatedScenarios> {
     try {
       // Build query params from filters
@@ -22,9 +22,11 @@ export class ScenarioRepository implements IScenarioRepository {
       const result = await this.httpClient.get<BackendPaginatedResponse<ScenarioBackend>>(
         `/scenarios?${params.toString()}`
       );
-      
+
       // Transform backend data to domain entities
-      const transformedData = ScenarioTransformer.toDomain(result.data) as ScenarioEntity[];
+      const transformedData: ScenarioEntity[] = result.data.map(scenarioData => 
+        ScenarioTransformer.toDomain(scenarioData) as ScenarioEntity
+      );
 
       return {
         data: transformedData,
@@ -40,7 +42,7 @@ export class ScenarioRepository implements IScenarioRepository {
   async getById(id: number): Promise<ScenarioEntity | null> {
     try {
       const result = await this.httpClient.get<ScenarioBackend>(`/scenarios/${id}`);
-      
+
       // Transform backend data to domain entity
       return ScenarioTransformer.toDomain(result) as ScenarioEntity;
     } catch (error: any) {
@@ -59,26 +61,26 @@ export class ScenarioRepository implements IScenarioRepository {
       }
 
       const allScenariosResult = await this.getAll();
-      
+
       let filtered = allScenariosResult.data;
 
       // Filter by search query
       if (criteria.searchQuery) {
-        filtered = filtered.filter(entity => 
+        filtered = filtered.filter(entity =>
           entity.matchesSearchQuery(criteria.searchQuery!)
         );
       }
 
       // Filter by neighborhood ID
       if (criteria.neighborhoodId) {
-        filtered = filtered.filter(entity => 
+        filtered = filtered.filter(entity =>
           entity.isInNeighborhood(criteria.neighborhoodId!)
         );
       }
 
       // Filter by active status
       if (criteria.active !== undefined) {
-        filtered = filtered.filter(entity => 
+        filtered = filtered.filter(entity =>
           entity.isActive() === criteria.active
         );
       }
@@ -100,13 +102,13 @@ export class ScenarioRepository implements IScenarioRepository {
     try {
       // Transform domain entity to backend format for API call
       const backendData = ScenarioTransformer.toBackend(data as ScenarioEntity);
-      
+
       // Call backend API
       const result = await this.httpClient.post<BackendResponse<ScenarioBackend>>('/scenarios', backendData);
-      
+
       // Transform response back to domain entity
       return ScenarioTransformer.toDomain(result.data) as ScenarioEntity;
-      
+
     } catch (error) {
       console.error('ScenarioRepository: Error in create:', error);
       throw new ScenarioDomainError(`Failed to create scenario: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -124,13 +126,13 @@ export class ScenarioRepository implements IScenarioRepository {
       // Create updated entity and transform to backend format
       const updatedEntity = { ...existing, ...data } as ScenarioEntity;
       const backendData = ScenarioTransformer.toBackend(updatedEntity);
-      
+
       // Call backend API
       const result = await this.httpClient.put<BackendResponse<ScenarioBackend>>(`/scenarios/${id}`, backendData);
-      
+
       // Transform response back to domain entity  
       return ScenarioTransformer.toDomain(result.data) as ScenarioEntity;
-      
+
     } catch (error) {
       console.error('ScenarioRepository: Error in update:', error);
       throw new ScenarioDomainError(`Failed to update scenario ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -148,6 +150,6 @@ export class ScenarioRepository implements IScenarioRepository {
 }
 
 // Temporary factory function for legacy containers
-export function createScenarioRepositoryAdapter(httpClient: HttpClient): IScenarioRepository {
+export function createScenarioRepositoryAdapter(httpClient: IHttpClient): IScenarioRepository {
   return new ScenarioRepository(httpClient);
 }

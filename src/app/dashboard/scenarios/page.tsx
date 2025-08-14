@@ -4,6 +4,7 @@ import { ScenarioFilters } from '@/entities/scenario/infrastructure/IScenarioRep
 import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
 import { IContainer } from '@/infrastructure/config/di/simple-container';
 import { TOKENS } from '@/infrastructure/config/di/tokens';
+import { serializeScenariosData } from '@/presentation/utils/serialization.utils';
 
 interface ScenariosRouteProps {
   searchParams: Promise<{
@@ -42,13 +43,19 @@ export default async function ScenariosRoute(props: ScenariosRouteProps) {
         : undefined,
     };
 
-    // Execute Use Case through Application Layer
-    const result: IScenariosDataResponse = await getScenariosDataService.execute(filters);
+    // Execute Use Case through Application Layer - returns pure Domain Entities
+    const domainResult: IScenariosDataResponse = await getScenariosDataService.execute(filters);
 
-    // Render Presentation Layer with server-side data
+    console.log('ScenariosRoute - Domain Result:', domainResult);
+    
+    
+    // Presentation Layer responsibility: Serialize domain entities for client components
+    const serializedResult = serializeScenariosData(domainResult);
+
+    // Render Presentation Layer with serialized data (plain objects)
     return (
       <ScenariosPage
-        initialData={result}
+        initialData={serializedResult}
       />
     );
 

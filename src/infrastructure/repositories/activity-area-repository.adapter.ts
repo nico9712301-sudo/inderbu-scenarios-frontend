@@ -26,8 +26,10 @@ export class ActivityAreaRepositoryAdapter implements IActivityAreaRepository {
         `/activity-areas?${params.toString()}`
       );
       
-      // Transform backend data to domain entities using generic transformer
-      const transformedData = ActivityAreaTransformer.toDomain(result.data);
+      // Transform backend data to domain entities
+      const transformedData: ActivityAreaEntity[] = result.data.map(activityAreaData => 
+        ActivityAreaTransformer.toDomain(activityAreaData)
+      );
 
       return {
         data: transformedData,

@@ -1279,3 +1279,209 @@ export function serializeSubScenariosData(
 6. **Client Components** - Receive plain objects, never domain entities
 
 **This pattern maintains Clean Architecture principles while solving real-world framework constraints!**
+
+## 📄 **DDD Pagination Wrapper Pattern**
+
+### **Theoretical Foundation**
+
+The pagination wrapper pattern follows **Clean Architecture** and **Domain-Driven Design** principles based on industry standards:
+
+- ✅ **Uncle Bob's Clean Architecture**: Uses DTOs (wrapper objects) to cross architectural boundaries without polluting domain
+- ✅ **Martin Fowler's DTO Pattern**: Batches data transfer between layers to reduce method calls
+- ✅ **Microsoft eShopOnContainers**: Industry-standard wrapper pattern for commands/queries
+- ✅ **DDD Best Practices**: Separates pure domain entities from technical metadata
+
+### **Complete Implementation Pattern**
+
+#### **🏗️ Repository Layer - Returns Pagination Wrapper**
+
+```typescript
+// All repositories follow the same consistent pattern
+export interface PaginatedEntities {
+  data: EntityEntity[]; // Pure domain entities (business concern)
+  meta: PageMeta; // Technical metadata (infrastructure concern)
+}
+
+export class ScenarioRepository implements IScenarioRepository {
+  async getAll(filters?: ScenarioFilters): Promise<PaginatedScenarios> {
+    const result =
+      await this.httpClient.get<BackendPaginatedResponse<ScenarioBackend>>();
+    const transformedData = ScenarioTransformer.toDomain(result.data);
+
+    return {
+      data: transformedData, // Domain entities
+      meta: result.meta, // Pagination metadata
+    };
+  }
+}
+```
+
+#### **🎯 Use Case Layer - Returns Pagination Wrapper**
+
+```typescript
+// Use Cases maintain business logic while preserving pagination
+export class GetScenariosUseCase {
+  async execute(filters?: ScenarioFilters): Promise<PaginatedScenarios> {
+    // Business validation can be applied here
+    return await this.scenarioRepository.getAll(filters);
+  }
+}
+
+export class GetActivityAreasUseCase {
+  async execute(
+    filters?: ActivityAreaFilters,
+  ): Promise<PaginatedActivityAreas> {
+    return await this.activityAreaRepository.getAll(filters);
+  }
+}
+
+export class GetNeighborhoodsUseCase {
+  async execute(
+    filters?: NeighborhoodFilters,
+  ): Promise<PaginatedNeighborhoods> {
+    return await this.neighborhoodRepository.getAll(filters);
+  }
+}
+
+export class GetFieldSurfaceTypesUseCase {
+  async execute(
+    filters?: FieldSurfaceTypeFilters,
+  ): Promise<PaginatedFieldSurfaceTypes> {
+    return await this.fieldSurfaceTypeRepository.getAll(filters);
+  }
+}
+
+export class GetSubScenariosUseCase {
+  async execute(filters?: SubScenariosFilters): Promise<PaginatedSubScenarios> {
+    return await this.subScenarioRepository.getAll(filters);
+  }
+}
+```
+
+#### **🎨 Application Service Layer - Extracts Domain Entities**
+
+```typescript
+// Application Services extract .data for business composition
+export class GetSubScenariosDataService {
+  async execute(
+    filters: SubScenariosFilters,
+  ): Promise<ISubScenariosDataResponse> {
+    // All use cases return consistent pagination wrappers
+    const [
+      scenariosResult,
+      activityAreasResult,
+      neighborhoodsResult,
+      fieldSurfaceTypesResult,
+      subScenariosResult,
+    ] = await Promise.all([
+      this.getScenariosUseCase.execute({ limit: 100 }), // PaginatedScenarios
+      this.getActivityAreasUseCase.execute(), // PaginatedActivityAreas
+      this.getNeighborhoodsUseCase.execute(), // PaginatedNeighborhoods
+      this.getFieldSurfaceTypesUseCase.execute(), // PaginatedFieldSurfaceTypes
+      this.getSubScenariosUseCase.execute(filters), // PaginatedSubScenarios
+    ]);
+
+    // Extract pure domain entities for business logic
+    return {
+      subScenarios: subScenariosResult.data, // SubScenarioEntity[]
+      scenarios: scenariosResult.data, // ScenarioEntity[]
+      activityAreas: activityAreasResult.data, // ActivityAreaEntity[]
+      neighborhoods: neighborhoodsResult.data, // NeighborhoodEntity[]
+      fieldSurfaceTypes: fieldSurfaceTypesResult.data, // FieldSurfaceTypeEntity[]
+      meta: subScenariosResult.meta, // PageMeta for main entity
+      filters, // Current filters
+    };
+  }
+}
+```
+
+#### **🖥️ Presentation Layer - Serialization for Client Components**
+
+```typescript
+// Server Component handles serialization for Next.js constraints
+export default async function SubScenariosRoute(props: SubScenariosRouteProps) {
+
+  // 1. Get domain entities from Application Service
+  const domainResult = await getSubScenariosDataService.execute(filters);
+
+  // 2. Serialize for client components (Presentation layer responsibility)
+  const serializedResult = serializeSubScenariosData(domainResult);
+
+  // 3. Pass plain objects to client component
+  return <SubScenariosPage initialData={serializedResult} />;
+}
+
+// Presentation utilities handle domain entity → plain object conversion
+export function serializeSubScenariosData(
+  domainResponse: ISubScenariosDataResponse
+): ISubScenariosDataClientResponse {
+  return {
+    subScenarios: serializeSubScenarios(domainResponse.subScenarios),
+    scenarios: serializeScenarios(domainResponse.scenarios),
+    activityAreas: serializeActivityAreas(domainResponse.activityAreas),
+    neighborhoods: serializeNeighborhoods(domainResponse.neighborhoods),
+    fieldSurfaceTypes: serializeFieldSurfaceTypes(domainResponse.fieldSurfaceTypes),
+    meta: domainResponse.meta,
+    filters: domainResponse.filters,
+  };
+}
+```
+
+### **🎯 Consistent Entity Implementation**
+
+**All entities follow the same pattern:**
+
+1. **Scenarios** → `PaginatedScenarios`
+2. **ActivityAreas** → `PaginatedActivityAreas`
+3. **Neighborhoods** → `PaginatedNeighborhoods`
+4. **FieldSurfaceTypes** → `PaginatedFieldSurfaceTypes`
+5. **SubScenarios** → `PaginatedSubScenarios`
+
+### **📊 Complete Data Flow**
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│    Backend      │───▶│   Repository    │───▶│   Use Case      │
+│ (Paginated API) │    │ (PaginatedWrap) │    │ (PaginatedWrap) │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                                                       │
+                                                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│ Client Component│◄───│Server Component │◄───│Application Svc  │
+│ (Plain Objects) │    │ (Serialization) │    │ (Pure Entities) │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+### **✅ Architecture Benefits**
+
+**🏛️ DDD Compliance:**
+
+- **Domain Purity**: Entities remain focused on business logic
+- **Technical Separation**: Pagination metadata handled separately
+- **Boundary Crossing**: Proper DTOs for layer communication
+- **Framework Independence**: Application layer agnostic to Next.js
+
+**🔧 Technical Benefits:**
+
+- **Type Safety**: Full TypeScript support with generic interfaces
+- **Consistency**: Same pattern across all entities
+- **Reusability**: Use cases composable in multiple services
+- **Performance**: Parallel execution with Promise.all
+
+**🚀 Developer Benefits:**
+
+- **Predictable**: Same pattern for every entity
+- **Maintainable**: Clear separation of concerns
+- **Testable**: Each layer independently mockable
+- **Scalable**: Easy to add new entities following same pattern
+
+### **🎯 Key Implementation Rules**
+
+1. **Repository Layer**: Always return `PaginatedEntities` wrapper
+2. **Use Case Layer**: Maintain wrapper, apply business validation
+3. **Application Service Layer**: Extract `.data` for business composition
+4. **Presentation Layer**: Handle serialization for client components
+5. **Domain Entities**: Never know about pagination metadata
+6. **Client Components**: Receive plain objects, never domain entities
+
+**This pagination pattern achieves DDD compliance while maintaining practical usability and Next.js compatibility!**

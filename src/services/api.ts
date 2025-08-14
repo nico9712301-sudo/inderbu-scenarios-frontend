@@ -84,8 +84,8 @@ export interface PageMeta {
   limit: number;
   totalItems: number;
   totalPages: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
+  hasNextPage?: boolean;
+  hasPreviousPage?: boolean;
 }
 
 export interface PagedResponse<T> {

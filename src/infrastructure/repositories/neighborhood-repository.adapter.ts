@@ -25,7 +25,9 @@ export class NeighborhoodRepositoryAdapter implements INeighborhoodRepository {
       );
       
       // Transform backend data to domain entities
-      const transformedData = NeighborhoodTransformer.toDomain(result.data);
+      const transformedData: NeighborhoodEntity[] = result.data.map(neighborhoodData => 
+        NeighborhoodTransformer.toDomain(neighborhoodData)
+      );
 
       return {
         data: transformedData,

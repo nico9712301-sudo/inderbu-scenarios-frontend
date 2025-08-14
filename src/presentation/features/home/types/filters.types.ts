@@ -1,10 +1,10 @@
 export interface IActivityArea {
-  id: string;
+  id: number;
   name: string;
 }
 
 export interface INeighborhood {
-  id: string;
+  id: number;
   name: string;
 }
 

@@ -22,7 +22,7 @@ export interface ReservationFilters {
 }
 
 export interface IReservationRepository {
-  getAllWithPagination(filters: ReservationFilters): Promise<PaginatedReservations>;
-  getAll(filters?: Record<string, any>): Promise<ReservationDto[]>;
+  getAll(filters: ReservationFilters): Promise<PaginatedReservations>;
+  getAllSimple(filters?: Record<string, any>): Promise<ReservationDto[]>;
   updateState(reservationId: number, reservationStateId: number): Promise<ReservationDto>;
 }

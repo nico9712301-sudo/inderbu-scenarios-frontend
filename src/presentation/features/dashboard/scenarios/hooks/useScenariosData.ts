@@ -1,9 +1,9 @@
 "use client";
 
 import { useDashboardPagination } from "@/shared/hooks/use-dashboard-pagination";
-import { IScenariosDataResponse } from "@/application/dashboard/scenarios/services/GetScenariosDataService";
+import { IScenariosDataClientResponse } from "@/presentation/utils/serialization.utils";
 
-export function useScenariosData(initialData: IScenariosDataResponse) {
+export function useScenariosData(initialData: IScenariosDataClientResponse) {
 
   const pagination = useDashboardPagination({
     baseUrl: "/dashboard/scenarios",

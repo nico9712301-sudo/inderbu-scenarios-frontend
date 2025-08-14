@@ -15,6 +15,7 @@ export const TOKENS = {
   ISubScenarioRepository: 'ISubScenarioRepository',
   IFieldSurfaceTypeRepository: 'IFieldSurfaceTypeRepository',
   IUserRepository: 'IUserRepository',
+  IRoleRepository: 'IRoleRepository',
   IReservationRepository: 'IReservationRepository',
 
   // =============================================================================
@@ -53,10 +54,29 @@ export const TOKENS = {
   UploadSubScenarioImagesUseCase: 'UploadSubScenarioImagesUseCase',
 
   // =============================================================================
+  // USE CASES - HOME (Application Layer)
+  // =============================================================================
+  GetHomeDataUseCase: 'GetHomeDataUseCase',
+
+  // =============================================================================
+  // USE CASES - RESERVATIONS (Application Layer)
+  // =============================================================================
+  GetUserReservationsUseCase: 'GetUserReservationsUseCase',
+
+  // =============================================================================
+  // USE CASES - USERS/CLIENTS (Application Layer)
+  // =============================================================================
+  GetUsersUseCase: 'GetUsersUseCase',
+  GetRolesUseCase: 'GetRolesUseCase',
+
+  // =============================================================================
   // APPLICATION SERVICES (Cross-Domain Operations)
   // =============================================================================
   GetScenariosDataService: 'GetScenariosDataService',
   GetSubScenariosDataService: 'GetSubScenariosDataService',
+  GetHomeDataService: 'GetHomeDataService',
+  GetUserReservationsDataService: 'GetUserReservationsDataService',
+  GetClientsDataService: 'GetClientsDataService',
 
   // =============================================================================
   // INFRASTRUCTURE SERVICES
