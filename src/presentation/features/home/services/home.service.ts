@@ -230,9 +230,6 @@ export const subScenarioApiService = {
   getSubScenarios
 };
 
-export const activityAreaApiService = {
-  getActivityAreas  
-};
 
 export const neighborhoodApiService = {
   getNeighborhoods

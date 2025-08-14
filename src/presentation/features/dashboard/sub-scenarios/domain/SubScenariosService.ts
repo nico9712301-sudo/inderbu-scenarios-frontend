@@ -1,15 +1,15 @@
 import { 
-  GetSubScenariosDataUseCase, 
+  GetSubScenariosDataService, 
   ISubScenariosDataResponse 
-} from '../application/GetSubScenariosDataUseCase';
+} from '@/application/dashboard/sub-scenarios/services/GetSubScenariosDataService';
 import { SubScenariosFilters } from './repositories/ISubScenarioRepository';
 
 export class SubScenariosService {
   constructor(
-    private readonly getSubScenariosDataUseCase: GetSubScenariosDataUseCase
+    private readonly getSubScenariosDataService: GetSubScenariosDataService
   ) {}
 
   async getSubScenariosData(filters: SubScenariosFilters): Promise<ISubScenariosDataResponse> {
-    return await this.getSubScenariosDataUseCase.execute(filters);
+    return await this.getSubScenariosDataService.execute(filters);
   }
 }

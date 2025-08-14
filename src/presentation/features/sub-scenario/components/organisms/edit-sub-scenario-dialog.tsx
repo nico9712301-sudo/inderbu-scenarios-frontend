@@ -8,7 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { ActivityArea, FieldSurfaceType, Scenario, SubScenario } from "@/services/api";
+import { FieldSurfaceType, Scenario, SubScenario } from "@/services/api";
+import { ActivityAreaPlainObject } from "@/entities/activity-area/domain/ActivityAreaEntity";
 import { SubScenarioForm } from "./sub-scenario-form";
 import { Button } from "@/shared/ui/button";
 import { useEffect } from "react";
@@ -22,7 +23,7 @@ interface Props {
   onOpenChange(v: boolean): void;
   handleSubScenarioCreatedOrUpdated(): void;
   scenarios: Scenario[];
-  activityAreas: ActivityArea[];
+  activityAreas: ActivityAreaPlainObject[];
   fieldSurfaceTypes: FieldSurfaceType[];
 }
 

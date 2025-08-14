@@ -6,7 +6,7 @@ import { TOKENS } from '@/infrastructure/config/di/tokens';
 import { CreateScenarioUseCase } from '@/application/dashboard/scenarios/use-cases/CreateScenarioUseCase';
 import { UpdateScenarioUseCase } from '@/application/dashboard/scenarios/use-cases/UpdateScenarioUseCase';
 import { GetScenariosUseCase } from '@/application/dashboard/scenarios/use-cases/GetScenariosUseCase';
-import { GetScenariosDataUseCase } from '@/application/dashboard/scenarios/use-cases/GetScenariosDataUseCase';
+import { GetScenariosDataService } from '@/application/dashboard/scenarios/services/GetScenariosDataService';
 import { ErrorHandlerComposer } from '@/shared/api/error-handler';
 import { IContainer } from '@/infrastructure/config/di/simple-container';
 import { Scenario } from '@/entities/scenario/domain/Scenario';
@@ -154,12 +154,12 @@ export async function getScenariosDataAction(
   return await ErrorHandlerComposer.withErrorHandling(async () => {
     // Get dependencies from Simple DI container
     const container = ContainerFactory.createContainer();
-    const getScenariosDataUseCase = container.get<GetScenariosDataUseCase>(
-      TOKENS.GetScenariosDataUseCase
+    const getScenariosDataService = container.get<GetScenariosDataService>(
+      TOKENS.GetScenariosDataService
     );
 
     // Execute composite use case
-    const result = await getScenariosDataUseCase.execute(
+    const result = await getScenariosDataService.execute(
       request.scenarioFilters || {},
     );
 

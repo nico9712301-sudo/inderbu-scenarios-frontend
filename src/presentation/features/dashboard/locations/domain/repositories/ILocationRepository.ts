@@ -46,13 +46,6 @@ export interface ICommuneRepository {
   update(id: number, data: UpdateCommuneDto): Promise<Commune>;
 }
 
-export interface INeighborhoodRepository {
-  getAllWithPagination(filters: NeighborhoodFilters): Promise<PaginatedNeighborhoods>;
-  getAll(): Promise<Neighborhood[]>;
-  create(data: CreateNeighborhoodDto): Promise<Neighborhood>;
-  update(id: number, data: UpdateNeighborhoodDto): Promise<Neighborhood>;
-}
-
 export interface ICityRepository {
   getAll(): Promise<City[]>;
 }

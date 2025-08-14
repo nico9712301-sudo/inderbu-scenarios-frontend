@@ -1,41 +1,27 @@
-import { IScenariosFilters, PaginatedScenarios } from '@/presentation/features/dashboard/scenarios/domain/repositories/IScenarioRepository';
-import { IActivityAreaRepository } from '@/entities/activity-area/domain/IActivityAreaRepository';
-import { INeighborhoodRepository } from '@/entities/neighborhood/domain/INeighborhoodRepository';
-import {
-  SubScenario,
-  PageMeta,
-} from '@/services/api';
-
-export interface PaginatedSubScenarios {
-  data: SubScenario[];
-  meta: PageMeta;
-}
+import { SubScenarioEntity, SubScenarioSearchCriteria } from '@/entities/sub-scenario/domain/SubScenarioEntity';
+import { PageMeta } from '@/services/api';
 
 export interface SubScenariosFilters {
-  page?: number;
-  limit?: number;
   search?: string;
   scenarioId?: number;
   activityAreaId?: number;
   neighborhoodId?: number;
   active?: boolean;
+  limit?: number;
+  page?: number;
+}
+
+export interface PaginatedSubScenarios {
+  data: SubScenarioEntity[];
+  meta: PageMeta;
 }
 
 export interface ISubScenarioRepository {
-  getAllWithPagination(filters: SubScenariosFilters): Promise<PaginatedSubScenarios>;
-  create(data: Omit<SubScenario, "id"> & { images?: any[] }): Promise<SubScenario>;
-  update(id: number, data: Partial<SubScenario>): Promise<SubScenario>;
+  getAll(filters?: SubScenariosFilters): Promise<PaginatedSubScenarios>;
+  getById(id: number): Promise<SubScenarioEntity | null>;
+  search(criteria: SubScenarioSearchCriteria): Promise<SubScenarioEntity[]>;
+  create(data: Omit<SubScenarioEntity, "id"> & { images?: any[] }): Promise<SubScenarioEntity>;
+  update(id: number, data: Partial<SubScenarioEntity>): Promise<SubScenarioEntity>;
+  delete(id: number): Promise<void>;
 }
 
-export interface IScenarioRepository {
-  getAllWithPagination(filters: IScenariosFilters): Promise<PaginatedScenarios>
-}
-
-// REMOVIDAS: Estas interfaces no pertenecen aquí
-// export interface IActivityAreaRepository {
-//   getAll(): Promise<ActivityArea[]>;
-// }
-
-// export interface INeighborhoodRepository {
-//   getAll(): Promise<Neighborhood[]>;
-// }

@@ -3,21 +3,24 @@ import { TOKENS, Environment } from './tokens';
 
 // Repository imports
 import { ScenarioRepository } from '@/infrastructure/repositories/scenario-repository.adapter';
-import { NeighborhoodRepository } from '@/infrastructure/repositories/neighborhood-repository.adapter';
+import { NeighborhoodRepositoryAdapter } from '@/infrastructure/repositories/neighborhood-repository.adapter';
 import { ActivityAreaRepositoryAdapter } from '@/infrastructure/repositories/activity-area-repository.adapter';
-import { activityAreaApiService } from '@/presentation/features/home/services/home.service';
 import { SubScenarioRepository } from '@/presentation/features/dashboard/sub-scenarios/infrastructure/SubScenarioRepository';
-import type { INeighborhoodRepository } from '@/entities/neighborhood/domain/INeighborhoodRepository';
+import { FieldSurfaceTypeRepositoryAdapter } from '@/infrastructure/repositories/field-surface-type-repository.adapter';
 import type { IActivityAreaRepository } from '@/entities/activity-area/domain/IActivityAreaRepository';
 import type { ISubScenarioRepository } from '@/presentation/features/dashboard/sub-scenarios/domain/repositories/ISubScenarioRepository';
+import type { IFieldSurfaceTypeRepository } from '@/entities/field-surface-type/domain/IFieldSurfaceTypeRepository';
 
 // Use Case imports
 import { CreateScenarioUseCase } from '@/application/dashboard/scenarios/use-cases/CreateScenarioUseCase';
 import { UpdateScenarioUseCase } from '@/application/dashboard/scenarios/use-cases/UpdateScenarioUseCase';
-import { GetScenariosDataUseCase } from '@/application/dashboard/scenarios/use-cases/GetScenariosDataUseCase';
+import { GetScenariosDataService } from '@/application/dashboard/scenarios/services/GetScenariosDataService';
 import { GetScenariosUseCase } from '@/application/dashboard/scenarios/use-cases/GetScenariosUseCase';
 import { GetNeighborhoodsUseCase } from '@/application/dashboard/scenarios/use-cases/GetNeighborhoodsUseCase';
-import { GetSubScenariosDataUseCase } from '@/presentation/features/dashboard/sub-scenarios/application/GetSubScenariosDataUseCase';
+import { GetActivityAreasUseCase } from '@/application/dashboard/activity-areas/use-cases/GetActivityAreasUseCase';
+import { GetFieldSurfaceTypesUseCase } from '@/application/dashboard/field-surface-types/use-cases/GetFieldSurfaceTypesUseCase';
+import { GetSubScenariosUseCase } from '@/application/dashboard/sub-scenarios/use-cases/GetSubScenariosUseCase';
+import { GetSubScenariosDataService } from '@/application/dashboard/sub-scenarios/services/GetSubScenariosDataService';
 import { CreateSubScenarioUseCase } from '@/application/dashboard/sub-scenarios/use-cases/CreateSubScenarioUseCase';
 import { UpdateSubScenarioUseCase } from '@/application/dashboard/sub-scenarios/use-cases/UpdateSubScenarioUseCase';
 import { UploadSubScenarioImagesUseCase } from '@/application/dashboard/sub-scenarios/use-cases/UploadSubScenarioImagesUseCase';
@@ -26,6 +29,7 @@ import { UploadSubScenarioImagesUseCase } from '@/application/dashboard/sub-scen
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
 import { IScenarioRepository } from '@/entities/scenario/infrastructure/IScenarioRepository';
+import { INeighborhoodRepository } from '@/entities/neighborhood/infrastructure/INeighborhoodRepository';
 
 /**
  * Container Factory
@@ -163,17 +167,22 @@ export class ContainerFactory {
 
     // Neighborhood Repository (singleton)
     container.bind<INeighborhoodRepository>(TOKENS.INeighborhoodRepository)
-      .to(() => new NeighborhoodRepository(createHttpClient()))
+      .to(() => new NeighborhoodRepositoryAdapter(createHttpClient()))
       .singleton();
 
     // Activity Area Repository (singleton)
     container.bind<IActivityAreaRepository>(TOKENS.IActivityAreaRepository)
-      .to(() => new ActivityAreaRepositoryAdapter(activityAreaApiService))
+      .to(() => new ActivityAreaRepositoryAdapter(createHttpClient()))
       .singleton();
 
     // Sub Scenario Repository (singleton)
     container.bind<ISubScenarioRepository>(TOKENS.ISubScenarioRepository)
-      .to(() => new SubScenarioRepository())
+      .to(() => new SubScenarioRepository(createHttpClient()))
+      .singleton();
+
+    // Field Surface Type Repository (singleton)
+    container.bind<IFieldSurfaceTypeRepository>(TOKENS.IFieldSurfaceTypeRepository)
+      .to(() => new FieldSurfaceTypeRepositoryAdapter(createHttpClient()))
       .singleton();
   }
 
@@ -205,20 +214,39 @@ export class ContainerFactory {
         container.get<INeighborhoodRepository>(TOKENS.INeighborhoodRepository)
       ));
 
-    // Get Scenarios Data Use Case (composite)
-    container.bind<GetScenariosDataUseCase>(TOKENS.GetScenariosDataUseCase)
-      .to(() => new GetScenariosDataUseCase(
+    // Get Activity Areas Use Case
+    container.bind<GetActivityAreasUseCase>(TOKENS.GetActivityAreasUseCase)
+      .to(() => new GetActivityAreasUseCase(
+        container.get<IActivityAreaRepository>(TOKENS.IActivityAreaRepository)
+      ));
+
+    // Get Field Surface Types Use Case
+    container.bind<GetFieldSurfaceTypesUseCase>(TOKENS.GetFieldSurfaceTypesUseCase)
+      .to(() => new GetFieldSurfaceTypesUseCase(
+        container.get<IFieldSurfaceTypeRepository>(TOKENS.IFieldSurfaceTypeRepository)
+      ));
+
+    // Get Sub Scenarios Use Case
+    container.bind<GetSubScenariosUseCase>(TOKENS.GetSubScenariosUseCase)
+      .to(() => new GetSubScenariosUseCase(
+        container.get<ISubScenarioRepository>(TOKENS.ISubScenarioRepository)
+      ));
+
+    // Get Scenarios Data Service (application service)
+    container.bind<GetScenariosDataService>(TOKENS.GetScenariosDataService)
+      .to(() => new GetScenariosDataService(
         container.get<GetScenariosUseCase>(TOKENS.GetScenariosUseCase),
         container.get<GetNeighborhoodsUseCase>(TOKENS.GetNeighborhoodsUseCase)
       ));
 
-    // Get Sub-Scenarios Data Use Case (composite)
-    container.bind<GetSubScenariosDataUseCase>(TOKENS.GetSubScenariosDataUseCase)
-      .to(() => new GetSubScenariosDataUseCase(
-        container.get<ISubScenarioRepository>(TOKENS.ISubScenarioRepository),
-        container.get<IScenarioRepository>(TOKENS.IScenarioRepository),
-        container.get<IActivityAreaRepository>(TOKENS.IActivityAreaRepository),
-        container.get<INeighborhoodRepository>(TOKENS.INeighborhoodRepository)
+    // Get Sub-Scenarios Data Service (application service)
+    container.bind<GetSubScenariosDataService>(TOKENS.GetSubScenariosDataService)
+      .to(() => new GetSubScenariosDataService(
+        container.get<GetScenariosUseCase>(TOKENS.GetScenariosUseCase),
+        container.get<GetNeighborhoodsUseCase>(TOKENS.GetNeighborhoodsUseCase),
+        container.get<GetActivityAreasUseCase>(TOKENS.GetActivityAreasUseCase),
+        container.get<GetFieldSurfaceTypesUseCase>(TOKENS.GetFieldSurfaceTypesUseCase),
+        container.get<GetSubScenariosUseCase>(TOKENS.GetSubScenariosUseCase)
       ));
 
     // Create Sub-Scenario Use Case

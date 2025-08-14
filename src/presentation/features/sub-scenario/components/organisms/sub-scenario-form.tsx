@@ -1,6 +1,7 @@
 "use client";
 
-import { ActivityArea, Scenario } from "@/services/api";
+import { Scenario } from "@/services/api";
+import { ActivityAreaPlainObject } from "@/entities/activity-area/domain/ActivityAreaEntity";
 import { Textarea } from "@/shared/ui/textarea";
 import { Switch } from "@/shared/ui/switch";
 import { Input } from "@/shared/ui/input";
@@ -12,7 +13,7 @@ import { ImageUploadData } from "@/application/dashboard/sub-scenarios/use-cases
 interface Props {
   value: any;
   scenarios: Scenario[];
-  activityAreas: ActivityArea[];
+  activityAreas: ActivityAreaPlainObject[];
   fieldSurfaceTypes: { id: number; name: string }[];
   onChange(v: any): void;
   onImagesChange?: (images: ImageUploadData[]) => void;

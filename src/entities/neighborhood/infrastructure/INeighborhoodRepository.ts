@@ -1,15 +1,26 @@
-import { Neighborhood, CreateNeighborhoodData, UpdateNeighborhoodData } from '../domain/Neighborhood';
+import { NeighborhoodEntity, NeighborhoodSearchCriteria } from '../domain/NeighborhoodEntity';
+import { PageMeta } from '@/services/api';
 
 export interface NeighborhoodFilters {
-  communeId?: number;
+  page?: number;
+  limit?: number;
   search?: string;
+  communeId?: number;
+  active?: boolean;
 }
 
+export interface PaginatedNeighborhoods {
+  data: NeighborhoodEntity[];
+  meta: PageMeta;
+}
+
+// Clean repository interface working only with Domain Entities
 export interface INeighborhoodRepository {
-  findAll(filters?: NeighborhoodFilters): Promise<Neighborhood[]>;
-  findById(id: number): Promise<Neighborhood | null>;
-  findByCommuneId(communeId: number): Promise<Neighborhood[]>;
-  create(data: CreateNeighborhoodData): Promise<Neighborhood>;
-  update(id: number, data: UpdateNeighborhoodData): Promise<Neighborhood>;
+  getAll(filters?: NeighborhoodFilters): Promise<PaginatedNeighborhoods>;
+  getById(id: number): Promise<NeighborhoodEntity | null>;
+  search(criteria: NeighborhoodSearchCriteria): Promise<NeighborhoodEntity[]>;
+  findByCommuneId(communeId: number): Promise<NeighborhoodEntity[]>;
+  create(data: Omit<NeighborhoodEntity, 'id'>): Promise<NeighborhoodEntity>;
+  update(id: number, data: Partial<NeighborhoodEntity>): Promise<NeighborhoodEntity>;
   delete(id: number): Promise<void>;
 }

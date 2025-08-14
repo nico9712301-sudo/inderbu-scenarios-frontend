@@ -3,9 +3,9 @@
 import {
   useDashboardPagination,
 } from "@/shared/hooks/use-dashboard-pagination";
-import { ISubScenariosDataResponse } from "@/presentation/features/dashboard/sub-scenarios/application/GetSubScenariosDataUseCase";
+import { ISubScenariosDataClientResponse } from "@/presentation/utils/serialization.utils";
 
-export function useSubScenarioData(initialData: ISubScenariosDataResponse) {
+export function useSubScenarioData(initialData: ISubScenariosDataClientResponse) {
 
   // ─── Use standardized pagination hook ─────────────────────────────────────────────────────────────
   const pagination = useDashboardPagination({

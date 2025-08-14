@@ -1,144 +1,153 @@
-import { Scenario, CreateScenarioData, UpdateScenarioData } from '@/entities/scenario/domain/Scenario';
+// Infrastructure: Scenario Repository Adapter
+import { ScenarioEntity, ScenarioSearchCriteria, ScenarioDomainError } from '@/entities/scenario/domain/ScenarioEntity';
 import { IScenarioRepository, PaginatedScenarios, ScenarioFilters } from '@/entities/scenario/infrastructure/IScenarioRepository';
-import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
-import { createServerAuthContext } from '@/shared/api/server-auth';
-import { BackendResponse } from '@/shared/api/backend-types';
+import { HttpClient } from '@/shared/api/types';
+import { BackendResponse, BackendPaginatedResponse } from '@/shared/api/backend-types';
+import { ScenarioTransformer, ScenarioBackend } from '@/infrastructure/transformers/ScenarioTransformer';
 
 export class ScenarioRepository implements IScenarioRepository {
+  constructor(private readonly httpClient: HttpClient) {}
   
-  async findAll(): Promise<Scenario[]> {
+  async getAll(filters?: ScenarioFilters): Promise<PaginatedScenarios> {
     try {
-      const authContext = createServerAuthContext();
-      const httpClient = ClientHttpClientFactory.createClient(authContext);
-
-      const result = await httpClient.get<{ data: Scenario[] } | Scenario[]>('/scenarios/all');
-      return Array.isArray(result) ? result : result.data;
-    } catch (error) {
-      console.error('Error in ScenarioRepository.findAll:', error);
-      throw error;
-    }
-  }
-
-  async findWithPagination(filters: ScenarioFilters): Promise<PaginatedScenarios> {
-    try {
-      const authContext = createServerAuthContext();
-      const httpClient = ClientHttpClientFactory.createClient(authContext);
-
-      // Build query params
+      // Build query params from filters
       const params = new URLSearchParams();
-      if (filters.page) params.append('page', filters.page.toString());
-      if (filters.limit) params.append('limit', filters.limit.toString());
-      if (filters.search) params.append('search', filters.search);
-      if (filters.neighborhoodId) params.append('neighborhoodId', filters.neighborhoodId.toString());
-      if (filters.active !== undefined) params.append('active', filters.active.toString());
+      if (filters?.search) params.append('search', filters.search);
+      if (filters?.neighborhoodId) params.append('neighborhoodId', filters.neighborhoodId.toString());
+      if (filters?.active !== undefined) params.append('active', filters.active.toString());
+      if (filters?.limit) params.append('limit', filters.limit.toString());
+      else params.append('limit', '1000'); // Default high limit
 
-      const result = await httpClient.get<PaginatedScenarios>(
+      // Call HTTP client with filters
+      const result = await this.httpClient.get<BackendPaginatedResponse<ScenarioBackend>>(
         `/scenarios?${params.toString()}`
       );
+      
+      // Transform backend data to domain entities
+      const transformedData = ScenarioTransformer.toDomain(result.data) as ScenarioEntity[];
 
-      return result;
+      return {
+        data: transformedData,
+        meta: result.meta,
+      };
+
     } catch (error) {
-      console.error('Error in ScenarioRepository.findWithPagination:', error);
-      throw error;
+      console.error('ScenarioRepository: Error in getAll:', error);
+      throw new ScenarioDomainError(`Failed to fetch scenarios: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
-  async findById(id: number): Promise<Scenario | null> {
+  async getById(id: number): Promise<ScenarioEntity | null> {
     try {
-      const authContext = createServerAuthContext();
-      const httpClient = ClientHttpClientFactory.createClient(authContext);
-
-      const result = await httpClient.get<Scenario>(`/scenarios/${id}`);
-      return result;
+      const result = await this.httpClient.get<ScenarioBackend>(`/scenarios/${id}`);
+      
+      // Transform backend data to domain entity
+      return ScenarioTransformer.toDomain(result) as ScenarioEntity;
     } catch (error: any) {
       if (error.status === 404) {
         return null;
       }
-      console.error('Error in ScenarioRepository.findById:', error);
+      console.error('ScenarioRepository: Error in getById:', error);
+      throw new ScenarioDomainError(`Failed to fetch scenario ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async search(criteria: ScenarioSearchCriteria): Promise<ScenarioEntity[]> {
+    try {
+      if (!criteria.isValid()) {
+        throw new ScenarioDomainError('Invalid search criteria');
+      }
+
+      const allScenariosResult = await this.getAll();
+      
+      let filtered = allScenariosResult.data;
+
+      // Filter by search query
+      if (criteria.searchQuery) {
+        filtered = filtered.filter(entity => 
+          entity.matchesSearchQuery(criteria.searchQuery!)
+        );
+      }
+
+      // Filter by neighborhood ID
+      if (criteria.neighborhoodId) {
+        filtered = filtered.filter(entity => 
+          entity.isInNeighborhood(criteria.neighborhoodId!)
+        );
+      }
+
+      // Filter by active status
+      if (criteria.active !== undefined) {
+        filtered = filtered.filter(entity => 
+          entity.isActive() === criteria.active
+        );
+      }
+
+      // Apply limit
+      if (criteria.limit && criteria.limit > 0) {
+        filtered = filtered.slice(0, criteria.limit);
+      }
+
+      return filtered;
+
+    } catch (error) {
+      console.error('ScenarioRepository: Error in search:', error);
       throw error;
     }
   }
 
-  async create(data: CreateScenarioData): Promise<Scenario> {
+  async create(data: Omit<ScenarioEntity, 'id'>): Promise<ScenarioEntity> {
     try {
-      const authContext = createServerAuthContext();
-      const httpClient = ClientHttpClientFactory.createClient(authContext);
-
-      // Map domain data to API format
-      const createPayload = {
-        name: data.name,
-        address: data.address,
-        neighborhoodId: data.neighborhoodId,
-        ...(data.description && { description: data.description }),
-      };
-
-      const result = await httpClient.post<BackendResponse<Scenario>>('/scenarios', createPayload);
+      // Transform domain entity to backend format for API call
+      const backendData = ScenarioTransformer.toBackend(data as ScenarioEntity);
       
-      // Unwrap backend response to get the actual Scenario
-      console.log('Repository: Backend response:', result);
-      console.log('Repository: Unwrapped scenario:', result.data);
+      // Call backend API
+      const result = await this.httpClient.post<BackendResponse<ScenarioBackend>>('/scenarios', backendData);
       
-      return result.data;
+      // Transform response back to domain entity
+      return ScenarioTransformer.toDomain(result.data) as ScenarioEntity;
+      
     } catch (error) {
-      console.error('Error in ScenarioRepository.create:', error);
-      throw error;
+      console.error('ScenarioRepository: Error in create:', error);
+      throw new ScenarioDomainError(`Failed to create scenario: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
-  async update(id: number, data: UpdateScenarioData): Promise<Scenario> {
+  async update(id: number, data: Partial<ScenarioEntity>): Promise<ScenarioEntity> {
     try {
-      const authContext = createServerAuthContext();
-      const httpClient = ClientHttpClientFactory.createClient(authContext);
+      // Get existing entity and merge with updates
+      const existing = await this.getById(id);
+      if (!existing) {
+        throw new ScenarioDomainError(`Scenario with id ${id} not found`);
+      }
 
-      // Map domain data to API format
-      const updatePayload = {
-        ...(data.name && { name: data.name }),
-        ...(data.address && { address: data.address }),
-        ...(data.neighborhoodId && { neighborhoodId: data.neighborhoodId }),
-        ...(data.active !== undefined && { isActive: data.active }),
-      };
-
-      const result = await httpClient.put<BackendResponse<Scenario>>(`/scenarios/${id}`, updatePayload);
+      // Create updated entity and transform to backend format
+      const updatedEntity = { ...existing, ...data } as ScenarioEntity;
+      const backendData = ScenarioTransformer.toBackend(updatedEntity);
       
-      // Unwrap backend response to get the actual Scenario  
-      console.log('Repository: Update backend response:', result);
-      console.log('Repository: Unwrapped updated scenario:', result.data);
+      // Call backend API
+      const result = await this.httpClient.put<BackendResponse<ScenarioBackend>>(`/scenarios/${id}`, backendData);
       
-      return result.data;
+      // Transform response back to domain entity  
+      return ScenarioTransformer.toDomain(result.data) as ScenarioEntity;
+      
     } catch (error) {
-      console.error('Error in ScenarioRepository.update:', error);
-      throw error;
+      console.error('ScenarioRepository: Error in update:', error);
+      throw new ScenarioDomainError(`Failed to update scenario ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
   async delete(id: number): Promise<void> {
     try {
-      const authContext = createServerAuthContext();
-      const httpClient = ClientHttpClientFactory.createClient(authContext);
-
-      await httpClient.delete(`/scenarios/${id}`);
+      await this.httpClient.delete(`/scenarios/${id}`);
     } catch (error) {
-      console.error('Error in ScenarioRepository.delete:', error);
-      throw error;
+      console.error('ScenarioRepository: Error in delete:', error);
+      throw new ScenarioDomainError(`Failed to delete scenario ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
+}
 
-  async getAllWithLimit(limit: number): Promise<Scenario[]> {
-    try {
-      const authContext = createServerAuthContext();
-      const httpClient = ClientHttpClientFactory.createClient(authContext);
-
-      const params = new URLSearchParams();
-      params.append('limit', limit.toString());
-
-      const result = await httpClient.get<{ data: Scenario[] } | Scenario[]>(
-        `/scenarios?${params.toString()}`
-      );
-      
-      return Array.isArray(result) ? result : result.data;
-    } catch (error) {
-      console.error('Error in ScenarioRepository.getAllWithLimit:', error);
-      throw error;
-    }
-  }
+// Temporary factory function for legacy containers
+export function createScenarioRepositoryAdapter(httpClient: HttpClient): IScenarioRepository {
+  return new ScenarioRepository(httpClient);
 }

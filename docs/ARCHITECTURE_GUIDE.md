@@ -151,10 +151,12 @@ src/
 
 ### 🎯 **Application Layer** (`application/`)
 
-- **Use Cases** - Business operations orchestration (CreateScenarioUseCase)
-- **Commands** - Write operation contracts (CreateScenarioCommand)
-- **Queries** - Read operation contracts (GetScenariosQuery)
-- **Application Services** - Coordination between multiple use cases
+- **Use Cases** - Individual business operations (CreateScenarioUseCase, GetScenariosUseCase)
+- **Application Services** - Cross-domain orchestration (GetScenariosDataService, GetSubScenariosDataService)
+  - Coordinate multiple Use Cases from different domains
+  - Compose complex data responses for UI requirements
+  - Handle cross-cutting concerns like filtering and pagination
+- **Repository Pattern** - Standardized data access with HttpClient injection
 - **NO Framework Dependencies** - Pure business logic orchestration
 
 ### 🎨 **Presentation Layer** (`presentation/` + `app/`)
@@ -737,6 +739,167 @@ export function CreateScenarioModal({ isOpen, onClose, onScenarioCreated }) {
 }
 ```
 
+## 🔄 Application Services Pattern - NEW ARCHITECTURE
+
+### **Application Services vs Use Cases**
+
+**Use Cases** (`/src/application/dashboard/[domain]/use-cases/`):
+
+- Single-domain business operations
+- Examples: `CreateScenarioUseCase`, `GetScenariosUseCase`, `GetActivityAreasUseCase`
+- Called directly for CRUD operations
+
+**Application Services** (`/src/application/dashboard/[domain]/services/`):
+
+- Cross-domain orchestration and composition
+- Examples: `GetScenariosDataService`, `GetSubScenariosDataService`
+- Coordinate multiple Use Cases for complex UI requirements
+
+### **Implementation Examples**
+
+#### **GetScenariosDataService (Simple Composition)**
+
+```typescript
+export class GetScenariosDataService {
+  constructor(
+    private readonly getScenariosUseCase: GetScenariosUseCase,
+    private readonly getNeighborhoodsUseCase: GetNeighborhoodsUseCase,
+  ) {}
+
+  async execute(filters: ScenarioFilters): Promise<IScenariosDataResponse> {
+    const [scenariosResult, neighborhoods] = await Promise.all([
+      this.getScenariosUseCase.execute(filters),
+      this.getNeighborhoodsUseCase.execute(),
+    ]);
+
+    return {
+      scenarios: scenariosResult.data,
+      neighborhoods,
+      meta: scenariosResult.meta,
+      filters,
+    };
+  }
+}
+```
+
+#### **GetSubScenariosDataService (Complex Composition)**
+
+```typescript
+export class GetSubScenariosDataService {
+  constructor(
+    private readonly getScenariosUseCase: GetScenariosUseCase,
+    private readonly getNeighborhoodsUseCase: GetNeighborhoodsUseCase,
+    private readonly getActivityAreasUseCase: GetActivityAreasUseCase,
+    private readonly getFieldSurfaceTypesUseCase: GetFieldSurfaceTypesUseCase,
+    private readonly getSubScenariosUseCase: GetSubScenariosUseCase,
+  ) {}
+
+  async execute(
+    filters: SubScenariosFilters,
+  ): Promise<ISubScenariosDataResponse> {
+    // Orchestrate 5 different Use Cases in parallel
+    const [
+      scenarios,
+      neighborhoods,
+      activityAreas,
+      fieldSurfaceTypes,
+      subScenarios,
+    ] = await Promise.all([
+      this.getScenariosUseCase.execute({ limit: 100 }),
+      this.getNeighborhoodsUseCase.execute(),
+      this.getActivityAreasUseCase.execute(),
+      this.getFieldSurfaceTypesUseCase.execute(),
+      this.getSubScenariosUseCase.execute(filters),
+    ]);
+
+    return {
+      subScenarios: subScenarios.data,
+      scenarios: scenarios.data,
+      activityAreas,
+      neighborhoods,
+      fieldSurfaceTypes,
+      meta: subScenarios.meta,
+      filters,
+    };
+  }
+}
+```
+
+### **DI Container Configuration**
+
+```typescript
+// Application Services (transient)
+container
+  .bind<GetScenariosDataService>(TOKENS.GetScenariosDataService)
+  .to(
+    () =>
+      new GetScenariosDataService(
+        container.get<GetScenariosUseCase>(TOKENS.GetScenariosUseCase),
+        container.get<GetNeighborhoodsUseCase>(TOKENS.GetNeighborhoodsUseCase),
+      ),
+  );
+
+container
+  .bind<GetSubScenariosDataService>(TOKENS.GetSubScenariosDataService)
+  .to(
+    () =>
+      new GetSubScenariosDataService(
+        container.get<GetScenariosUseCase>(TOKENS.GetScenariosUseCase),
+        container.get<GetNeighborhoodsUseCase>(TOKENS.GetNeighborhoodsUseCase),
+        container.get<GetActivityAreasUseCase>(TOKENS.GetActivityAreasUseCase),
+        container.get<GetFieldSurfaceTypesUseCase>(
+          TOKENS.GetFieldSurfaceTypesUseCase,
+        ),
+        container.get<GetSubScenariosUseCase>(TOKENS.GetSubScenariosUseCase),
+      ),
+  );
+```
+
+### **Repository Standardization - HttpClient Injection**
+
+All repositories now follow a consistent pattern:
+
+```typescript
+export class ScenarioRepository implements IScenarioRepository {
+  constructor(private readonly httpClient: HttpClient) {}
+
+  async create(data: CreateScenarioData): Promise<Scenario> {
+    const result = await this.httpClient.post<BackendResponse<Scenario>>(
+      "/scenarios",
+      data,
+    );
+    return result.data; // Unwrap backend response
+  }
+}
+
+export class ActivityAreaRepository implements IActivityAreaRepository {
+  constructor(private readonly httpClient: HttpClient) {}
+
+  async getAll(): Promise<ActivityArea[]> {
+    return await this.httpClient.get<ActivityArea[]>("/activity-areas");
+  }
+}
+
+export class FieldSurfaceTypeRepository implements IFieldSurfaceTypeRepository {
+  constructor(private readonly httpClient: HttpClient) {}
+
+  async getAll(): Promise<FieldSurfaceType[]> {
+    return await this.httpClient.get<FieldSurfaceType[]>(
+      "/field-surface-types",
+    );
+  }
+}
+```
+
+### **Key Architectural Benefits**
+
+1. **Separation of Concerns**: Use Cases handle single operations, Services handle orchestration
+2. **Reusability**: Use Cases can be reused across different Services
+3. **Testability**: Each layer can be tested independently
+4. **Consistency**: Standardized HttpClient injection across all repositories
+5. **Performance**: Parallel execution in Application Services
+6. **Maintainability**: Clear boundaries between simple and complex operations
+
 ## 🎯 Benefits of This Architecture
 
 1. **Testability** - Each layer can be tested in isolation with easy mocking
@@ -943,3 +1106,176 @@ Our custom DI solution provides:
 - **Easy onboarding** - "Everything uses container.get()"
 - **Performance optimization** - No external dependencies
 - **Full control** - Customizable to our exact requirements
+
+## 🔄 **Domain Entity Transformation & Serialization Pattern**
+
+### **Overview**
+
+El patrón de transformación y serialización maneja la conversión bidireccional entre datos del backend y entidades de dominio, respetando la separación de responsabilidades de Clean Architecture.
+
+### **Architecture Responsibilities**
+
+#### **📦 Infrastructure Layer - Domain Transformers**
+
+```typescript
+// Infrastructure: Generic transformer pattern
+export interface IDomainTransformer<TBackend, TDomain> {
+  toDomain(backendData: TBackend): TDomain;
+  toDomain(backendData: TBackend[]): TDomain[];
+  toBackend(domainEntity: TDomain): TBackend;
+  toBackend(domainEntities: TDomain[]): TBackend[];
+}
+
+// Infrastructure: ActivityArea specific transformer
+export const ActivityAreaTransformer: IDomainTransformer<
+  ActivityArea,
+  ActivityAreaEntity
+> = createDomainTransformer(
+  (data) => ActivityAreaEntity.fromApiData(data), // Backend → Domain
+  (entity) => entity.toApiFormat(), // Domain → Backend
+  isValidActivityAreaBackend, // Validation
+  isValidActivityAreaDomain,
+);
+```
+
+#### **🏗️ Repository Layer - Uses Transformers**
+
+```typescript
+// Repository uses transformer for bidirectional conversion
+export class ActivityAreaRepositoryAdapter implements IActivityAreaRepository {
+  async getAll(): Promise<ActivityAreaEntity[]> {
+    // 1. Get backend response
+    const result =
+      await this.httpClient.get<BackendPaginatedResponse<ActivityArea>>(
+        "/activity-areas",
+      );
+
+    // 2. Transform backend data to domain entities
+    return ActivityAreaTransformer.toDomain(result.data);
+  }
+
+  async create(
+    data: Omit<ActivityAreaEntity, "id">,
+  ): Promise<ActivityAreaEntity> {
+    // 1. Transform domain entity to backend format
+    const backendData = ActivityAreaTransformer.toBackend(
+      data as ActivityAreaEntity,
+    );
+
+    // 2. Call backend
+    const result = await this.httpClient.post<
+      BackendPaginatedResponse<ActivityArea>
+    >("/activity-areas", backendData);
+
+    // 3. Transform response back to domain entity
+    return ActivityAreaTransformer.toDomain(result.data[0]);
+  }
+}
+```
+
+#### **🎯 Application Layer - Pure Domain Entities**
+
+```typescript
+// Application Service returns pure domain entities (no serialization concerns)
+export class GetSubScenariosDataService {
+  async execute(
+    filters: SubScenariosFilters,
+  ): Promise<ISubScenariosDataResponse> {
+    const activityAreas = await this.getActivityAreasUseCase.execute();
+
+    return {
+      activityAreas, // ActivityAreaEntity[] - Pure domain entities
+      scenarios,
+      neighborhoods,
+      // ... other data
+    };
+  }
+}
+```
+
+#### **🖥️ Presentation Layer - Serialization for Client Components**
+
+```typescript
+// Server Component: Handles serialization for Next.js Client Components
+export default async function SubScenariosRoute(props: SubScenariosRouteProps) {
+
+  // 1. Execute Application Service - returns pure Domain Entities
+  const domainResult: ISubScenariosDataResponse = await getSubScenariosDataService.execute(filters);
+
+  // 2. Presentation Layer responsibility: Serialize for client components
+  const serializedResult = serializeSubScenariosData(domainResult);
+
+  // 3. Pass serialized data (plain objects) to client component
+  return <SubScenariosPage initialData={serializedResult} />;
+}
+
+// Serialization utility (Presentation Layer)
+export function serializeSubScenariosData(
+  domainResponse: ISubScenariosDataResponse
+): ISubScenariosDataClientResponse {
+  return {
+    activityAreas: domainResponse.activityAreas.map(entity => entity.toPlainObject()),
+    scenarios: domainResponse.scenarios,
+    // ... other data
+  };
+}
+```
+
+### **🔄 Complete Flow Example - ActivityArea**
+
+#### **1. Read Operation (Backend → Domain → UI)**
+
+```
+1. Repository calls backend → BackendPaginatedResponse<ActivityArea>
+2. Repository transforms → ActivityAreaEntity[] (using transformer)
+3. Use Case applies business rules → Active ActivityAreaEntity[]
+4. Application Service orchestrates → Pure domain response
+5. Server Component serializes → Plain objects for client
+6. Client Component receives → Serialized data (no classes)
+```
+
+#### **2. Write Operation (UI → Domain → Backend)**
+
+```
+1. Client Component → Form data
+2. Server Action → Validates and calls Use Case
+3. Use Case → Business logic with ActivityAreaEntity
+4. Repository transforms → ActivityArea (using transformer)
+5. Repository calls backend → HTTP request with backend format
+6. Backend response transforms back → ActivityAreaEntity
+```
+
+### **✅ Benefits of This Pattern**
+
+**🏛️ Architectural Benefits:**
+
+- **Clean Separation**: Each layer has single responsibility
+- **Domain Purity**: Application layer never knows about serialization
+- **Framework Independence**: Application layer works for web, mobile, desktop
+- **Testability**: Easy to mock transformers and test each layer independently
+
+**🔧 Technical Benefits:**
+
+- **Type Safety**: Full TypeScript support with overloaded methods
+- **Bidirectional**: Handles both read and write operations
+- **Reusable**: Generic transformer pattern works for any entity
+- **Validation**: Centralized data validation in transformers
+- **Next.js Compatible**: Solves Server/Client Component serialization
+
+**🚀 Developer Benefits:**
+
+- **Consistent API**: Same pattern across all entities
+- **Composable**: Repository uses transformer via composition
+- **Scalable**: Easy to add new entities with same pattern
+- **Debuggable**: Clear transformation points for troubleshooting
+
+### **🎯 Key Implementation Rules**
+
+1. **Domain Entities** - Never know about serialization or Next.js constraints
+2. **Application Services** - Always return pure domain entities
+3. **Repositories** - Use transformers for bidirectional conversion
+4. **Server Components** - Handle serialization for client components
+5. **Transformers** - Single responsibility for data conversion
+6. **Client Components** - Receive plain objects, never domain entities
+
+**This pattern maintains Clean Architecture principles while solving real-world framework constraints!**

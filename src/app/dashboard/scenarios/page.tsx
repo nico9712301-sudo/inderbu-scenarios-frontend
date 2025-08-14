@@ -1,4 +1,4 @@
-import { GetScenariosDataUseCase, IScenariosDataResponse } from '@/application/dashboard/scenarios/use-cases/GetScenariosDataUseCase';
+import { GetScenariosDataService, IScenariosDataResponse } from '@/application/dashboard/scenarios/services/GetScenariosDataService';
 import { ScenariosPage } from '@/presentation/features/dashboard/scenarios/pages/scenarios.page';
 import { ScenarioFilters } from '@/entities/scenario/infrastructure/IScenarioRepository';
 import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
@@ -27,7 +27,7 @@ export default async function ScenariosRoute(props: ScenariosRouteProps) {
   try {
     // Dependency Injection: Get container and resolve use case
     const container: IContainer = ContainerFactory.createContainer();
-    const getScenariosDataUseCase = container.get<GetScenariosDataUseCase>(TOKENS.GetScenariosDataUseCase);
+    const getScenariosDataService = container.get<GetScenariosDataService>(TOKENS.GetScenariosDataService);
     
     // Parse and validate search params
     const filters: ScenarioFilters = {
@@ -43,7 +43,7 @@ export default async function ScenariosRoute(props: ScenariosRouteProps) {
     };
 
     // Execute Use Case through Application Layer
-    const result: IScenariosDataResponse = await getScenariosDataUseCase.execute(filters);
+    const result: IScenariosDataResponse = await getScenariosDataService.execute(filters);
 
     // Render Presentation Layer with server-side data
     return (

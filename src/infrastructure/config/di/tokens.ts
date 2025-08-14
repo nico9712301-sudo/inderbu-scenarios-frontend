@@ -13,6 +13,7 @@ export const TOKENS = {
   INeighborhoodRepository: 'INeighborhoodRepository',
   IActivityAreaRepository: 'IActivityAreaRepository',
   ISubScenarioRepository: 'ISubScenarioRepository',
+  IFieldSurfaceTypeRepository: 'IFieldSurfaceTypeRepository',
   IUserRepository: 'IUserRepository',
   IReservationRepository: 'IReservationRepository',
 
@@ -39,6 +40,11 @@ export const TOKENS = {
   CreateActivityAreaUseCase: 'CreateActivityAreaUseCase',
 
   // =============================================================================
+  // USE CASES - FIELD SURFACE TYPE (Application Layer)
+  // =============================================================================
+  GetFieldSurfaceTypesUseCase: 'GetFieldSurfaceTypesUseCase',
+
+  // =============================================================================
   // USE CASES - SUB SCENARIO (Application Layer)
   // =============================================================================
   GetSubScenariosUseCase: 'GetSubScenariosUseCase',
@@ -47,10 +53,10 @@ export const TOKENS = {
   UploadSubScenarioImagesUseCase: 'UploadSubScenarioImagesUseCase',
 
   // =============================================================================
-  // COMPOSITE USE CASES (Cross-Domain Operations)
+  // APPLICATION SERVICES (Cross-Domain Operations)
   // =============================================================================
-  GetScenariosDataUseCase: 'GetScenariosDataUseCase',
-  GetSubScenariosDataUseCase: 'GetSubScenariosDataUseCase',
+  GetScenariosDataService: 'GetScenariosDataService',
+  GetSubScenariosDataService: 'GetSubScenariosDataService',
 
   // =============================================================================
   // INFRASTRUCTURE SERVICES

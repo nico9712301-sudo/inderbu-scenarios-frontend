@@ -1,50 +1,49 @@
-import type { IScenarioRepository, ScenarioFilters } from '@/entities/scenario/infrastructure/IScenarioRepository';
-
-export interface PaginatedScenariosResponse {
-  data: any[]; // Using any temporarily until we unify types
-  meta: any;   // Using any temporarily until we unify types
-}
+import type { IScenarioRepository, ScenarioFilters, PaginatedScenarios } from '@/entities/scenario/infrastructure/IScenarioRepository';
+import { ScenarioEntity, ScenarioDomainError } from '@/entities/scenario/domain/ScenarioEntity';
 
 export class GetScenariosUseCase {
   constructor(
     private readonly scenarioRepository: IScenarioRepository
   ) { }
 
-  async execute(filters: ScenarioFilters = {}): Promise<PaginatedScenariosResponse> {
+  async execute(filters: ScenarioFilters = {}): Promise<PaginatedScenarios> {
     try {
-      // Business validation
-      if (filters.page !== undefined && filters.page <= 0) {
-        throw new Error('Page number must be greater than 0');
-      }
-
-      if (filters.limit !== undefined && (filters.limit <= 0 || filters.limit > 100)) {
-        throw new Error('Limit must be between 1 and 100');
-      }
-
-      // Default filters with business rules
-      const defaultFilters: ScenarioFilters = {
-        page: 1,
-        limit: 7, // Business rule: default page size
-        search: "",
-        ...filters,
-      };
-
-      // Sanitize search input
-      if (defaultFilters.search) {
-        defaultFilters.search = defaultFilters.search.trim().substring(0, 100); // Max 100 chars
-      }
-
-      // Get scenarios with pagination
-      const result = await this.scenarioRepository.findWithPagination(defaultFilters);
-
-      return {
-        data: result.data,
-        meta: result.meta,
-      };
+      // Repository handles filtering, just pass filters directly
+      return await this.scenarioRepository.getAll(filters);
 
     } catch (error) {
       console.error('Error in GetScenariosUseCase:', error);
-      throw error;
+      
+      // Re-throw domain errors as-is
+      if (error instanceof ScenarioDomainError) {
+        throw error;
+      }
+      
+      // Wrap other errors in domain error
+      throw new ScenarioDomainError(
+        `Use case execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  async findById(id: number): Promise<ScenarioEntity | null> {
+    try {
+      if (id <= 0) {
+        throw new ScenarioDomainError('Invalid scenario ID');
+      }
+
+      return await this.scenarioRepository.getById(id);
+
+    } catch (error) {
+      console.error('Error in GetScenariosUseCase.findById:', error);
+      
+      if (error instanceof ScenarioDomainError) {
+        throw error;
+      }
+      
+      throw new ScenarioDomainError(
+        `Find by ID failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 }

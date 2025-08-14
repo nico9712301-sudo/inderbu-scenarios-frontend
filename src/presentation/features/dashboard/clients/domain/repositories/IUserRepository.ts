@@ -92,7 +92,3 @@ export interface IUserRepository {
 export interface IRoleRepository {
   getAll(): Promise<Role[]>;
 }
-
-export interface INeighborhoodRepository {
-  getAll(): Promise<Neighborhood[]>;
-}

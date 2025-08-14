@@ -10,7 +10,8 @@ import {
 } from "@/shared/ui/dialog";
 import { SubScenarioForm } from "./sub-scenario-form";
 import { Button } from "@/shared/ui/button";
-import { ActivityArea, FieldSurfaceType, Scenario, SubScenario } from "@/services/api";
+import { FieldSurfaceType, Scenario, SubScenario } from "@/services/api";
+import { ActivityAreaPlainObject } from "@/entities/activity-area/domain/ActivityAreaEntity";
 import { useSubScenarioForm } from "@/presentation/features/dashboard/sub-scenarios/hooks/useSubScenarioForm";
 import { toast } from "sonner";
 
@@ -20,7 +21,7 @@ interface Props {
   onOpenChange(v: boolean): void;
   handleSubScenarioCreatedOrUpdated(): void;
   scenarios: Scenario[];
-  activityAreas: ActivityArea[];
+  activityAreas: ActivityAreaPlainObject[];
   fieldSurfaceTypes: FieldSurfaceType[];
 }
 
@@ -57,6 +58,9 @@ export function CreateSubScenarioDialog({ open, onOpenChange, handleSubScenarioC
   const handleSave = async () => {
     await handleCreate();
   };
+
+  console.log("Activity Areas from create-sub-scenario-dialog:", activityAreas);
+  
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

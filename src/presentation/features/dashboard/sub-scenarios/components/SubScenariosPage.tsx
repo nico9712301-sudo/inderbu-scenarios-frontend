@@ -5,7 +5,7 @@ import { SubScenariosFiltersCard } from "@/presentation/features/sub-scenario/co
 import { EditSubScenarioDialog } from "@/presentation/features/sub-scenario/components/organisms/edit-sub-scenario-dialog";
 import { SubScenarioTable } from "@/presentation/features/sub-scenario/components/organisms/sub-scenario-table";
 import { useSubScenarioData } from "@/presentation/features/sub-scenario/hooks/use-sub-scenario-data";
-import { ISubScenariosDataResponse } from "../application/GetSubScenariosDataUseCase";
+import { ISubScenariosDataClientResponse } from "@/presentation/utils/serialization.utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { useDebouncedSearch } from "@/shared/hooks/use-debounced-search";
 import { useCallback, useState } from "react";
@@ -19,7 +19,7 @@ import { ErrorHandlerResult } from "@/shared/api/error-handler";
 import { toast } from "sonner";
 
 interface SubScenariosPageProps {
-  initialData: ISubScenariosDataResponse;
+  initialData: ISubScenariosDataClientResponse;
 }
 
 export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
@@ -122,6 +122,9 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
     await toggleSubScenarioStatus(subScenario);
   }, [toggleSubScenarioStatus, router]);
 
+  console.log("Activity Areas from SubscenariosPage", activityAreas);  
+
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -188,7 +191,7 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
         {NavValues.map((k) => (
           <TabsContent key={k.value} value={k.value} className="mt-0">
             <SubScenarioTable
-              rows={subScenarios}
+              rows={subScenarios as SubScenario[]}
               meta={pageMeta}
               loading={false} // TODO: Check how to handle loading state with SSR
               searchValue={search.value}

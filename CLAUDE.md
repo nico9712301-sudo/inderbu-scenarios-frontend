@@ -36,7 +36,7 @@ src/
 │   ├── (public)/          # Public routes (auth, reservations, scenarios)
 │   ├── api/               # API routes and server endpoints
 │   └── dashboard/         # Protected admin dashboard routes
-├── application/           # Application layer (use cases, commands, orchestrators)
+├── application/           # Application layer (use cases, services, commands, orchestrators)
 ├── entities/              # Domain entities and business logic
 ├── infrastructure/        # External services, repositories, and DI configuration
 ├── presentation/          # Presentation layer (UI components and features)
@@ -91,11 +91,12 @@ presentation/features/[feature-name]/
 
 Contains business logic orchestration and application-specific use cases:
 
-- **Use Cases**: Business logic implementations (`[domain]/use-cases/`)
+- **Use Cases**: Single-domain business logic implementations (`[domain]/use-cases/`)
+- **Services**: Cross-domain orchestration services (`[domain]/services/`)
 - **Utils**: Domain-specific utilities and builders (`[domain]/utils/`)
 - **Actions**: Legacy export actions (`[domain]/actions/`)
 
-**Note**: Commands pattern removed from scenarios for simplicity. Use Cases called directly from Server Actions.
+**Architecture Pattern**: Application Services orchestrate multiple Use Cases for cross-domain operations. Use Cases handle single-domain business logic. Commands pattern legacy for complex workflows.
 
 #### Domain Layer (`src/entities/`)
 
@@ -224,23 +225,170 @@ TypeScript paths are configured for clean imports:
 - Authentication uses httpOnly cookies to prevent XSS attacks
 - All forms use React Hook Form with Zod validation for type safety
 - The UI system is based on Radix UI primitives with custom theming
-- **Hybrid Approach**: Command Pattern for complex operations (reservations), direct calls for CRUD (scenarios)
-- **Repository Pattern** ensures clean data access abstractions with BackendResponse unwrapping
+- **Hybrid Approach**: Application Services for cross-domain operations, Use Cases for single-domain operations, Commands for complex workflows (legacy)
+- **Repository Pattern** ensures clean data access abstractions with BackendResponse unwrapping and HttpClient injection
+- **Domain Transformation Pattern**: Generic bidirectional transformers for Backend ↔ Domain Entity conversion
+- **Application Services Pattern**: Cross-domain orchestration services separate from single-domain Use Cases
+- **Serialization Pattern**: Presentation layer handles Domain Entity → Plain Object serialization for Next.js
 - **Simple DI System**: Custom ~100-line implementation with string tokens, no external dependencies
+- **Standardized Architecture**: All repositories follow HttpClient injection + transformer composition pattern
 - **Error Handling**: Consistent ErrorHandlerResult pattern across all Server Actions
 - **Modal Management**: Fixed UI flicker issues with proper callback ordering
 - Mock data is available in `src/mock-data/` for development and testing
 
 ### Implementation Patterns
 
-#### CRUD Operations (Scenarios Pattern):
+#### DDD Pagination Wrapper Pattern:
+
+All use cases consistently return pagination wrappers following Clean Architecture principles:
 
 ```typescript
-UI Component → Server Action → Use Case → Repository → HTTP Client → Backend
+// Repository Layer - Returns wrapper with domain entities + technical metadata
+async getAll(filters?: EntityFilters): Promise<PaginatedEntities> {
+  const result = await httpClient.get<BackendPaginatedResponse<BackendEntity>>();
+  const transformedData = EntityTransformer.toDomain(result.data);
+
+  return {
+    data: transformedData,  // Domain entities (business concern)
+    meta: result.meta,      // Pagination metadata (technical concern)
+  };
+}
+
+// Use Case Layer - Returns paginated wrapper
+async execute(filters?: EntityFilters): Promise<PaginatedEntities> {
+  return await this.repository.getAll(filters);
+}
+
+// Application Service - Extracts .data from wrappers for business logic
+const [scenariosResult, areasResult] = await Promise.all([
+  this.getScenariosUseCase.execute({ limit: 100 }),
+  this.getActivityAreasUseCase.execute(),
+]);
+
+return {
+  scenarios: scenariosResult.data,      // Pure domain entities
+  activityAreas: areasResult.data,      // Pure domain entities
+  meta: scenariosResult.meta,           // Technical metadata
+};
 ```
 
-#### Complex Operations (Reservations Pattern):
+#### Simple CRUD Operations:
+
+```typescript
+UI Component → Server Action → Use Case → Repository + Transformer → HTTP Client → Backend
+```
+
+#### Cross-Domain Operations with Serialization (Application Services):
+
+```typescript
+Server Component:  Application Service → Multiple Use Cases → PaginatedEntities
+                          ↓ (Extract .data + Presentation Layer Serialization)
+Client Component:  Plain Objects → UI Components
+```
+
+#### Full Read Flow with Pagination (Backend → Domain → UI):
+
+```typescript
+Backend → BackendPaginatedResponse → Repository → Transformer.toDomain() →
+PaginatedEntities → Application Service → Server Component → Serialization →
+Plain Objects → Client Component
+```
+
+#### Full Write Flow (UI → Domain → Backend):
+
+```typescript
+Client Component → Server Action → Use Case → Domain Entity →
+Repository → Transformer.toBackend() → HTTP Client → Backend API
+```
+
+#### Complex Workflows (Commands - Legacy Pattern):
 
 ```typescript
 UI Component → Command → Server Action → Multiple Use Cases → Repositories → HTTP Client → Backend
 ```
+
+### DDD Pagination Architecture
+
+#### Theoretical Foundation
+
+The pagination wrapper pattern follows **Clean Architecture** and **Domain-Driven Design** principles:
+
+- ✅ **Uncle Bob's Clean Architecture**: Uses DTOs (wrapper objects) to cross architectural boundaries
+- ✅ **Martin Fowler's DTO Pattern**: Batches data transfer between layers to reduce calls
+- ✅ **Microsoft eShopOnContainers**: Industry-standard wrapper pattern for commands/queries
+- ✅ **DDD Best Practices**: Separates domain entities from technical metadata
+
+#### Consistent Implementation
+
+**All entities follow the same pattern:**
+
+1. **Scenarios** → `PaginatedScenarios`
+2. **ActivityAreas** → `PaginatedActivityAreas`
+3. **Neighborhoods** → `PaginatedNeighborhoods`
+4. **FieldSurfaceTypes** → `PaginatedFieldSurfaceTypes`
+5. **SubScenarios** → `PaginatedSubScenarios`
+
+#### Wrapper Structure
+
+```typescript
+export interface PaginatedEntities {
+  data: EntityEntity[]; // Pure domain entities (business layer)
+  meta: PageMeta; // Technical metadata (infrastructure layer)
+}
+```
+
+#### Benefits
+
+- **Architectural Consistency**: Same pattern across all entities
+- **Clean Boundaries**: Technical concerns separated from business logic
+- **Type Safety**: Full TypeScript support with generic interfaces
+- **DDD Compliance**: Domain entities remain pure, metadata handled separately
+- **Framework Independence**: Application layer independent of Next.js serialization
+
+### Domain Entity Transformation & Serialization
+
+#### Key Components
+
+**1. Generic Domain Transformer** (`infrastructure/transformers/`):
+
+- Bidirectional conversion: `toDomain()` and `toBackend()`
+- Type-safe with overloaded methods for arrays/objects
+- Centralized validation logic
+
+**2. Repository Composition**:
+
+- Repositories use transformers via composition (not inheritance)
+- Clean separation: Repository handles HTTP, Transformer handles conversion
+- Example: `ActivityAreaRepository` + `ActivityAreaTransformer`
+
+**3. Presentation Layer Serialization** (`presentation/utils/serialization.utils.ts`):
+
+- Server Components serialize Domain Entities → Plain Objects
+- Solves Next.js Server/Client Component constraints
+- Application Layer remains pure (no serialization concerns)
+
+#### Example: ActivityArea Flow
+
+```typescript
+// 1. Repository (Infrastructure)
+const result = await httpClient.get<BackendPaginatedResponse<ActivityArea>>('/activity-areas');
+return ActivityAreaTransformer.toDomain(result.data); // → ActivityAreaEntity[]
+
+// 2. Application Service (Domain)
+return { activityAreas }; // Pure ActivityAreaEntity[]
+
+// 3. Server Component (Presentation)
+const serialized = serializeSubScenariosData(domainResult);
+return <ClientComponent initialData={serialized} />; // Plain objects
+
+// 4. Client Component receives plain objects (Next.js compatible)
+```
+
+#### Benefits
+
+✅ **Clean Architecture**: Each layer has single responsibility  
+✅ **Framework Independence**: Application layer works anywhere  
+✅ **Type Safety**: Full TypeScript support with generic transformers  
+✅ **Reusability**: Same pattern works for any entity  
+✅ **Next.js Compatible**: Solves serialization constraints  
+✅ **Testability**: Easy to mock and test each layer independently

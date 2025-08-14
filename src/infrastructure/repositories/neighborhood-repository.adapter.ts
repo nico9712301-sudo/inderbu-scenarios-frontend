@@ -1,60 +1,145 @@
-import { INeighborhoodRepository } from '@/entities/neighborhood/domain/INeighborhoodRepository';
+import { INeighborhoodRepository, PaginatedNeighborhoods, NeighborhoodFilters } from '@/entities/neighborhood/infrastructure/INeighborhoodRepository';
+import { NeighborhoodEntity, NeighborhoodSearchCriteria, NeighborhoodDomainError } from '@/entities/neighborhood/domain/NeighborhoodEntity';
+import { NeighborhoodTransformer } from '@/infrastructure/transformers/NeighborhoodTransformer';
+import { BackendPaginatedResponse } from '@/shared/api/backend-types';
+import { HttpClient } from '@/shared/api/types';
 import { Neighborhood } from '@/services/api';
-import { ClientHttpClient } from '@/shared/api/http-client-client';
+// Infrastructure: Neighborhood Repository Adapter
 
-export class NeighborhoodRepository implements INeighborhoodRepository {
-  constructor(private readonly httpClient: ClientHttpClient) {}
-  
-  async getAll(): Promise<Neighborhood[]> {
+export class NeighborhoodRepositoryAdapter implements INeighborhoodRepository {
+  constructor(private readonly httpClient: HttpClient) { }
+
+  async getAll(filters?: NeighborhoodFilters): Promise<PaginatedNeighborhoods> {
     try {
-      const result = await this.httpClient.get<{ data: Neighborhood[] } | Neighborhood[]>('/neighborhoods');
-      return Array.isArray(result) ? result : result.data;
+      // Build query params from filters
+      const params = new URLSearchParams();
+      if (filters?.search) params.append('search', filters.search);
+      if (filters?.communeId) params.append('communeId', filters.communeId.toString());
+      if (filters?.active !== undefined) params.append('active', filters.active.toString());
+      if (filters?.limit) params.append('limit', filters.limit.toString());
+      else params.append('limit', '1000'); // Default high limit
+
+      // Call HTTP client - backend returns BackendPaginatedResponse
+      const result = await this.httpClient.get<BackendPaginatedResponse<Neighborhood>>(
+        `/neighborhoods?${params.toString()}`
+      );
+      
+      // Transform backend data to domain entities
+      const transformedData = NeighborhoodTransformer.toDomain(result.data);
+
+      return {
+        data: transformedData,
+        meta: result.meta,
+      };
+
     } catch (error) {
-      console.error('Error in NeighborhoodRepository.getAll:', error);
+      console.error('NeighborhoodRepositoryAdapter: Error in getAll:', error);
+      throw new NeighborhoodDomainError(`Failed to fetch neighborhoods: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async getById(id: number): Promise<NeighborhoodEntity | null> {
+    try {
+      const allEntitiesResult = await this.getAll();
+      return allEntitiesResult.data.find(entity => entity.id === id) || null;
+    } catch (error) {
+      console.error('NeighborhoodRepositoryAdapter: Error in getById:', error);
       throw error;
     }
   }
 
-  async getById(id: number): Promise<Neighborhood | null> {
+  async search(criteria: NeighborhoodSearchCriteria): Promise<NeighborhoodEntity[]> {
     try {
-      const result = await this.httpClient.get<Neighborhood>(`/neighborhoods/${id}`);
-      return result;
-    } catch (error: any) {
-      if (error.status === 404) {
-        return null;
+      if (!criteria.isValid()) {
+        throw new NeighborhoodDomainError('Invalid search criteria');
       }
-      console.error('Error in NeighborhoodRepository.getById:', error);
+
+      const allEntitiesResult = await this.getAll();
+      
+      let filtered = allEntitiesResult.data;
+
+      // Filter by search query
+      if (criteria.searchQuery) {
+        filtered = filtered.filter(entity => 
+          entity.matchesSearchQuery(criteria.searchQuery!)
+        );
+      }
+
+      // Filter by commune ID
+      if (criteria.communeId) {
+        filtered = filtered.filter(entity => 
+          entity.communeId === criteria.communeId
+        );
+      }
+
+      // Filter by city ID
+      if (criteria.cityId) {
+        filtered = filtered.filter(entity => 
+          entity.cityId === criteria.cityId
+        );
+      }
+
+      // Apply limit
+      if (criteria.limit && criteria.limit > 0) {
+        filtered = filtered.slice(0, criteria.limit);
+      }
+
+      return filtered;
+
+    } catch (error) {
+      console.error('NeighborhoodRepositoryAdapter: Error in search:', error);
       throw error;
     }
   }
 
-  async getByCommuneId(communeId: number): Promise<Neighborhood[]> {
+  async findByCommuneId(communeId: number): Promise<NeighborhoodEntity[]> {
     try {
-      const result = await this.httpClient.get<{ data: Neighborhood[] } | Neighborhood[]>(`/neighborhoods?communeId=${communeId}`);
-      return Array.isArray(result) ? result : result.data;
+      const allEntitiesResult = await this.getAll();
+      return allEntitiesResult.data.filter(entity => entity.communeId === communeId);
     } catch (error) {
-      console.error('Error in NeighborhoodRepository.getByCommuneId:', error);
+      console.error('NeighborhoodRepositoryAdapter: Error in findByCommuneId:', error);
       throw error;
     }
   }
 
-  async create(data: Omit<Neighborhood, 'id'>): Promise<Neighborhood> {
+  async create(data: Omit<NeighborhoodEntity, 'id'>): Promise<NeighborhoodEntity> {
     try {
-      const result = await this.httpClient.post<Neighborhood>('/neighborhoods', data);
-      return result;
+      // Transform domain entity to backend format for API call
+      const backendData = NeighborhoodTransformer.toBackend(data as NeighborhoodEntity);
+      
+      // Call backend API
+      const result = await this.httpClient.post<BackendPaginatedResponse<Neighborhood>>('/neighborhoods', backendData);
+      
+      // Transform response back to domain entity
+      return NeighborhoodTransformer.toDomain(result.data[0]);
+      
     } catch (error) {
-      console.error('Error in NeighborhoodRepository.create:', error);
-      throw error;
+      console.error('NeighborhoodRepositoryAdapter: Error in create:', error);
+      throw new NeighborhoodDomainError(`Failed to create neighborhood: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
-  async update(id: number, data: Partial<Neighborhood>): Promise<Neighborhood> {
+  async update(id: number, data: Partial<NeighborhoodEntity>): Promise<NeighborhoodEntity> {
     try {
-      const result = await this.httpClient.put<Neighborhood>(`/neighborhoods/${id}`, data);
-      return result;
+      // Get existing entity and merge with updates
+      const existing = await this.getById(id);
+      if (!existing) {
+        throw new NeighborhoodDomainError(`Neighborhood with id ${id} not found`);
+      }
+
+      // Create updated entity and transform to backend format
+      const updatedEntity = { ...existing, ...data } as NeighborhoodEntity;
+      const backendData = NeighborhoodTransformer.toBackend(updatedEntity);
+      
+      // Call backend API
+      const result = await this.httpClient.put<BackendPaginatedResponse<Neighborhood>>(`/neighborhoods/${id}`, backendData);
+      
+      // Transform response back to domain entity  
+      return NeighborhoodTransformer.toDomain(result.data[0]);
+      
     } catch (error) {
-      console.error('Error in NeighborhoodRepository.update:', error);
-      throw error;
+      console.error('NeighborhoodRepositoryAdapter: Error in update:', error);
+      throw new NeighborhoodDomainError(`Failed to update neighborhood ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -62,8 +147,13 @@ export class NeighborhoodRepository implements INeighborhoodRepository {
     try {
       await this.httpClient.delete(`/neighborhoods/${id}`);
     } catch (error) {
-      console.error('Error in NeighborhoodRepository.delete:', error);
-      throw error;
+      console.error('NeighborhoodRepositoryAdapter: Error in delete:', error);
+      throw new NeighborhoodDomainError(`Failed to delete neighborhood ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
+}
+
+// Temporary factory function for legacy containers
+export function createNeighborhoodRepositoryAdapter(httpClient: HttpClient): INeighborhoodRepository {
+  return new NeighborhoodRepositoryAdapter(httpClient);
 }

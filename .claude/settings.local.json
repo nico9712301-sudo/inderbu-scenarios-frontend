@@ -13,7 +13,15 @@
       "Bash(rm:*)",
       "Bash(pnpm run lint:*)",
       "Bash(pnpm run:*)",
-      "WebFetch(domain:)"
+      "WebFetch(domain:)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(touch:*)",
+      "WebSearch",
+      "WebFetch(domain:martinfowler.com)",
+      "WebFetch(domain:enterprisecraftsmanship.com)",
+      "WebFetch(domain:learn.microsoft.com)",
+      "WebFetch(domain:blog.cleancoder.com)"
     ]
   },
   "enableAllProjectMcpServers": false

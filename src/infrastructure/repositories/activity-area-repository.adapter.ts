@@ -1,73 +1,136 @@
 // Infrastructure: Activity Area Repository Adapter (bridges existing API to domain interface)
 
-import { IActivityAreaRepository } from '@/entities/activity-area/domain/IActivityAreaRepository';
+import { IActivityAreaRepository, PaginatedActivityAreas, ActivityAreaFilters } from '@/entities/activity-area/domain/IActivityAreaRepository';
+import { ActivityAreaEntity, ActivityAreaSearchCriteria, ActivityAreaDomainError } from '@/entities/activity-area/domain/ActivityAreaEntity';
 import { ActivityArea } from '@/services/api';
-
-// Existing API interface (what currently exists)
-interface ActivityAreaApiService {
-  getActivityAreas(): Promise<ActivityArea[]>;
-}
+import { HttpClient } from '@/shared/api/types';
+import { BackendPaginatedResponse } from '@/shared/api/backend-types';
+import { ActivityAreaTransformer } from '@/infrastructure/transformers/ActivityAreaTransformer';
 
 // Infrastructure: Adapter Pattern - Bridge existing API to domain interface
 export class ActivityAreaRepositoryAdapter implements IActivityAreaRepository {
-  constructor(private readonly apiService: ActivityAreaApiService) { }
+  constructor(private readonly httpClient: HttpClient) { }
 
-  async getAll(): Promise<ActivityArea[]> {
 
+  async getAll(filters?: ActivityAreaFilters): Promise<PaginatedActivityAreas> {
     try {
-      // Call existing API service
-      const result = await this.apiService.getActivityAreas();
-      return result;
+      // Build query params from filters
+      const params = new URLSearchParams();
+      if (filters?.search) params.append('search', filters.search);
+      if (filters?.active !== undefined) params.append('active', filters.active.toString());
+      if (filters?.limit) params.append('limit', filters.limit.toString());
+      else params.append('limit', '1000'); // Default high limit
+
+      // Call HTTP client - backend always returns BackendPaginatedResponse
+      const result: BackendPaginatedResponse<ActivityArea> = await this.httpClient.get<BackendPaginatedResponse<ActivityArea>>(
+        `/activity-areas?${params.toString()}`
+      );
+      
+      // Transform backend data to domain entities using generic transformer
+      const transformedData = ActivityAreaTransformer.toDomain(result.data);
+
+      return {
+        data: transformedData,
+        meta: result.meta,
+      };
 
     } catch (error) {
-      console.error('ActivityAreaRepositoryAdapter: Error in findAll:', error);
-      throw error; // Re-throw to let domain handle it
+      console.error('ActivityAreaRepositoryAdapter: Error in getAll:', error);
+      throw new ActivityAreaDomainError(`Failed to fetch activity areas: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
-  async getById(id: number): Promise<ActivityArea | null> {
+  async getById(id: number): Promise<ActivityAreaEntity | null> {
     try {
-      const allActivityAreas = await this.getAll();
-      const found = allActivityAreas.find(area => +area.id === id);
-
-      return found || null;
-
+      const allEntitiesResult = await this.getAll();
+      return allEntitiesResult.data.find(entity => entity.id === id) || null;
     } catch (error) {
-      console.error('ActivityAreaRepositoryAdapter: Error in findById:', error);
+      console.error('ActivityAreaRepositoryAdapter: Error in getById:', error);
       throw error;
     }
   }
 
-  async create(data: Omit<ActivityArea, 'id'>): Promise<ActivityArea> {
-    throw new Error('Create not implemented');
-  }
-
-  async update(id: number, data: Partial<ActivityArea>): Promise<ActivityArea> {
-    throw new Error('Update not implemented');
-  }
-
-  async delete(id: number): Promise<void> {
-    throw new Error('Delete not implemented');
-  }
-
-  // Additional helper methods
-  async findByName(name: string): Promise<ActivityArea[]> {
+  async search(criteria: ActivityAreaSearchCriteria): Promise<ActivityAreaEntity[]> {
     try {
-      const allActivityAreas = await this.getAll();
-      const filtered = allActivityAreas.filter(area =>
-        area.name.toLowerCase().includes(name.toLowerCase())
-      );
+      if (!criteria.isValid()) {
+        throw new ActivityAreaDomainError('Invalid search criteria');
+      }
+
+      const allEntitiesResult = await this.getAll();
+      
+      let filtered = allEntitiesResult.data;
+
+      if (criteria.searchQuery) {
+        filtered = filtered.filter(entity => 
+          entity.matchesSearchQuery(criteria.searchQuery!)
+        );
+      }
+
+      if (criteria.limit && criteria.limit > 0) {
+        filtered = filtered.slice(0, criteria.limit);
+      }
 
       return filtered;
 
     } catch (error) {
-      console.error('ActivityAreaRepositoryAdapter: Error in findByName:', error);
+      console.error('ActivityAreaRepositoryAdapter: Error in search:', error);
       throw error;
+    }
+  }
+
+  async create(data: Omit<ActivityAreaEntity, 'id'>): Promise<ActivityAreaEntity> {
+    try {
+      // Transform domain entity to backend format for API call
+      const backendData = ActivityAreaTransformer.toBackend(data as ActivityAreaEntity);
+      
+      // Call backend API
+      const result = await this.httpClient.post<BackendPaginatedResponse<ActivityArea>>('/activity-areas', backendData);
+      
+      // Transform response back to domain entity
+      return ActivityAreaTransformer.toDomain(result.data[0]); // Assuming backend returns array with created item
+      
+    } catch (error) {
+      console.error('ActivityAreaRepositoryAdapter: Error in create:', error);
+      throw new ActivityAreaDomainError(`Failed to create activity area: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async update(id: number, data: Partial<ActivityAreaEntity>): Promise<ActivityAreaEntity> {
+    try {
+      // Get existing entity and merge with updates
+      const existing = await this.getById(id);
+      if (!existing) {
+        throw new ActivityAreaDomainError(`Activity area with id ${id} not found`);
+      }
+
+      // Create updated entity and transform to backend format
+      const updatedEntity = { ...existing, ...data } as ActivityAreaEntity;
+      const backendData = ActivityAreaTransformer.toBackend(updatedEntity);
+      
+      // Call backend API
+      const result = await this.httpClient.put<BackendPaginatedResponse<ActivityArea>>(`/activity-areas/${id}`, backendData);
+      
+      // Transform response back to domain entity  
+      return ActivityAreaTransformer.toDomain(result.data[0]);
+      
+    } catch (error) {
+      console.error('ActivityAreaRepositoryAdapter: Error in update:', error);
+      throw new ActivityAreaDomainError(`Failed to update activity area ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async delete(id: number): Promise<void> {
+    try {
+      await this.httpClient.delete(`/activity-areas/${id}`);
+    } catch (error) {
+      console.error('ActivityAreaRepositoryAdapter: Error in delete:', error);
+      throw new ActivityAreaDomainError(`Failed to delete activity area ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 }
 
-// Factory function for DI container
-export function createActivityAreaRepositoryAdapter(apiService: ActivityAreaApiService): IActivityAreaRepository {
-  return new ActivityAreaRepositoryAdapter(apiService);
+// Temporary factory function for legacy containers
+export function createActivityAreaRepositoryAdapter(httpClient: HttpClient): IActivityAreaRepository {
+  return new ActivityAreaRepositoryAdapter(httpClient);
 }
+

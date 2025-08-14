@@ -1,9 +1,24 @@
-import { ActivityArea } from '@/services/api';
+import { ActivityAreaEntity, ActivityAreaSearchCriteria } from './ActivityAreaEntity';
+import { PageMeta } from '@/services/api';
 
+export interface ActivityAreaFilters {
+  page?: number;
+  limit?: number;
+  search?: string;
+  active?: boolean;
+}
+
+export interface PaginatedActivityAreas {
+  data: ActivityAreaEntity[];
+  meta: PageMeta;
+}
+
+// Clean repository interface working only with Domain Entities
 export interface IActivityAreaRepository {
-  getAll(): Promise<ActivityArea[]>;
-  getById(id: number): Promise<ActivityArea | null>;
-  create(data: Omit<ActivityArea, 'id'>): Promise<ActivityArea>;
-  update(id: number, data: Partial<ActivityArea>): Promise<ActivityArea>;
+  getAll(filters?: ActivityAreaFilters): Promise<PaginatedActivityAreas>;
+  getById(id: number): Promise<ActivityAreaEntity | null>;
+  search(criteria: ActivityAreaSearchCriteria): Promise<ActivityAreaEntity[]>;
+  create(data: Omit<ActivityAreaEntity, 'id'>): Promise<ActivityAreaEntity>;
+  update(id: number, data: Partial<ActivityAreaEntity>): Promise<ActivityAreaEntity>;
   delete(id: number): Promise<void>;
 }

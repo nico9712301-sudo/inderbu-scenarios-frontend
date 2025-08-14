@@ -2,7 +2,6 @@
 
 import { GetHomeDataUseCase, createGetHomeDataUseCase } from '@/presentation/features/home/data/application/get-home-data-use-case';
 import { HomeService, createHomeService } from '@/presentation/features/home/data/infrastructure/home-service';
-import { createInMemoryEventBus } from '@/shared/infrastructure/InMemoryEventBus';
 
 // Import repository adapters
 import { createSubScenarioRepositoryAdapter } from '@/entities/sub-scenario/infrastructure/sub-scenario-repository.adapter';
@@ -10,11 +9,11 @@ import { createSubScenarioRepositoryAdapter } from '@/entities/sub-scenario/infr
 // Import existing API services (temporary bridge)
 import { 
   subScenarioApiService, 
-  activityAreaApiService, 
   neighborhoodApiService 
 } from '@/presentation/features/home/services/home.service';
-import { createActivityAreaRepositoryAdapter } from '@/infrastructure/repositories/activity-area-repository.adapter';
-import { createNeighborhoodRepositoryAdapter } from '@/infrastructure/repositories/neighborhood-repository.adapter';
+// import { createActivityAreaRepositoryAdapter } from '@/infrastructure/repositories/activity-area-repository.adapter';
+// import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
+// import { createServerAuthContext } from '@/shared/api/server-auth';
 
 // DDD: Container interface
 export interface HomeContainer {
@@ -30,19 +29,22 @@ export function createHomeContainer(): HomeContainer {
   console.log('Building Home DI Container...');
 
   // Infrastructure: Event Bus
-  const eventBus = createInMemoryEventBus();
+  // const eventBus = createInMemoryEventBus();
+  const eventBus = null; // Temporarily disabled
 
   // Infrastructure: Repository Adapters (Bridge existing APIs to domain interfaces)
   const subScenarioRepository = createSubScenarioRepositoryAdapter(subScenarioApiService);
-  const activityAreaRepository = createActivityAreaRepositoryAdapter(activityAreaApiService);
-  const neighborhoodRepository = createNeighborhoodRepositoryAdapter(neighborhoodApiService);
+  // TODO: Update to use DI container instead of individual adapters
+  const activityAreaRepository = null; // Temporarily disabled
+  const neighborhoodRepository = null; // Temporarily disabled
 
   // Application: Use Cases (Business Logic)
+  // TODO: Refactor to use main DI container
   const getHomeDataUseCase = createGetHomeDataUseCase(
     subScenarioRepository,
-    activityAreaRepository,
-    neighborhoodRepository,
-    eventBus
+    null, // activityAreaRepository - temporarily disabled
+    null, // neighborhoodRepository - temporarily disabled
+    null  // eventBus - temporarily disabled
   );
 
   console.log('Use cases created');

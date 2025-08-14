@@ -1,8 +1,9 @@
-import { GetSubScenariosDataUseCase, ISubScenariosDataResponse } from '@/presentation/features/dashboard/sub-scenarios/application/GetSubScenariosDataUseCase';
+import { GetSubScenariosDataService, ISubScenariosDataResponse } from '@/application/dashboard/sub-scenarios/services/GetSubScenariosDataService';
 import { SubScenariosPage } from '@/presentation/features/dashboard/sub-scenarios/components/SubScenariosPage';
 import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
 import { IContainer } from '@/infrastructure/config/di/simple-container';
 import { TOKENS } from '@/infrastructure/config/di/tokens';
+import { serializeSubScenariosData } from '@/presentation/utils/serialization.utils';
 
 interface SubScenariosRouteProps {
   searchParams: Promise<{
@@ -28,7 +29,7 @@ export default async function SubScenariosRoute(props: SubScenariosRouteProps) {
   try {
     // Dependency Injection: Get container and resolve use case
     const container: IContainer = ContainerFactory.createContainer();
-    const getSubScenariosDataUseCase = container.get<GetSubScenariosDataUseCase>(TOKENS.GetSubScenariosDataUseCase);
+    const getSubScenariosDataService = container.get<GetSubScenariosDataService>(TOKENS.GetSubScenariosDataService);
     
     // Parse and validate search params
     const filters = {
@@ -43,13 +44,16 @@ export default async function SubScenariosRoute(props: SubScenariosRouteProps) {
         : undefined,
     };
 
-    // Execute Use Case through Application Layer
-    const result: ISubScenariosDataResponse = await getSubScenariosDataUseCase.execute(filters);   
-
-    // Render Presentation Layer with server-side data
+    // Execute Application Service - returns pure Domain Entities
+    const domainResult: ISubScenariosDataResponse = await getSubScenariosDataService.execute(filters);
+    
+    // Presentation Layer responsibility: Serialize domain entities for client components
+    const serializedResult = serializeSubScenariosData(domainResult);
+    
+    // Render Presentation Layer with serialized data (plain objects)
     return (
       <SubScenariosPage
-        initialData={result}
+        initialData={serializedResult}
       />
     );
 

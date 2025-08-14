@@ -9,7 +9,7 @@ export interface IScenariosDataResponse {
   filters: ScenarioFilters;
 }
 
-export class GetScenariosDataUseCase {
+export class GetScenariosDataService {
   constructor(
     private readonly getScenariosUseCase: GetScenariosUseCase,
     private readonly getNeighborhoodsUseCase: GetNeighborhoodsUseCase
@@ -56,7 +56,7 @@ export class GetScenariosDataUseCase {
       };
 
     } catch (error) {
-      console.error('Error in GetScenariosDataUseCase:', error);
+      console.error('Error in GetScenariosDataService:', error);
       throw error;
     }
   }
