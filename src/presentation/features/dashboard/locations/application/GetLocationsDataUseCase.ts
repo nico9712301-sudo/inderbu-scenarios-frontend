@@ -1,4 +1,5 @@
-import { Commune, Neighborhood, PageMeta } from '@/services/api';
+import { Commune, Neighborhood } from '@/shared/api/domain-types';
+import { PageMeta } from '@/shared/api/pagination';
 import {
   ICommuneRepository,
   INeighborhoodRepository,

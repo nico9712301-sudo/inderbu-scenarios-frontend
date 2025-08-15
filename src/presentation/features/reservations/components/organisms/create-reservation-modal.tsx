@@ -17,14 +17,46 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import ScenarioService, {
-  ScenarioDto,
-  SubScenarioDto,
-} from "@/services/scenario.service";
+// DDD Architecture imports
+import { getScenariosAction } from "@/infrastructure/web/controllers/dashboard/scenario.actions";
+import { getSubScenariosAction } from "@/infrastructure/web/controllers/dashboard/sub-scenario.actions";
+
+// Legacy types for compatibility during migration
+export interface ScenarioDto {
+  id: number;
+  name: string;
+  address: string;
+  locationId?: number;
+  location?: { id: number; name: string };
+  subScenarios?: SubScenarioDto[];
+  active?: boolean;
+}
+
+export interface SubScenarioDto {
+  id: number;
+  name: string;
+  description?: string;
+  scenarioId: number;
+  active?: boolean;
+}
 import { createReservationRepository } from "@/entities/reservation/infrastructure/reservation-repository.adapter";
 import { ClientHttpClientFactory } from "@/shared/api/http-client-client";
-import { createReservationAction, CreateReservationResult } from "../../use-cases/create/actions/create-reservation.action";
-import UserService, { UserDto } from "@/services/user.service";
+// DDD Architecture imports for Users
+import { getUsersAction, getUserByIdAction } from "@/infrastructure/web/controllers/dashboard/user.actions";
+import type { UserPlainObject } from "@/entities/user/domain/UserEntity";
+
+// Legacy types for compatibility during migration
+export interface UserDto {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string;
+  neighborhood?: string;
+  address?: string;
+  role?: string;
+  active?: boolean;
+}
 import { useCallback, useEffect, useState } from "react";
 import { Textarea } from "@/shared/ui/textarea";
 import { Button } from "@/shared/ui/button";
@@ -34,7 +66,8 @@ import { Label } from "@/shared/ui/label";
 import { Modal } from "@/shared/ui/modal";
 import debounce from "lodash/debounce";
 import { toast } from "sonner";
-import { TimeSlotDto } from "@/services/reservation.service";
+import { TimeSlotDto } from "@/entities/reservation/model/types";
+import { createReservationAction, CreateReservationResult } from "@/infrastructure/web/controllers/create-reservation.action";
 
 
 
@@ -95,8 +128,21 @@ export const CreateReservationModal = ({
 
       setLoadingUsers(true);
       try {
-        const response = await UserService.searchUsers(term);
-        setUsers(response.data);
+        const response = await getUsersAction({ search: term, limit: 50 });
+        const users = response.data?.data || [];
+        // Transform DDD entities to legacy format for compatibility
+        const mappedUsers = users.map((u: any) => ({
+          id: u.id,
+          first_name: u.firstName || u.first_name || '',
+          last_name: u.lastName || u.last_name || '',
+          email: u.email || '',
+          phone: u.phone,
+          neighborhood: u.neighborhood?.name,
+          address: u.address,
+          role: u.role?.name,
+          active: u.isActive !== false
+        }));
+        setUsers(mappedUsers);
       } catch (error) {
         console.error("Error al buscar usuarios:", error);
         toast.error("No se pudieron cargar los usuarios");
@@ -117,8 +163,16 @@ export const CreateReservationModal = ({
       setLoadingScenarios(true);
       try {
         // Ajustar para usar los parámetros de búsqueda de la API
-        const response = await ScenarioService.getAllScenarios(term);
-        setScenarios(response);
+        const response = await getScenariosAction({ search: term, limit: 50 });
+        const scenarios = response.data?.data || [];
+        // Transform DDD entities to legacy format for compatibility
+        const mappedScenarios = scenarios.map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          address: s.address,
+          active: s.active
+        }));
+        setScenarios(mappedScenarios);
       } catch (error) {
         console.error("Error al buscar escenarios:", error);
         toast.error("No se pudieron cargar los escenarios");
@@ -136,13 +190,21 @@ export const CreateReservationModal = ({
 
       setLoadingSubScenarios(true);
       try {
-        const response = await ScenarioService.searchSubScenarios(
-          scenarioId,
-          1,
-          10,
-          term,
-        );
-        setSubScenarios(response.data);
+        const response = await getSubScenariosAction({
+          scenarioId: scenarioId,
+          search: term,
+          page: 1,
+          limit: 10
+        });
+        const subScenarios = response.data?.data || [];
+        // Transform DDD entities to legacy format for compatibility
+        const mappedSubScenarios = subScenarios.map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          scenarioId: s.scenario?.id || scenarioId,
+          active: true
+        }));
+        setSubScenarios(mappedSubScenarios);
       } catch (error) {
         console.error("Error al buscar subescenarios:", error);
         toast.error("No se pudieron cargar los subescenarios");
@@ -176,7 +238,13 @@ export const CreateReservationModal = ({
       (async () => {
         try {
           setLoadingScenarios(true);
-          const scenData = await ScenarioService.getAllScenarios();
+          const scenResponse = await getScenariosAction({ limit: 100 });
+          const scenData = (scenResponse.data?.data || []).map((s: any) => ({
+            id: s.id,
+            name: s.name,
+            address: s.address,
+            active: s.active
+          }));
           setScenarios(scenData);
         } catch (err) {
           toast.error("No se pudieron cargar los escenarios");
@@ -199,12 +267,20 @@ export const CreateReservationModal = ({
       (async () => {
         try {
           setLoadingSubScenarios(true);
-          const response = await ScenarioService.searchSubScenarios(
-            scenarioId,
-            1,
-            10,
-          );
-          setSubScenarios(response.data);
+          const response = await getSubScenariosAction({
+            scenarioId: scenarioId,
+            page: 1,
+            limit: 10
+          });
+          const subScenarios = response.data?.data || [];
+          // Transform to legacy format
+          const transformedSubScenarios = subScenarios.map((s: any) => ({
+            id: s.id,
+            name: s.name,
+            scenarioId: s.scenario?.id || scenarioId,
+            active: true
+          }));
+          setSubScenarios(transformedSubScenarios);
         } catch (error) {
           console.error("Error al cargar sub-escenarios:", error);
           toast.error("No se pudieron cargar los sub-escenarios");
@@ -225,10 +301,24 @@ export const CreateReservationModal = ({
       (async () => {
         try {
           // Obtener el usuario por ID
-          const user = await UserService.getUserById(
-            Number(newReservation.clientId),
+          const userResponse = await getUserByIdAction(
+            Number(newReservation.clientId)
           );
-          if (user) setSelectedUser(user);
+          if (userResponse) {
+            // Transform DDD entity to legacy format for compatibility
+            const user = {
+              id: userResponse.id,
+              first_name: userResponse.firstName || '',
+              last_name: userResponse.lastName || '',
+              email: userResponse.email || '',
+              phone: userResponse.phone,
+              neighborhood: userResponse.neighborhood?.name,
+              address: userResponse.address,
+              role: userResponse.role?.name,
+              active: userResponse.isActive !== false
+            };
+            setSelectedUser(user);
+          }
         } catch (error) {
           console.error("Error al cargar datos del usuario:", error);
         }
@@ -273,7 +363,13 @@ export const CreateReservationModal = ({
       (async () => {
         try {
           setLoadingScenarios(true);
-          const scenData = await ScenarioService.getAllScenarios();
+          const scenResponse = await getScenariosAction({ limit: 100 });
+          const scenData = (scenResponse.data?.data || []).map((s: any) => ({
+            id: s.id,
+            name: s.name,
+            address: s.address,
+            active: s.active
+          }));
           setScenarios(scenData);
         } catch (err) {
           toast.error("No se pudieron cargar los escenarios");

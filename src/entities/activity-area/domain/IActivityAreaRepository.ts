@@ -1,5 +1,5 @@
 import { ActivityAreaEntity, ActivityAreaSearchCriteria } from './ActivityAreaEntity';
-import { PageMeta } from '@/services/api';
+import { PageMeta } from '@/shared/api/pagination';
 
 export interface ActivityAreaFilters {
   page?: number;

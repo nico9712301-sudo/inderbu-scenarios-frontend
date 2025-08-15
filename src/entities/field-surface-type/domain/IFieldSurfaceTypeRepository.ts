@@ -1,5 +1,5 @@
 import { FieldSurfaceTypeEntity, FieldSurfaceTypeSearchCriteria } from './FieldSurfaceTypeEntity';
-import { PageMeta } from '@/services/api';
+import { PageMeta } from '@/shared/api/pagination';
 
 export interface FieldSurfaceTypeFilters {
   page?: number;

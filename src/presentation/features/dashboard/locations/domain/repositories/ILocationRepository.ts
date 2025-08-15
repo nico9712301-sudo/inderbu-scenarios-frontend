@@ -1,12 +1,6 @@
-import { 
-  Commune, 
-  Neighborhood, 
-  CreateCommuneDto, 
-  CreateNeighborhoodDto, 
-  UpdateCommuneDto, 
-  UpdateNeighborhoodDto, 
-  PageMeta 
-} from '@/services/api';
+import { Commune, Neighborhood } from '@/shared/api/domain-types';
+import { CreateCommuneDto, CreateNeighborhoodDto, UpdateCommuneDto, UpdateNeighborhoodDto } from '@/shared/api/dto-types';
+import { PageMeta } from '@/shared/api/pagination';
 
 // City entity (for communes)
 export interface City {

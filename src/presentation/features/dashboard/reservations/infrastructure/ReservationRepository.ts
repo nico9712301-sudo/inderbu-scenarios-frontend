@@ -3,7 +3,7 @@ import {
   PaginatedReservations, 
   ReservationFilters 
 } from '../domain/repositories/IReservationRepository';
-import { ReservationDto } from '@/services/reservation.service';
+import { ReservationDto } from '@/entities/reservation/model/types';
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
 

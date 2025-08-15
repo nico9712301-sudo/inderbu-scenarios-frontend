@@ -1,8 +1,8 @@
 import { useCallback, useState, useRef, useEffect } from "react";
-import { SubScenario } from "@/services/api";
 import { createSubScenarioAction, updateSubScenarioAction, uploadSubScenarioImagesAction } from "@/infrastructure/web/controllers/dashboard/sub-scenario.actions";
 import { ImageUploadData } from "@/application/dashboard/sub-scenarios/use-cases/UploadSubScenarioImagesUseCase";
 import { ErrorHandlerResult } from "@/shared/api/error-handler";
+import { SubScenario } from "@/shared/api";
 
 // Types
 export interface SubScenarioFormData {

@@ -1,6 +1,6 @@
-import ReservationService, {
-  ReservationStateDto,
-} from "@/services/reservation.service";
+import { ReservationStateDto } from "@/entities/reservation/model/types";
+import { createReservationRepository } from "@/entities/reservation/infrastructure/reservation-repository.adapter";
+import { ClientHttpClientFactory } from "@/shared/api/http-client-client";
 import { useEffect, useState } from "react";
 
 export const useReservationStates = () => {
@@ -11,7 +11,9 @@ export const useReservationStates = () => {
   const fetchStates = async () => {
     try {
       setLoading(true);
-      const data = await ReservationService.getAllReservationStates();
+      const httpClient = ClientHttpClientFactory.createClientWithAuth();
+      const repository = createReservationRepository(httpClient);
+      const data = await repository.getStates();
       setStates(data);
       setError(null);
     } catch (err) {

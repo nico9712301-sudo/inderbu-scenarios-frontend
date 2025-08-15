@@ -255,7 +255,7 @@ export function useTraceUpdate(props: Record<string, any>) {
     }, {} as Record<string, any>);
 
     if (Object.keys(changedProps).length > 0) {
-      console.log("🔄 Changed props/state causing re-render:", changedProps);
+      console.log("Changed props/state causing re-render:", changedProps);
     }
 
     prev.current = props;

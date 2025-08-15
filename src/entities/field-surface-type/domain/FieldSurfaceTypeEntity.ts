@@ -1,7 +1,7 @@
 // Domain Entity: Field Surface Type
 // Represents the core business concept of a field surface type with rich behavior
 
-import { FieldSurfaceType } from '@/services/api';
+import { FieldSurfaceType } from '@/shared/api/domain-types';
 
 export class FieldSurfaceTypeEntity {
   public readonly id: number;

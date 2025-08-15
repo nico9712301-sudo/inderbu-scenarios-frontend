@@ -1,4 +1,4 @@
-import { PageMeta } from '@/services/api';
+import { PageMeta } from '@/shared/api/pagination';
 import { ScenarioEntity, ScenarioSearchCriteria } from '../domain/ScenarioEntity';
 
 export interface ScenarioFilters {

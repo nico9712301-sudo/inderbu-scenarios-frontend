@@ -20,7 +20,7 @@ import {
   User,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
-import type { ReservationDto } from "@/services/reservation.service";
+import type { ReservationDto } from "@/entities/reservation/model/types";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Label } from "@/shared/ui/label";

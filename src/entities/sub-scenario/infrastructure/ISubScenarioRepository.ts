@@ -1,5 +1,5 @@
 import { SubScenarioEntity, SubScenarioSearchCriteria } from '@/entities/sub-scenario/domain/SubScenarioEntity';
-import { PageMeta } from '@/services/api';
+import { PageMeta } from '@/shared/api/pagination';
 
 export interface SubScenariosFilters {
   search?: string;

@@ -1,4 +1,4 @@
-import { UserRepository } from '@/entities/user/infrastructure/user-repository.adapter'; // Use existing
+import { UserRepository } from '@/infrastructure/repositories/auth-user-repository.adapter'; // Use existing
 import { ReservationRepository } from '@/entities/reservation/infrastructure/reservation-repository.adapter'; // Use existing  
 import { EventBus, ReservationsAccessedEvent } from '@/entities/reservation/domain/reservation.domain';
 import { PaginatedReservations, GetReservationsQuery } from '@/entities/reservation/model/types';

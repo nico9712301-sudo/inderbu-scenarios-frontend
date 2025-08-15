@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '../model/use-auth';
+import { useAuth } from '@/presentation/features/auth/model/use-auth';
 import { canViewUserReservations } from '@/entities/user/model/types';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';

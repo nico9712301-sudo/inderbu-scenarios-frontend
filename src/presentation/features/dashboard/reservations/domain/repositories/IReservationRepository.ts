@@ -1,4 +1,4 @@
-import { ReservationDto } from '@/services/reservation.service';
+import { ReservationDto } from '@/entities/reservation/model/types';
 
 export interface PaginatedReservations {
   data: ReservationDto[];

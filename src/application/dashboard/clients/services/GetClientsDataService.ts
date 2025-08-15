@@ -1,13 +1,13 @@
 // Application Layer: Get Clients Data Service
 // Orchestrates multiple use cases for dashboard clients page data
 
-import { UserEntity } from '@/entities/user/domain/UserEntity';
-import { NeighborhoodEntity } from '@/entities/neighborhood/domain/NeighborhoodEntity';
-import { UserFilters } from '@/entities/user/infrastructure/IUserRepository';
-import { GetUsersUseCase } from '../use-cases/GetUsersUseCase';
-import { GetNeighborhoodsUseCase } from '../../scenarios/use-cases/GetNeighborhoodsUseCase';
-import { GetRolesUseCase } from '../use-cases/GetRolesUseCase';
-import { RoleEntity } from '@/entities/role/domain/RoleEntity';
+import { UserEntity } from "@/entities/user/domain/UserEntity";
+import { NeighborhoodEntity } from "@/entities/neighborhood/domain/NeighborhoodEntity";
+import { UserFilters } from "@/entities/user/infrastructure/IUserRepository";
+import { GetUsersUseCase } from "../use-cases/GetUsersUseCase";
+import { GetNeighborhoodsUseCase } from "../../scenarios/use-cases/GetNeighborhoodsUseCase";
+import { GetRolesUseCase } from "../use-cases/GetRolesUseCase";
+import { RoleEntity } from "@/entities/role/domain/RoleEntity";
 
 // Filter options for UI components
 export interface FilterOption {
@@ -17,8 +17,8 @@ export interface FilterOption {
 
 // Response interface containing all dashboard clients data
 export interface IClientsDataResponse {
-  users: UserEntity[];           // Domain entities
-  roles: RoleEntity[];          // Simple role entities
+  users: UserEntity[]; // Domain entities
+  roles: RoleEntity[]; // Simple role entities
   neighborhoods: NeighborhoodEntity[]; // Domain entities
   meta: {
     page: number;
@@ -36,7 +36,7 @@ export interface IClientsDataResponse {
 
 /**
  * Get Clients Data Service
- * 
+ *
  * Application service that orchestrates multiple use cases to provide
  * complete dashboard clients page data. Extracts data from pagination
  * wrappers and returns pure domain entities.
@@ -52,11 +52,14 @@ export class GetClientsDataService {
     try {
       // Business validation
       if (filters.page !== undefined && filters.page <= 0) {
-        throw new Error('Page number must be greater than 0');
+        throw new Error("Page number must be greater than 0");
       }
-      
-      if (filters.limit !== undefined && (filters.limit <= 0 || filters.limit > 100)) {
-        throw new Error('Limit must be between 1 and 100');
+
+      if (
+        filters.limit !== undefined &&
+        (filters.limit <= 0 || filters.limit > 100)
+      ) {
+        throw new Error("Limit must be between 1 and 100");
       }
 
       // Default filters with business rules
@@ -73,23 +76,18 @@ export class GetClientsDataService {
       }
 
       // Orchestrate multiple use cases in parallel
-      const [
-        usersResult,
-        neighborhoodsResult,
-        rolesResult,
-      ] = await Promise.all([
-        // Use role-specific endpoint if roleId filter is present
-        filters.roleId 
-          ? this.getUsersUseCase.executeByRole(filters.roleId, { ...defaultFilters, roleId: undefined })
-          : this.getUsersUseCase.execute(defaultFilters),
-        this.getNeighborhoodsUseCase.execute(),
-        this.getRolesUseCase.execute(),
-      ]);
+      const [usersResult, neighborhoodsResult, rolesResult] = await Promise.all(
+        [
+          this.getUsersUseCase.execute(defaultFilters),
+          this.getNeighborhoodsUseCase.execute(),
+          this.getRolesUseCase.execute(),
+        ]
+      );
 
       // Extract data from pagination wrappers - Application Service responsibility
-      const users = usersResult.data; // Extract from PaginatedUsers
-      const neighborhoods = neighborhoodsResult.data; // Extract from PaginatedNeighborhoods
-      const roles = rolesResult.data; // Extract from PaginatedRoles
+      const users: UserEntity[] = usersResult.data; // Extract from PaginatedUsers
+      const neighborhoods: NeighborhoodEntity[] = neighborhoodsResult.data; // Extract from PaginatedNeighborhoods
+      const roles: RoleEntity[] = rolesResult.data; // Extract from PaginatedRoles
 
       // Prepare filter options for UI components
       const filterOptions = {
@@ -97,10 +95,12 @@ export class GetClientsDataService {
           value: role.id.toString(),
           label: role.description,
         })),
-        neighborhoods: neighborhoods.map((neighborhood: NeighborhoodEntity) => ({
-          value: neighborhood.id.toString(),
-          label: neighborhood.name,
-        })),
+        neighborhoods: neighborhoods.map(
+          (neighborhood: NeighborhoodEntity) => ({
+            value: neighborhood.id.toString(),
+            label: neighborhood.name,
+          })
+        ),
         status: [
           { value: "true", label: "Activo" },
           { value: "false", label: "Inactivo" },
@@ -108,16 +108,15 @@ export class GetClientsDataService {
       };
 
       return {
-        users,           // Pure domain entities
-        roles,          // Simple role entities
-        neighborhoods,  // Pure domain entities
+        users, // Pure domain entities
+        roles, // Simple role entities
+        neighborhoods, // Pure domain entities
         meta: usersResult.meta,
         filters: defaultFilters,
         filterOptions,
       };
-
     } catch (error) {
-      console.error('Error in GetClientsDataService:', error);
+      console.error("Error in GetClientsDataService:", error);
       throw error;
     }
   }

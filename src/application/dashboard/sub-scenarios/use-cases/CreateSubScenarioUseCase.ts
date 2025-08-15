@@ -1,4 +1,4 @@
-import { SubScenario } from '@/services/api';
+import { SubScenario } from '@/shared/api/domain-types';
 import { ISubScenarioRepository } from '@/entities/sub-scenario/infrastructure/ISubScenarioRepository';
 
 export class CreateSubScenarioUseCase {

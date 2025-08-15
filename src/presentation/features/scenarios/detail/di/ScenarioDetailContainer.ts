@@ -1,14 +1,9 @@
-// DDD: Dependency Injection Container for Scenario Detail Feature
-
 import { GetScenarioDetailUseCase, createGetScenarioDetailUseCase } from '@/presentation/features/scenarios/detail/application/GetScenarioDetailUseCase';
 import { ScenarioDetailService, createScenarioDetailService } from '@/presentation/features/scenarios/detail/infrastructure/ScenarioDetailService';
-import { createInMemoryEventBus } from '@/shared/infrastructure/InMemoryEventBus';
 
 // Import repository adapter
 import { createScenarioDetailRepositoryAdapter } from '@/entities/scenario/infrastructure/scneario-detail-repository.adapter';
 
-// NEW: Import CLEAN repository (no legacy dependencies)
-import { CleanScenarioRepositoryAdapter } from '@/presentation/features/scenarios/infrastructure/scenarioRepository';
 
 // DDD: Container interface
 export interface ScenarioDetailContainer {

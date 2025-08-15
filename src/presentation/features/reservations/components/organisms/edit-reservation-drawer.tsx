@@ -8,6 +8,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/shared/ui/drawer";
+import { updateReservationStateAction, UpdateReservationResult } from "../../use-cases/update/actions/update-reservation.action";
 import {
   Select,
   SelectContent,
@@ -15,8 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import type { ReservationDto } from "@/services/reservation.service";
-import { updateReservationStateAction, UpdateReservationResult } from "../../use-cases/update/actions/update-reservation.action";
+import type { ReservationDto } from "@/entities/reservation/model/types";
 import { formatDate } from "@/utils/reservation.utils";
 import { toast } from "@/shared/hooks/use-toast";
 import { Textarea } from "@/shared/ui/textarea";
@@ -24,6 +24,7 @@ import { Button } from "@/shared/ui/button";
 import { useEffect, useState } from "react";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+
 
 
 interface EditReservationDrawerProps {

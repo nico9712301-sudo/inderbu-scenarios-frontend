@@ -3,7 +3,7 @@
 
 import { createDomainTransformer, IDomainTransformer } from './DomainTransformer';
 import { FieldSurfaceTypeEntity, FieldSurfaceTypeDomainError } from '@/entities/field-surface-type/domain/FieldSurfaceTypeEntity';
-import { FieldSurfaceType } from '@/services/api';
+import { FieldSurfaceType } from '@/shared/api/domain-types';
 
 // Validation functions
 function isValidFieldSurfaceTypeBackend(data: any): data is FieldSurfaceType {

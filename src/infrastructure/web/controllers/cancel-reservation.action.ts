@@ -6,6 +6,13 @@ import { ClientHttpClient, ClientHttpClientFactory } from '@/shared/api/http-cli
 import { createServerAuthContext, ServerAuthContext } from '@/shared/api/server-auth';
 import { revalidateTag } from 'next/cache';
 
+/**
+ * Cancel Reservation Server Actions
+ * 
+ * Next.js Server Actions that handle reservation cancellation.
+ * These act as controllers in the Clean Architecture.
+ */
+
 export interface CancelReservationResult {
   success: boolean;
   message?: string;

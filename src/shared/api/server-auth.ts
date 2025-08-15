@@ -1,6 +1,6 @@
 import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
 import { cookies } from 'next/headers';
-import { createUserRepository } from '@/entities/user/infrastructure/user-repository.adapter';
+import { createUserRepository } from '@/infrastructure/repositories/auth-user-repository.adapter';
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import 'server-only';
 
@@ -43,7 +43,7 @@ export async function getToken(): Promise<string | null> {
   }
 }
 
-// 🔄 Nueva función para refresh automático
+// Nueva función para refresh automático
 async function refreshTokenIfNeeded(): Promise<string | null> {
   try {
     console.log('Server Auth: Attempting to refresh token...');

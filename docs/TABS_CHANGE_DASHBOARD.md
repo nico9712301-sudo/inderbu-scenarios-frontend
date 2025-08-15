@@ -43,11 +43,11 @@ onValueChange={(value) => {
     ↓
 🗺️ filterMap["active"] = { active: true }
     ↓
-🔄 onFilterChange({ active: true }) se llama
+onFilterChange({ active: true }) se llama
     ↓
 useSubScenarioData actualiza los filtros
     ↓
-🔄 Los datos se refrescan con el filtro aplicado
+Los datos se refrescan con el filtro aplicado
     ↓
 SubScenarioTable recibe solo items activos
     ↓

@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/shared/ui/dialog";
 import { Button } from "@/shared/ui/button";
-import { Scenario } from "@/services/api";
+import { Scenario } from "@/shared/api/domain-types";
 import { useScenarioForm } from "../../hooks/useScenarioForm";
 import { updateScenarioAction } from "@/infrastructure/web/controllers/dashboard/scenario.actions";
 import { ScenarioForm } from "../molecules/scenario-form.component";

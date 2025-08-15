@@ -4,7 +4,7 @@
 
 "use client";
 
-import { ReservationDto } from "@/services/reservation.service";
+import { ReservationDto } from "@/entities/reservation/model/types";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
@@ -38,7 +38,7 @@ import { StatusBadge } from "../atoms/status-badge";
 import {
   cancelReservationAction,
   CancelReservationResult,
-} from "../../use-cases/cancel/actions/cancel-reservation.action";
+} from "@/infrastructure/web/controllers/cancel-reservation.action";
 
 /* ───────────────────────────────────  Props  ─────────────────────────────── */
 interface ReservationItemProps {

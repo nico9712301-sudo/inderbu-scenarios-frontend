@@ -1,7 +1,7 @@
 // Infrastructure: Field Surface Type Repository Adapter
 import { IFieldSurfaceTypeRepository, PaginatedFieldSurfaceTypes, FieldSurfaceTypeFilters } from '@/entities/field-surface-type/domain/IFieldSurfaceTypeRepository';
 import { FieldSurfaceTypeEntity, FieldSurfaceTypeSearchCriteria, FieldSurfaceTypeDomainError } from '@/entities/field-surface-type/domain/FieldSurfaceTypeEntity';
-import { FieldSurfaceType } from '@/services/api';
+import { FieldSurfaceType } from '@/shared/api/domain-types';
 import { HttpClient } from '@/shared/api/types';
 import { BackendPaginatedResponse } from '@/shared/api/backend-types';
 import { FieldSurfaceTypeTransformer } from '@/infrastructure/transformers/FieldSurfaceTypeTransformer';

@@ -1,4 +1,4 @@
-import { SubScenarioImage } from '@/services/api';
+import { SubScenarioImage } from '@/shared/api/domain-types';
 import { FILE_UPLOAD, FileValidation } from '@/shared/constants/file-upload.constants';
 
 export interface ImageUploadData {

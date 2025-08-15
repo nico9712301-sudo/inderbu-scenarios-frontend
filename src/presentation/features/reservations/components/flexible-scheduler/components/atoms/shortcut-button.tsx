@@ -1,6 +1,6 @@
 import { Button } from "@/shared/ui/button";
-import { Tooltip } from "@/shared/components/atoms/tooltip";
 import { SmartShortcut } from "../../types/scheduler.types";
+import { Tooltip } from "@/shared/ui/tooltip";
 
 interface ShortcutButtonProps {
   shortcut: SmartShortcut;
@@ -10,7 +10,8 @@ interface ShortcutButtonProps {
 
 export const ShortcutButton = ({ shortcut, isLoading, onApply }: ShortcutButtonProps) => {
   return (
-    <Tooltip content={shortcut.description} side="bottom">
+    // <Tooltip content={shortcut.description} side="bottom">
+    <Tooltip>
       <Button
         variant="outline"
         size="sm"

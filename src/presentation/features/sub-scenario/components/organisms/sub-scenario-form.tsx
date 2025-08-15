@@ -1,6 +1,6 @@
 "use client";
 
-import { Scenario } from "@/services/api";
+import { Scenario } from "@/shared/api/domain-types";
 import { ActivityAreaPlainObject } from "@/entities/activity-area/domain/ActivityAreaEntity";
 import { Textarea } from "@/shared/ui/textarea";
 import { Switch } from "@/shared/ui/switch";

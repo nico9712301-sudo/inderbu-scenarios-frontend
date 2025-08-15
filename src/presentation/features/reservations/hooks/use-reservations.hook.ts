@@ -1,6 +1,6 @@
-import ReservationService, {
-  ReservationDto,
-} from "@/services/reservation.service";
+import { ReservationDto } from "@/entities/reservation/model/types";
+import { createReservationRepository } from "@/entities/reservation/infrastructure/reservation-repository.adapter";
+import { ClientHttpClientFactory } from "@/shared/api/http-client-client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -53,7 +53,9 @@ export const useReservations = () => {
     try {
       console.log("Fetching reservations with filters:", currentFilters);
 
-      const result = await ReservationService.getAllReservationsWithPagination({
+      const httpClient = ClientHttpClientFactory.createClientWithAuth();
+      const repository = createReservationRepository(httpClient);
+      const result = await repository.getByUserId(0, {
         page: pageNumber,
         limit: pageSize,
         ...currentFilters,
@@ -116,7 +118,10 @@ export const useReservations = () => {
   /* ---------- derived state (memoised) ---------- */
   const stats = useMemo(() => {
     const fetchAllReservations = async () => {
-      const allData = await ReservationService.getAllReservations();
+      const httpClient = ClientHttpClientFactory.createClientWithAuth();
+      const repository = createReservationRepository(httpClient);
+      const allDataResult = await repository.getAll({ limit: 1000 });
+      const allData = allDataResult.data;
       const today = new Date().toISOString().split("T")[0];
       const todayQty = allData.filter(
         (r) => r.reservationDate === today,

@@ -11,7 +11,7 @@ import { useDebouncedSearch } from "@/shared/hooks/use-debounced-search";
 import { useCallback, useState } from "react";
 import { Download, Filter, Plus } from "lucide-react";
 import { NavValues } from "../utils/nav-values";
-import { SubScenario } from "@/services/api";
+import { SubScenario } from "@/shared/api/domain-types";
 import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import { updateSubScenarioAction } from "@/infrastructure/web/controllers/dashboard/sub-scenario.actions";

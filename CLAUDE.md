@@ -129,7 +129,7 @@ User interface and user experience concerns:
 - **Session Management**: httpOnly cookies with server-side validation
 - **Auth Context**: `src/presentation/features/auth/model/use-auth.tsx` provides client-side auth state
 - **Server Auth**: `src/shared/api/server-auth.ts` handles server-side authentication
-- **Auth Guards**: Component-level protection via `src/presentation/features/auth/ui/auth-guard.tsx`
+- **Auth Guards**: Component-level protection via `src/shared/components/organisms/auth-guard.tsx`
 - **Role-Based Access**: Permission system in `src/shared/interfaces/permission.interface.ts`
 
 ### Dependency Injection Architecture

@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@/shared/ui/card";
 import { FlexibleSchedulerProps, ScheduleConfig, IFromTo } from "../../types/scheduler.types";
+import { AuthModal } from "@/presentation/features/auth/components/organisms/auth-modal";
 import { useReservationProcess } from "../../hooks/use-reservation-process";
 import { useTimeSlotSelection } from "../../hooks/use-time-slot-selection";
 import { useDateConfiguration } from "../../hooks/use-date-configuration";
@@ -18,19 +19,10 @@ import { useURLPersistence } from "../../hooks/use-url-persistence";
 import { DateRangePicker } from "../molecules/date-range-picker";
 import { AdvancedOptions } from "../molecules/advanced-options";
 import { generateTimeSlots } from "../../utils/time-formatters";
-import { Tooltip } from "@/shared/components/atoms/tooltip";
 import { Button } from "@/shared/ui/button";
-import { AuthModal } from "@/presentation/features/auth";
 import { useMemo, useEffect } from "react";
 import { FiLoader } from "react-icons/fi";
-
-// Hooks
-
-// Components
-
-// Utils
-
-// Types
+import { Tooltip } from "@/shared/ui/tooltip";
 
 export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerProps) {
   // Hooks de estado
@@ -161,7 +153,8 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
               <FiLoader className="h-4 w-4 animate-spin text-blue-500" />
             )}
             
-            <Tooltip content="Selecciona una fecha y horarios para crear tu reserva. ¡Es súper fácil!" side="bottom">
+            {/* <Tooltip content="Selecciona una fecha y horarios para crear tu reserva. ¡Es súper fácil!" side="bottom"> */}
+            <Tooltip>
               <Button variant="ghost" size="sm" className="ml-auto">
                 <HelpCircle className="h-4 w-4" />
               </Button>

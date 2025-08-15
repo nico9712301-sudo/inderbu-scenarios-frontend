@@ -3,7 +3,7 @@
 
 import { createDomainTransformer, IDomainTransformer } from './DomainTransformer';
 import { NeighborhoodEntity, NeighborhoodDomainError } from '@/entities/neighborhood/domain/NeighborhoodEntity';
-import { Neighborhood } from '@/services/api';
+import { Neighborhood } from '@/shared/api/domain-types';
 
 // Validation functions
 function isValidNeighborhoodBackend(data: any): data is Neighborhood {

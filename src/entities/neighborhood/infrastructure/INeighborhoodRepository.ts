@@ -1,5 +1,5 @@
 import { NeighborhoodEntity, NeighborhoodSearchCriteria } from '../domain/NeighborhoodEntity';
-import { PageMeta } from '@/services/api';
+import { PageMeta } from '@/shared/api/pagination';
 
 export interface NeighborhoodFilters {
   page?: number;

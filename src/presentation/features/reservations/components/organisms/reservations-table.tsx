@@ -2,7 +2,7 @@
 
 import { useMemo, useCallback, useState, useEffect } from "react";
 import { ClickableStatusBadge } from "../molecules/clickable-status-badge";
-import type { ReservationDto } from "@/services/reservation.service";
+import type { ReservationDto } from "@/entities/reservation/model/types";
 import { formatDate, reservationStateById } from "@/shared/utils/utils";
 import { DataTable } from "@/shared/ui/data-table";
 import { Button } from "@/shared/ui/button";

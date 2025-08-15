@@ -19,33 +19,37 @@ import { Switch } from "@/shared/ui/switch";
 import { useEffect, useState } from "react";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { UserPlainObject } from "@/entities/user/domain/UserEntity";
+import { EUserRole } from "@/shared/enums/user-role.enum";
 
 
 /* ---------- Tipos ---------- */
-export interface IUser {
-  id: number;
-  dni: number;
-  firstName?: string;
-  lastName?: string;
-  first_name?: string;
-  last_name?: string;
-  email: string;
-  phone: string;
-  address: string;
-  isActive: boolean;
-  role: {
-    id: number;
-    name: string;
-    description: string;
-  };
-  neighborhood: {
-    id: number;
-    name: string;
-  };
-  roleId?: number;
-  neighborhoodId?: number;
-  password?: string;
-}
+// export interface User {
+//   id: number;
+//   dni: number;
+//   firstName?: string;
+//   lastName?: string;
+//   first_name?: string;
+//   last_name?: string;
+//   email: string;
+//   phone: string;
+//   address: string;
+//   isActive: boolean;
+//   role: {
+//     id: number;
+//     name: string;
+//     description?: string;
+//   };
+//   neighborhood: {
+//     id: number;
+//     name: string;
+//   };
+//   roleId?: number;
+//   neighborhoodId?: number;
+//   password?: string;
+// }
+
+type User = UserPlainObject;
 
 interface IRoleOption {
   id: number;
@@ -59,9 +63,9 @@ interface IINeighborhoodOptionDTO {
 
 interface UserDrawerProps {
   open: boolean;
-  user: IUser | null;
+  user: UserPlainObject | null;
   onClose: () => void;
-  onSave: (data: Partial<IUser>) => Promise<void>;
+  onSave: (data: Partial<User>) => Promise<void>;
 }
 
 // API URL base
@@ -70,7 +74,7 @@ const API_BASE_URL =
 
 /* ---------- Componente ---------- */
 export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
-  const [form, setForm] = useState<Partial<IUser>>({});
+  const [form, setForm] = useState<Partial<User>>({});
   const [roles, setRoles] = useState<IRoleOption[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<IINeighborhoodOptionDTO[]>([]);
   const [loading, setLoading] = useState(false);
@@ -105,22 +109,13 @@ export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
     if (user) {
       setForm({
         dni: user.dni,
-        firstName: user.firstName || user.first_name || "",
-        lastName: user.lastName || user.last_name || "",
+        firstName: user.firstName || user.firstName || "",
+        lastName: user.lastName || user.lastName || "",
         email: user.email || "",
         phone: user.phone || "",
         address: user.address || "",
         isActive: user.isActive !== undefined ? user.isActive : true,
-        role: {
-          id: user.role?.id || (user.roleId ? user.roleId : 1),
-          name: user.role?.name || "",
-        },
-        neighborhood: {
-          id:
-            user.neighborhood?.id ||
-            (user.neighborhoodId ? user.neighborhoodId : 1),
-          name: user.neighborhood?.name || "",
-        },
+        role: user.role ?? undefined,
       });
     } else {
       setForm({
@@ -131,14 +126,7 @@ export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
         phone: "",
         address: "",
         isActive: true,
-        role: {
-          id: 1,
-          name: "",
-        },
-        neighborhood: {
-          id: 1,
-          name: "",
-        },
+        role: EUserRole.INDEPENDIENTE,
       });
     }
   }, [user]);
@@ -157,7 +145,7 @@ export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
   };
 
   const handle =
-    (field: keyof IUser) =>
+    (field: keyof User) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm({ ...form, [field]: e.target.value });
 
@@ -167,7 +155,7 @@ export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
         <DialogHeader className="pb-2">
           <DialogTitle className="text-xl text-teal-700">
             {user
-              ? `Editar Usuario: ${user.firstName || user.first_name || ""} ${user.lastName || user.last_name || ""}`
+              ? `Editar Usuario: ${user.firstName || user.firstName || ""} ${user.lastName || user.lastName || ""}`
               : "Nuevo Usuario"}
           </DialogTitle>
         </DialogHeader>
@@ -206,12 +194,16 @@ export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
               <Field id="user-role" label="Rol*">
                 <Select
                   value={form.role?.id?.toString() || ""}
-                  onValueChange={(value) =>
+                  onValueChange={(value) => {
+                    const selectedRole = roles.find((role) => role.id === Number(value));
                     setForm({
                       ...form,
-                      role: { ...form.role, id: Number(value) },
-                    })
-                  }
+                      role: {
+                        id: Number(value),
+                        name: selectedRole ? selectedRole.name : "",
+                      },
+                    });
+                  }}
                 >
                   <SelectTrigger className="bg-white h-9">
                     <SelectValue placeholder="Seleccionar rol" />
@@ -283,12 +275,16 @@ export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
               <Field id="user-neighborhood" label="Barrio*">
                 <Select
                   value={form.neighborhood?.id?.toString() || ""}
-                  onValueChange={(value) =>
+                  onValueChange={(value) => {
+                    const selectedNeighborhood = neighborhoods.find((n) => n.id === Number(value));
                     setForm({
                       ...form,
-                      neighborhood: { ...form.neighborhood, id: Number(value) },
-                    })
-                  }
+                      neighborhood: {
+                        id: Number(value),
+                        name: selectedNeighborhood ? selectedNeighborhood.name : "",
+                      },
+                    });
+                  }}
                 >
                   <SelectTrigger className="bg-white h-9">
                     <SelectValue placeholder="Seleccionar barrio" />

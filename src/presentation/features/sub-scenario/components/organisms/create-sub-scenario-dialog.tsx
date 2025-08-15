@@ -10,9 +10,9 @@ import {
 } from "@/shared/ui/dialog";
 import { SubScenarioForm } from "./sub-scenario-form";
 import { Button } from "@/shared/ui/button";
-import { FieldSurfaceType, Scenario, SubScenario } from "@/services/api";
+import { FieldSurfaceType, Scenario, SubScenario } from "@/shared/api/domain-types";
 import { ActivityAreaPlainObject } from "@/entities/activity-area/domain/ActivityAreaEntity";
-import { useSubScenarioForm } from "@/presentation/features/dashboard/sub-scenarios/hooks/useSubScenarioForm";
+import { useSubScenarioForm } from "@/presentation/features/dashboard/sub-scenarios/hooks/use-sub-scenario-form-data.hook";
 import { toast } from "sonner";
 
 

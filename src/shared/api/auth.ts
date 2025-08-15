@@ -25,7 +25,7 @@ export class ClientAuthManager {
     document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
   }
 
-  // 🔄 Nuevo método con refresh automático
+  // Nuevo método con refresh automático
   static async getValidToken(): Promise<string | null> {
     if (typeof window === 'undefined') return null;
 
@@ -45,7 +45,7 @@ export class ClientAuthManager {
     return token;
   }
 
-  // 🔄 Refresh automático en cliente
+  // Refresh automático en cliente
   private static async refreshTokenIfNeeded(): Promise<string | null> {
     // Evitar múltiples refreshes simultáneos
     if (this.isRefreshing && this.refreshPromise) {
@@ -78,7 +78,7 @@ export class ClientAuthManager {
       console.log('ClientAuthManager: Calling refresh endpoint...');
       
       // Importación dinámica para evitar ciclos
-      const { createUserRepository } = await import('@/entities/user/infrastructure/user-repository.adapter');
+      const { createUserRepository } = await import('@/infrastructure/repositories/auth-user-repository.adapter');
       const { ClientHttpClientFactory } = await import('@/shared/api/http-client-client');
       
       // Crear cliente sin auth para evitar ciclo infinito
@@ -178,6 +178,6 @@ export interface AuthContext {
 }
 
 export const createClientAuthContext = (): AuthContext => ({
-  getToken: async () => ClientAuthManager.getValidToken(), // 🔄 Usar el método con refresh
+  getToken: async () => ClientAuthManager.getValidToken(), // Usar el método con refresh
   isServer: false,
 });

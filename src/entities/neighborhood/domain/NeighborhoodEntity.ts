@@ -1,7 +1,7 @@
 // Domain Entity: Neighborhood
 // Represents the core business concept of a neighborhood with rich behavior
 
-import { Neighborhood } from '@/services/api';
+import { Neighborhood } from '@/shared/api/domain-types';
 
 export class NeighborhoodEntity {
   public readonly id: number;

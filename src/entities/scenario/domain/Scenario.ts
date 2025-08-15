@@ -1,4 +1,4 @@
-import { Neighborhood } from '@/services/api';
+import { Neighborhood } from '@/shared/api/domain-types';
 
 export interface Scenario {
   id: number;

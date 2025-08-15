@@ -1,4 +1,4 @@
-import { CreateScenarioDto, UpdateScenarioDto } from "@/services/api";
+import { CreateScenarioDto, UpdateScenarioDto } from "@/shared/api/dto-types";
 
 // Type for backward compatibility
 export interface ScenarioFormData {

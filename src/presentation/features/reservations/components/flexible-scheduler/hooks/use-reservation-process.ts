@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { createReservation } from "@/presentation/features/reservations/use-cases/create/actions/createReservationAction";
+
+import { validateMinimumSelection, validateDateSelection, getUnavailableSlots } from "../utils/slot-validators";
 import { CreateReservationDto } from "@/entities/reservation/model/types";
 import { useAuth } from "@/presentation/features/auth/model/use-auth";
-import { validateMinimumSelection, validateDateSelection, getUnavailableSlots } from "../utils/slot-validators";
 import { IFromTo } from "../types/scheduler.types";
+import { createReservation } from "@/infrastructure/web/controllers/create-reservation.action";
 
 export const useReservationProcess = (
   subScenarioId: number,

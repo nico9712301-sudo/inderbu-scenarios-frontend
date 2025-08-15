@@ -13,7 +13,7 @@ import { toast } from "sonner";
 
 import { AuthState } from "@/entities/user/model/types";
 import { TLoginData, TRegisterData, TResetData } from "../schemas/auth-schemas";
-import { login, register, resetPassword, logout } from "../api/auth-actions";
+import { login, register, resetPassword, logout } from "@/infrastructure/web/controllers/auth.actions";
 
 interface AuthContextType extends AuthState {
   // Actions

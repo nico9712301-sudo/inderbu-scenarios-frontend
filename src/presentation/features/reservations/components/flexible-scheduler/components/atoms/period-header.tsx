@@ -1,8 +1,8 @@
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
-import { Tooltip } from "@/shared/components/atoms/tooltip";
 import { PeriodHeaderProps } from "../../types/scheduler.types";
+import { Tooltip } from "@/shared/ui/tooltip";
 
 export const PeriodHeader = ({
   period,
@@ -28,7 +28,8 @@ export const PeriodHeader = ({
           </span>
         </div>
         {availableCount > 0 && (
-          <Tooltip content={`Seleccionar todos los horarios disponibles de ${period.name.toLowerCase()}`} side="top">
+          // <Tooltip content={`Seleccionar todos los horarios disponibles de ${period.name.toLowerCase()}`} side="top">
+          <Tooltip>
             <Button
               variant="ghost"
               size="sm"

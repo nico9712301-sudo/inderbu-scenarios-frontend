@@ -3,7 +3,7 @@
 
 import { createDomainTransformer, IDomainTransformer } from './DomainTransformer';
 import { ActivityAreaEntity, ActivityAreaDomainError } from '@/entities/activity-area/domain/ActivityAreaEntity';
-import { ActivityArea } from '@/services/api';
+import { ActivityArea } from '@/shared/api/domain-types';
 
 // Validation functions
 function isValidActivityAreaBackend(data: any): data is ActivityArea {

@@ -1,6 +1,6 @@
 'use server';
 
-import { createUserRepository } from '@/entities/user/infrastructure/user-repository.adapter';
+import { createUserRepository } from '@/infrastructure/repositories/auth-user-repository.adapter';
 import { extractUserFromToken } from '@/entities/user/model/types';
 import {
   loginSchema,
@@ -14,6 +14,19 @@ import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
+
+/**
+ * Auth Server Actions
+ * 
+ * Next.js Server Actions that handle authentication requests.
+ * These act as controllers in the Clean Architecture, handling:
+ * - Input validation and transformation
+ * - Authentication repository orchestration
+ * - Error handling
+ * - Cookie management (httpOnly security)
+ * - Cache invalidation (revalidatePath)
+ * - Response formatting
+ */
 
 // ARREGLADO: fieldErrors puede ser null o Record limpio
 export interface AuthResult {

@@ -1,6 +1,6 @@
 import { IReservationRepository } from '@/entities/reservation/infrastructure/IReservationRepository';
 import { ReservationEntity } from '@/entities/reservation/domain/ReservationEntity';
-import { PageMeta } from '@/services/api';
+import { PageMeta } from '@/shared/api/pagination';
 
 // Application Service Response (Domain Entities)
 export interface IUserReservationsDataResponse {

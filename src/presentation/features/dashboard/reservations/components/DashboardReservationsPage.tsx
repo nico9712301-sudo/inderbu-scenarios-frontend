@@ -7,7 +7,7 @@ import { useDashboardReservationsData } from "../hooks/use-dashboard-reservation
 import { FiltersCard } from "@/presentation/features/reservations/components/molecules/filters-card";
 import { DashboardReservationsTable } from "./organisms/dashboard-reservations-table";
 import { StatsGrid } from "@/presentation/features/reservations/components/molecules/stats-grid";
-import { ReservationDto } from "@/services/reservation.service";
+import { ReservationDto } from "@/entities/reservation/model/types";
 import { useState, useTransition } from "react";
 import { Filter, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";

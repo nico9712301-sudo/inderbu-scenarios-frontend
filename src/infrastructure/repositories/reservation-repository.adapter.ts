@@ -1,6 +1,14 @@
 // Infrastructure: Reservation Repository Adapter
 import { ReservationEntity, ReservationSearchCriteria, ReservationDomainError } from '@/entities/reservation/domain/ReservationEntity';
-import { IReservationRepository, PaginatedReservations, ReservationFilters } from '@/entities/reservation/infrastructure/IReservationRepository';
+import { 
+  IReservationRepository, 
+  PaginatedReservations, 
+  ReservationFilters,
+  CreateReservationDto,
+  CreateReservationResponseDto,
+  TimeslotResponseDto,
+  ReservationStateDto
+} from '@/entities/reservation/infrastructure/IReservationRepository';
 import { HttpClient } from '@/shared/api/types';
 import { BackendResponse, BackendPaginatedResponse } from '@/shared/api/backend-types';
 import { ReservationTransformer, ReservationBackend } from '@/infrastructure/transformers/ReservationTransformer';
@@ -215,6 +223,58 @@ export class ReservationRepository implements IReservationRepository {
     } catch (error) {
       console.error('ReservationRepository: Error in delete:', error);
       throw new ReservationDomainError(`Failed to delete reservation ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  // Legacy compatibility methods
+  async getAvailableTimeSlots(subScenarioId: number, date: string): Promise<TimeslotResponseDto[]> {
+    try {
+      const url = `/reservations/availability?subScenarioId=${subScenarioId}&initialDate=${date}`;
+      
+      const result = await this.httpClient.get<BackendResponse<any>>(url);
+      
+      // Handle backend response structure
+      const data = result.data || result;
+      
+      if (data && data.timeSlots && Array.isArray(data.timeSlots)) {
+        return data.timeSlots.map((slot: any) => ({
+          id: slot.id,
+          startTime: slot.startTime.substring(0, 5), // "09:00:00" -> "09:00"
+          endTime: slot.endTime.substring(0, 5),     // "10:00:00" -> "10:00"
+          available: slot.isAvailableInAllDates,
+          isAvailable: slot.isAvailableInAllDates
+        }));
+      }
+      
+      return [];
+    } catch (error) {
+      console.error('ReservationRepository: Error in getAvailableTimeSlots:', error);
+      throw new ReservationDomainError(`Failed to fetch available timeslots: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async createReservation(data: CreateReservationDto): Promise<CreateReservationResponseDto> {
+    try {
+      const result = await this.httpClient.post<BackendResponse<CreateReservationResponseDto>>(
+        '/reservations',
+        data
+      );
+      
+      return result.data || result;
+    } catch (error) {
+      console.error('ReservationRepository: Error in createReservation:', error);
+      throw new ReservationDomainError(`Failed to create reservation: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async getAllReservationStates(): Promise<ReservationStateDto[]> {
+    try {
+      const result = await this.httpClient.get<BackendResponse<ReservationStateDto[]>>('/reservations/states');
+      
+      return result.data || result || [];
+    } catch (error) {
+      console.error('ReservationRepository: Error in getAllReservationStates:', error);
+      throw new ReservationDomainError(`Failed to fetch reservation states: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 }

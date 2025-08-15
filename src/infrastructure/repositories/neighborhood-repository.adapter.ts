@@ -3,7 +3,7 @@ import { NeighborhoodEntity, NeighborhoodSearchCriteria, NeighborhoodDomainError
 import { NeighborhoodTransformer } from '@/infrastructure/transformers/NeighborhoodTransformer';
 import { BackendPaginatedResponse } from '@/shared/api/backend-types';
 import { HttpClient } from '@/shared/api/types';
-import { Neighborhood } from '@/services/api';
+import { Neighborhood } from '@/shared/api/domain-types';
 // Infrastructure: Neighborhood Repository Adapter
 
 export class NeighborhoodRepositoryAdapter implements INeighborhoodRepository {

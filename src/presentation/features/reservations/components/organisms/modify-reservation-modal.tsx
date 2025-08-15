@@ -28,10 +28,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { cancelReservationAction } from "../../use-cases/cancel/actions/cancel-reservation.action";
+import { cancelReservationAction } from "@/infrastructure/web/controllers/cancel-reservation.action";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { ClickableStatusBadge } from "../molecules/clickable-status-badge";
-import { ReservationDto } from "@/services/reservation.service";
+import { ReservationDto } from "@/entities/reservation/model/types";
 import { formatReservationInfo } from "../../utils/utils";
 import { Separator } from "@/shared/ui/separator";
 import { Button } from "@/shared/ui/button";

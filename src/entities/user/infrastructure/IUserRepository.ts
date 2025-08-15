@@ -2,7 +2,7 @@
 // Contract for user data access operations
 
 import { UserEntity } from '../domain/UserEntity';
-import { PageMeta } from '@/services/api';
+import { PageMeta } from '@/shared/api/pagination';
 
 // User filters for querying
 export interface UserFilters {
@@ -24,12 +24,11 @@ export interface CreateUserDto {
   roleId: number;
   address: string;
   neighborhoodId: number;
-  password: string;
+  password?: string;
 }
 
 // DTO for updating users
 export interface UpdateUserDto {
-  id: number;
   dni?: number;
   firstName?: string;
   lastName?: string;

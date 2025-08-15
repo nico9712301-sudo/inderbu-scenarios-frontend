@@ -67,6 +67,7 @@ export const TOKENS = {
   // USE CASES - USERS/CLIENTS (Application Layer)
   // =============================================================================
   GetUsersUseCase: 'GetUsersUseCase',
+  GetUserByIdUseCase: 'GetUserByIdUseCase',
   GetRolesUseCase: 'GetRolesUseCase',
 
   // =============================================================================

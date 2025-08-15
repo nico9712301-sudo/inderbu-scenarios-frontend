@@ -3,7 +3,7 @@
 import { useMemo,  useEffect, useState } from "react";
 import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
 import { ClickableStatusBadge } from "@/presentation/features/reservations/components/molecules/clickable-status-badge";
-import type { ReservationDto } from "@/services/reservation.service";
+import type { ReservationDto } from "@/entities/reservation/model/types";
 import { reservationStateById } from "@/shared/utils/utils";
 import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";

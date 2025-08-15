@@ -35,6 +35,7 @@ import { GetUserReservationsDataService } from '@/application/reservations/servi
 import { GetUserReservationsUseCase as AppGetUserReservationsUseCase } from '@/application/reservations/use-cases/GetUserReservationsUseCase';
 import { GetClientsDataService } from '@/application/dashboard/clients/services/GetClientsDataService';
 import { GetUsersUseCase } from '@/application/dashboard/clients/use-cases/GetUsersUseCase';
+import { GetUserByIdUseCase } from '@/application/dashboard/clients/use-cases/GetUserByIdUseCase';
 import { GetRolesUseCase } from '@/application/dashboard/clients/use-cases/GetRolesUseCase';
 
 // HTTP Client imports  
@@ -323,6 +324,12 @@ export class ContainerFactory {
     // Get Users Use Case
     container.bind<GetUsersUseCase>(TOKENS.GetUsersUseCase)
       .to(() => new GetUsersUseCase(
+        container.get<IUserRepository>(TOKENS.IUserRepository)
+      ));
+
+    // Get User By ID Use Case
+    container.bind<GetUserByIdUseCase>(TOKENS.GetUserByIdUseCase)
+      .to(() => new GetUserByIdUseCase(
         container.get<IUserRepository>(TOKENS.IUserRepository)
       ));
 

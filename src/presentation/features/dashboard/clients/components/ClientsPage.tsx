@@ -1,13 +1,14 @@
 "use client";
 
+import { createUserAction, updateUserAction, getUserByIdAction } from "@/infrastructure/web/controllers/dashboard/user.actions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { createUserAction, updateUserAction, getUserByIdAction } from "../actions/user.actions";
 import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
+import { IClientsDataClientResponse } from "@/presentation/utils/serialization.utils";
+import { UserDrawer } from "@/presentation/features/dashboard/components/user-drawer";
 import { useDashboardPagination } from "@/shared/hooks/use-dashboard-pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { IClientsDataClientResponse } from "@/presentation/utils/serialization.utils";
-import { UserDrawer } from "@/presentation/features/dashboard/components/user-drawer";
+import { UserPlainObject } from "@/entities/user/domain/UserEntity";
 import { Download, FileEdit, Plus, Search } from "lucide-react";
 import { StatusBadge } from "@/shared/ui/status-badge";
 import { Button } from "@/shared/ui/button";
@@ -16,6 +17,10 @@ import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { useState } from "react";
 import { toast } from "sonner";
+
+
+// Type alias for cleaner code in this component
+type User = UserPlainObject;
 
 
 interface ClientsPageProps {
@@ -107,8 +112,8 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
           email: data.email,
           phone: data.phone,
           address: data.address,
-          roleId: data.role?.id,
-          neighborhoodId: data.neighborhood?.id,
+          roleId: data.roleId,
+          neighborhoodId: data.neighborhoodId,
           isActive: data.isActive,
         };
 
@@ -131,8 +136,8 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
           email: data.email!,
           phone: data.phone!,
           address: data.address!,
-          roleId: data.role!.id,
-          neighborhoodId: data.neighborhood!.id,
+          roleId: data.roleId!,
+          neighborhoodId: data.neighborhoodId!,
           isActive: data.isActive ?? true,
         };
 
@@ -165,9 +170,9 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
       header: "Nombre",
       cell: (row: User) => (
         <span>
-          {(row.firstName || row.first_name || "") +
+          {(row.firstName || row.firstName || "") +
             " " +
-            (row.lastName || row.last_name || "")}
+            (row.lastName || row.lastName || "")}
         </span>
       ),
     },
@@ -179,12 +184,12 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
     {
       id: "role",
       header: "Rol",
-      cell: (row: User) => <span>{row.role?.name || "N/A"}</span>,
+      cell: (row: User) => <span>{row.role || "N/A"}</span>,
     },
     {
       id: "neighborhood",
       header: "Barrio",
-      cell: (row: User) => <span>{row.neighborhood?.name || "N/A"}</span>,
+      cell: (row: User) => <span>{row.neighborhoodId || "N/A"}</span>,
     },
     {
       id: "status",
@@ -235,7 +240,7 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los roles</SelectItem>
-                {filterOptions.roles.map((role) => (
+                {filterOptions.roles.map((role:any) => (
                   <SelectItem key={role.value} value={role.value}>
                     {role.label}
                   </SelectItem>
@@ -248,7 +253,7 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los barrios</SelectItem>
-                {filterOptions.neighborhoods.map((neighborhood) => (
+                {filterOptions.neighborhoods.map((neighborhood:any) => (
                   <SelectItem key={neighborhood.value} value={neighborhood.value}>
                     {neighborhood.label}
                   </SelectItem>
@@ -261,7 +266,7 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                {filterOptions.status.map((status) => (
+                {filterOptions.status.map((status: any) => (
                   <SelectItem key={status.value} value={status.value}>
                     {status.label}
                   </SelectItem>
@@ -320,7 +325,7 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
 
   // Filter users by role for tabs
   const filterUsersByRole = (roleName: string) => {
-    return users.filter((user) => user.role?.name === roleName);
+    return users.filter((user) => String(user.role) === roleName);
   };
 
   return (

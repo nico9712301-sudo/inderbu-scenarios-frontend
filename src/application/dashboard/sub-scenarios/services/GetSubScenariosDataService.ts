@@ -1,5 +1,5 @@
 import { SubScenariosFilters } from '@/entities/sub-scenario/infrastructure/ISubScenarioRepository';
-import { PageMeta } from '@/services/api';
+import { PageMeta } from '@/shared/api/pagination';
 import { ScenarioEntity } from '@/entities/scenario/domain/ScenarioEntity';
 import { SubScenarioEntity } from '@/entities/sub-scenario/domain/SubScenarioEntity';
 import { ActivityAreaEntity } from '@/entities/activity-area/domain/ActivityAreaEntity';

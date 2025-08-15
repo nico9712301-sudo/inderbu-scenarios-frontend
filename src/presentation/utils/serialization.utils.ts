@@ -1,17 +1,18 @@
-// Presentation Layer: Serialization utilities
-// Handles conversion from Domain Entities to plain objects for Next.js Client Components
-
+// Entities
+import { FieldSurfaceTypeEntity, FieldSurfaceTypePlainObject } from '@/entities/field-surface-type/domain/FieldSurfaceTypeEntity';
 import { ActivityAreaEntity, ActivityAreaPlainObject } from '@/entities/activity-area/domain/ActivityAreaEntity';
 import { NeighborhoodEntity, NeighborhoodPlainObject } from '@/entities/neighborhood/domain/NeighborhoodEntity';
-import { FieldSurfaceTypeEntity, FieldSurfaceTypePlainObject } from '@/entities/field-surface-type/domain/FieldSurfaceTypeEntity';
-import { ScenarioEntity, ScenarioPlainObject } from '@/entities/scenario/domain/ScenarioEntity';
 import { SubScenarioEntity, SubScenarioPlainObject } from '@/entities/sub-scenario/domain/SubScenarioEntity';
+import { ReservationEntity, ReservationPlainObject } from '@/entities/reservation/domain/ReservationEntity';
+import { ScenarioEntity, ScenarioPlainObject } from '@/entities/scenario/domain/ScenarioEntity';
+import { UserEntity, UserPlainObject } from '@/entities/user/domain/UserEntity';
+import { RoleEntity, RolePlainObject } from '@/entities/role/domain/RoleEntity';
+
+// Application Layer
 import { ISubScenariosDataResponse } from '@/application/dashboard/sub-scenarios/services/GetSubScenariosDataService';
 import { IUserReservationsDataResponse } from '@/application/reservations/services/GetUserReservationsDataService';
 import { IScenariosDataResponse } from '@/application/dashboard/scenarios/services/GetScenariosDataService';
-import { IClientsDataResponse, RoleEntity } from '@/application/dashboard/clients/services/GetClientsDataService';
-import { ReservationEntity, ReservationPlainObject } from '@/entities/reservation/domain/ReservationEntity';
-import { UserEntity, UserPlainObject } from '@/entities/user/domain/UserEntity';
+import { IClientsDataResponse } from '@/application/dashboard/clients/services/GetClientsDataService';
 import { IHomeDataResponse } from '@/application/home/services/GetHomeDataService';
 
 // Serialized version of ISubScenariosDataResponse for client components
@@ -53,7 +54,7 @@ export interface IScenariosDataClientResponse {
 // Serialized version of IClientsDataResponse for client components
 export interface IClientsDataClientResponse {
   users: UserPlainObject[]; // Serialized from domain entities
-  roles: RoleEntity[];     // Keep as-is (simple objects, no domain entity)
+  roles: RolePlainObject[]; // Serialized from domain entities
   neighborhoods: NeighborhoodPlainObject[]; // Serialized from domain entities
   meta: any;           // Keep as-is (already plain object from API)
   filters: any;        // Keep as-is (already plain object)
@@ -106,6 +107,13 @@ export function serializeReservations(entities: ReservationEntity[]): Reservatio
  * Serializes UserEntity[] to plain objects for client components
  */
 export function serializeUsers(entities: UserEntity[]): UserPlainObject[] {
+  return entities.map(entity => entity.toPlainObject());
+}
+
+/**
+ * Serializes RoleEntity[] to plain objects for client components
+ */
+export function serializeRoles(entities: RoleEntity[]): RolePlainObject[] {
   return entities.map(entity => entity.toPlainObject());
 }
 
@@ -200,7 +208,7 @@ export function serializeClientsData(
 ): IClientsDataClientResponse {
   return {
     users: serializeUsers(domainResponse.users), // Serialize domain entities
-    roles: domainResponse.roles, // Keep as-is (simple objects, no domain entity)
+    roles: serializeRoles(domainResponse.roles), // Serialize domain entities
     neighborhoods: serializeNeighborhoods(domainResponse.neighborhoods), // Serialize domain entities
     meta: domainResponse.meta,
     filters: domainResponse.filters,

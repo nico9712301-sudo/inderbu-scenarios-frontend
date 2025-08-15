@@ -202,7 +202,7 @@ src/
 - **Testing Support** - Easy mocking and dependency override for tests
 - **Consistent API** - Same interface patterns across all features for predictable development
 
-### 🔄 **Shared Layer** (`shared/`)
+### **Shared Layer** (`shared/`)
 
 - **UI Components** - Reutilizables entre features
 - **Utilities** - Helpers sin dependencias de negocio
@@ -279,7 +279,7 @@ src/
 5. Returns updated Scenario entity
 ```
 
-### 🔄 **Toggle Scenario Status Flow:**
+### **Toggle Scenario Status Flow:**
 
 ```
 1. UI Page (presentation/features/dashboard/scenarios/pages/scenarios.page.tsx)
@@ -739,7 +739,7 @@ export function CreateScenarioModal({ isOpen, onClose, onScenarioCreated }) {
 }
 ```
 
-## 🔄 Application Services Pattern - NEW ARCHITECTURE
+## Application Services Pattern - NEW ARCHITECTURE
 
 ### **Application Services vs Use Cases**
 
@@ -1107,7 +1107,7 @@ Our custom DI solution provides:
 - **Performance optimization** - No external dependencies
 - **Full control** - Customizable to our exact requirements
 
-## 🔄 **Domain Entity Transformation & Serialization Pattern**
+## **Domain Entity Transformation & Serialization Pattern**
 
 ### **Overview**
 
@@ -1221,7 +1221,7 @@ export function serializeSubScenariosData(
 }
 ```
 
-### **🔄 Complete Flow Example - ActivityArea**
+### **Complete Flow Example - ActivityArea**
 
 #### **1. Read Operation (Backend → Domain → UI)**
 

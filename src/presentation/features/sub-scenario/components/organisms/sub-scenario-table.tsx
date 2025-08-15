@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
 import { FileEdit, Loader2, Search } from "lucide-react";
 import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
-import { SubScenario } from "@/services/api";
+import { SubScenario } from "@/shared/api/domain-types";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";

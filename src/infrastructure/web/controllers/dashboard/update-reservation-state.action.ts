@@ -4,6 +4,13 @@ import { revalidatePath } from 'next/cache';
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
 
+/**
+ * Update Reservation State Server Action
+ * 
+ * Next.js Server Action that handles reservation state updates.
+ * Acts as controller in the Clean Architecture.
+ */
+
 export async function updateReservationStateAction(
   reservationId: number,
   reservationStateId: number

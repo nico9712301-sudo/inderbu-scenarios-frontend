@@ -7,7 +7,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import { Commune, Neighborhood, CreateCommuneDto, CreateNeighborhoodDto, UpdateCommuneDto, UpdateNeighborhoodDto } from "@/services/api";
+import { Commune, Neighborhood } from "@/shared/api/domain-types";
+import { CreateCommuneDto, CreateNeighborhoodDto, UpdateCommuneDto, UpdateNeighborhoodDto } from "@/shared/api/dto-types";
 import {
   Building2,
   Download,
@@ -25,9 +26,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { createNeighborhoodAction, updateNeighborhoodAction } from "../actions/neighborhood.actions";
+import { createNeighborhoodAction, updateNeighborhoodAction } from "@/infrastructure/web/controllers/dashboard/neighborhood.actions";
 import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
-import { createCommuneAction, updateCommuneAction } from "../actions/commune.actions";
+import { createCommuneAction, updateCommuneAction } from "@/infrastructure/web/controllers/dashboard/commune.actions";
 import { useMultiEntityPagination } from "@/shared/hooks/use-dashboard-pagination";
 import { LocationsDataResponse } from "../application/GetLocationsDataUseCase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";

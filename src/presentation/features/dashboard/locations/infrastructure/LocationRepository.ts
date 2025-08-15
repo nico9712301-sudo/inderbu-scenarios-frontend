@@ -1,11 +1,10 @@
+import { Commune, Neighborhood } from '@/shared/api/domain-types';
 import {
-  Commune,
-  Neighborhood,
   CreateCommuneDto,
   CreateNeighborhoodDto,
   UpdateCommuneDto,
   UpdateNeighborhoodDto,
-} from '@/services/api';
+} from '@/shared/api/dto-types';
 import {
   ICommuneRepository,
   ICityRepository,

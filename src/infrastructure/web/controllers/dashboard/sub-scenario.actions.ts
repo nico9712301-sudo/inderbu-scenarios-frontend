@@ -8,7 +8,6 @@ import { UpdateSubScenarioUseCase } from '@/application/dashboard/sub-scenarios/
 import { UploadSubScenarioImagesUseCase, ImageUploadData } from '@/application/dashboard/sub-scenarios/use-cases/UploadSubScenarioImagesUseCase';
 import { ErrorHandlerComposer } from '@/shared/api/error-handler';
 import { IContainer } from '@/infrastructure/config/di/simple-container';
-import { SubScenario, SubScenarioImage } from '@/services/api';
 
 /**
  * Sub-Scenario Server Actions
@@ -107,4 +106,48 @@ export async function uploadSubScenarioImagesAction(
 
     return uploadedImages;
   }, 'uploadSubScenarioImages');
+}
+
+// =============================================================================
+// GET SUB-SCENARIOS WITH PAGINATION
+// =============================================================================
+
+import { GetSubScenariosUseCase } from '@/application/dashboard/sub-scenarios/use-cases/GetSubScenariosUseCase';
+
+export interface GetSubScenariosRequest {
+  page?: number;
+  limit?: number;
+  search?: string;
+  scenarioId?: number;
+  activityAreaId?: number;
+  fieldSurfaceTypeId?: number;
+  hasCost?: boolean;
+  active?: boolean;
+}
+
+export async function getSubScenariosAction(request: GetSubScenariosRequest = {}) {
+  return await ErrorHandlerComposer.withErrorHandling(async () => {
+    // Get dependencies from Simple DI container
+    const container = ContainerFactory.createContainer();
+    const getSubScenariosUseCase = container.get<GetSubScenariosUseCase>(
+      TOKENS.GetSubScenariosUseCase
+    );
+
+    // Execute use case
+    const result = await getSubScenariosUseCase.execute({
+      page: request.page || 1,
+      limit: request.limit || 10,
+      search: request.search,
+      scenarioId: request.scenarioId,
+      activityAreaId: request.activityAreaId,
+      fieldSurfaceTypeId: request.fieldSurfaceTypeId,
+      hasCost: request.hasCost,
+      active: request.active,
+    });
+
+    return {
+      success: true,
+      data: result,
+    };
+  }, 'getSubScenariosAction');
 }

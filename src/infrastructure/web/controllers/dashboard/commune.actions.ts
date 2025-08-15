@@ -1,19 +1,25 @@
 "use server";
 
-import { CreateNeighborhoodDto, UpdateNeighborhoodDto } from '@/services/api';
+import { revalidatePath } from 'next/cache';
+import { CreateCommuneDto, UpdateCommuneDto } from '@/shared/api/dto-types';
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
-import { revalidatePath } from 'next/cache';
 
+/**
+ * Commune Server Actions
+ * 
+ * Next.js Server Actions that handle commune management requests.
+ * These act as controllers in the Clean Architecture.
+ */
 
-export async function createNeighborhoodAction(data: CreateNeighborhoodDto) {
+export async function createCommuneAction(data: CreateCommuneDto) {
   try {
     // CORRECTO - Con autenticación desde servidor
     const authContext = createServerAuthContext();
     const httpClient = ClientHttpClientFactory.createClient(authContext);
 
     // Direct API call with authentication
-    const created = await httpClient.post('/neighborhoods', data);
+    const created = await httpClient.post('/communes', data);
 
     // Revalidate the locations page to show updated data
     revalidatePath('/dashboard/locations');
@@ -23,17 +29,17 @@ export async function createNeighborhoodAction(data: CreateNeighborhoodDto) {
       data: created,
     };
   } catch (error: any) {
-    console.error('Error creating neighborhood:', error);
+    console.error('Error creating commune:', error);
     return {
       success: false,
-      error: error.message || 'Error al crear barrio',
+      error: error.message || 'Error al crear comuna',
     };
   }
 }
 
-export async function updateNeighborhoodAction(
+export async function updateCommuneAction(
   id: number,
-  data: UpdateNeighborhoodDto
+  data: UpdateCommuneDto
 ) {
   try {
     // CORRECTO - Con autenticación desde servidor
@@ -41,7 +47,7 @@ export async function updateNeighborhoodAction(
     const httpClient = ClientHttpClientFactory.createClient(authContext);
 
     // Direct API call with authentication
-    const updated = await httpClient.put(`/neighborhoods/${id}`, data);
+    const updated = await httpClient.put(`/communes/${id}`, data);
 
     // Revalidate the locations page to show updated data
     revalidatePath('/dashboard/locations');
@@ -51,10 +57,10 @@ export async function updateNeighborhoodAction(
       data: updated,
     };
   } catch (error: any) {
-    console.error('Error updating neighborhood:', error);
+    console.error('Error updating commune:', error);
     return {
       success: false,
-      error: error.message || 'Error al actualizar barrio',
+      error: error.message || 'Error al actualizar comuna',
     };
   }
 }

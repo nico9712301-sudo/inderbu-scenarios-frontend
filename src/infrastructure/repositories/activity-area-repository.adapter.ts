@@ -2,7 +2,7 @@
 
 import { IActivityAreaRepository, PaginatedActivityAreas, ActivityAreaFilters } from '@/entities/activity-area/domain/IActivityAreaRepository';
 import { ActivityAreaEntity, ActivityAreaSearchCriteria, ActivityAreaDomainError } from '@/entities/activity-area/domain/ActivityAreaEntity';
-import { ActivityArea } from '@/services/api';
+import { ActivityArea } from '@/shared/api/domain-types';
 import { HttpClient } from '@/shared/api/types';
 import { BackendPaginatedResponse } from '@/shared/api/backend-types';
 import { ActivityAreaTransformer } from '@/infrastructure/transformers/ActivityAreaTransformer';

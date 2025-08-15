@@ -22,7 +22,8 @@
       "WebFetch(domain:enterprisecraftsmanship.com)",
       "WebFetch(domain:learn.microsoft.com)",
       "WebFetch(domain:blog.cleancoder.com)"
-    ]
+    ],
+    "defaultMode": "acceptEdits"
   },
   "enableAllProjectMcpServers": false
 }

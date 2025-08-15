@@ -15,14 +15,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import { ReservationStateDto } from "@/services/reservation.service";
-import { updateReservationStateAction, UpdateReservationResult } from "../../use-cases/update/actions/update-reservation.action";
+import { ReservationStateDto } from "@/entities/reservation/model/types";
 import { useReservationStates } from "../../hooks/use-reservation-state.hook";
 import { AlertTriangle, Check, Loader2 } from "lucide-react";
 import { Badge } from "@/shared/ui/badge";
 import { useMemo, useState } from "react";
 import { cn } from "@/shared/utils/utils";
 import { toast } from "sonner";
+import { UpdateReservationResult, updateReservationStateAction } from "@/infrastructure/web/controllers/update-reservation.action";
 
 interface ClickableStatusBadgeProps {
   /** id actual de la reserva – viene del backend */

@@ -6,6 +6,13 @@ import { ClientHttpClient, ClientHttpClientFactory } from '@/shared/api/http-cli
 import { createServerAuthContext, ServerAuthContext } from '@/shared/api/server-auth';
 import { revalidateTag } from 'next/cache';
 
+/**
+ * Update Reservation Server Actions
+ * 
+ * Next.js Server Actions that handle reservation updates.
+ * Acts as controller in the Clean Architecture.
+ */
+
 export interface UpdateReservationResult {
   success: boolean;
   data?: ReservationDto;
@@ -23,7 +30,7 @@ export async function updateReservationStateAction(
     const httpClient: ClientHttpClient = ClientHttpClientFactory.createClient(authContext);
     const repository: ReservationRepository = createReservationRepository(httpClient);
 
-    console.log(`🔄 Updating reservation ${reservationId} state:`, command);
+    console.log(`Updating reservation ${reservationId} state:`, command);
 
     // Update reservation state through repository
     const updatedReservation: ReservationDto = await repository.updateState(reservationId, command);
@@ -73,7 +80,7 @@ export async function updateReservationAction(
     // For now, this could be extended to handle other field updates
     // Currently focusing on state updates as that's what the edit drawer uses
     
-    console.log(`🔄 Full reservation update not yet implemented for ${reservationId}`);
+    console.log(`Full reservation update not yet implemented for ${reservationId}`);
     
     return {
       success: false,

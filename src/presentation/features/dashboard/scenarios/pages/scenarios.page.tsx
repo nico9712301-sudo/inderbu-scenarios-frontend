@@ -19,7 +19,7 @@ import { Button } from "@/shared/ui/button";
 
 // Import shared filters component
 import { updateScenarioAction } from "@/infrastructure/web/controllers/dashboard/scenario.actions";
-import { ScenariosFiltersCard } from "@/presentation/components/molecules/ScenariosFiltersCard";
+import { ScenariosFiltersCard } from "@/presentation/features/dashboard/scenarios/components/molecules/scenarios-filter-card.component";
 import { ErrorHandlerResult } from "@/shared/api/error-handler";
 import { Scenario } from "@/entities/scenario/domain/Scenario";
 import { toast } from "sonner";

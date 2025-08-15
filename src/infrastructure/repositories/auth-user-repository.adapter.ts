@@ -5,7 +5,7 @@ import {
 } from "@/presentation/features/auth/schemas/auth-schemas";
 import { ClientHttpClient } from "@/shared/api/http-client-client";
 import { SimpleApiResponse } from "@/shared/api/types";
-import { AuthTokens, User } from "../model/types";
+import { AuthTokens, User } from "@/entities/user/model/types";
 
 export interface UserRepository {
   login(credentials: TLoginData): Promise<AuthTokens>;

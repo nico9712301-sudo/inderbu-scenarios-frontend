@@ -2,7 +2,7 @@
 // Contract for role data access operations
 
 import { RoleEntity } from '../domain/RoleEntity';
-import { PageMeta } from '@/services/api';
+import { PageMeta } from '@/shared/api/pagination';
 
 // Role filters for querying
 export interface RoleFilters {

@@ -1,6 +1,6 @@
 "use client";
 
-import { ReservationDto } from "@/services/reservation.service";
+import { ReservationDto } from "@/entities/reservation/model/types";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Filter, Plus, X } from "lucide-react";

@@ -61,3 +61,20 @@ export { ClientHttpClient, ClientHttpClientFactory } from './http-client-client'
 
 // Default export for apiClient (for existing usage)
 export const apiClient = authApiClient;
+
+// =============================================================================
+// NEW: Centralized exports for migrated types (from services/api.ts)
+// =============================================================================
+
+// Pagination types and utilities
+export * from './pagination';
+
+// Domain business interfaces
+export * from './domain-types';
+
+// Data Transfer Objects (DTOs)
+export * from './dto-types';
+
+// Core API types (existing)
+export * from './types';
+export * from './backend-types';

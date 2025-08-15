@@ -9,11 +9,10 @@ export {
   logoutAction,
   login,
   register
-} from './api/auth-actions';
+} from '@/infrastructure/web/controllers/auth.actions';
 
 // Export auth UI components
-export { AuthGuard, UserReservationsGuard } from './ui/auth-guard';
-export { AuthModal } from './components'; // NEW: Export AuthModal
+export { AuthGuard, UserReservationsGuard } from '@/shared/components/organisms/auth-guard';
 
 // Export auth types from entities
 export type { 

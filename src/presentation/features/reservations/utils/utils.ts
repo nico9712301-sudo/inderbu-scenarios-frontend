@@ -1,6 +1,6 @@
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { ReservationDto } from "@/services/reservation.service";
+import { ReservationDto } from "@/entities/reservation/model/types";
 
 const getWeekDayNames = (weekDays: number[]) => {
   const days = [

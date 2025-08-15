@@ -36,7 +36,7 @@ Este módulo ha sido refactorizado desde un archivo monolítico de más de 800 l
 - **🔗 Shareability**: URLs compartibles con configuración
 - **📌 Bookmarking**: Guardar configuraciones favoritas
 - **⏪ Navigation**: Back/Forward funciona intuitivamente
-- **🔄 Refresh**: No se pierde estado al refrescar
+- **Refresh**: No se pierde estado al refrescar
 
 ## Arquitectura
 
@@ -197,7 +197,7 @@ Atajos predefinidos para selección rápida:
 
 Configuración de días de la semana.
 
-## 🔄 Compatibilidad
+## Compatibilidad
 
 El archivo original `components/flexible-scheduler.tsx` ahora re-exporta el nuevo componente, manteniendo **compatibilidad hacia atrás** sin romper imports existentes.
 

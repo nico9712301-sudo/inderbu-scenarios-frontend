@@ -4,7 +4,7 @@
 import { IUserRepository, UserFilters, CreateUserDto, UpdateUserDto, PaginatedUsers } from '@/entities/user/infrastructure/IUserRepository';
 import { UserEntity } from '@/entities/user/domain/UserEntity';
 import { UserTransformer, UserBackend } from '../transformers/UserTransformer';
-import { IHttpClient } from '@/shared/api/http-client-server';
+import { IHttpClient } from '@/shared/api/types';
 import { BackendPaginatedResponse } from '@/shared/api/backend-types';
 
 /**

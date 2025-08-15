@@ -7,7 +7,7 @@ import { SubScenarioEntity } from '@/entities/sub-scenario/domain/SubScenarioEnt
 import { ActivityAreaEntity } from '@/entities/activity-area/domain/ActivityAreaEntity';
 import { NeighborhoodEntity } from '@/entities/neighborhood/domain/NeighborhoodEntity';
 import { FieldSurfaceTypeEntity } from '@/entities/field-surface-type/domain/FieldSurfaceTypeEntity';
-import { PageMeta } from '@/services/api';
+import { PageMeta } from '@/shared/api/pagination';
 
 // Application Service Input
 export interface HomeFilters {
