@@ -7,9 +7,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/shared/ui/carousel";
-import { slidesScenario } from "@/mock-data/slides-scenario";
+import { slidesScenario } from "@/shared/mock-data/slides-scenario";
 import Autoplay from "embla-carousel-autoplay";
-import { slides } from "@/mock-data/slides";
 import Image from "next/image";
 import * as React from "react";
 

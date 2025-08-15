@@ -25,14 +25,15 @@ import {
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { SimpleLayout } from "@/shared/components/layout/simple-layout";
+import { slides } from "@/shared/mock-data/slides";
 import { Textarea } from "@/shared/ui/textarea";
-import { slides } from "@/mock-data/slides";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { useState } from "react";
 import Image from "next/image";
+
 
 export default function BannersPage() {
   const [activeTab, setActiveTab] = useState("home");
