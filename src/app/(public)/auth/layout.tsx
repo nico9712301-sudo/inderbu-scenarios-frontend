@@ -12,3 +12,5 @@ export default function AuthLayout({
 }) {
   return children;
 }
+
+// This layout is used for the authentication pages, such as login and registration.
