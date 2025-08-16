@@ -9,11 +9,12 @@ import { ISubScenariosDataClientResponse } from "@/presentation/utils/serializat
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { useDebouncedSearch } from "@/shared/hooks/use-debounced-search";
 import { useCallback, useState } from "react";
-import { Download, Filter, Plus } from "lucide-react";
+import { Filter, Plus } from "lucide-react";
 import { NavValues } from "../utils/nav-values";
 import { SubScenario } from "@/shared/api/domain-types";
 import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/button";
+import { SubScenarioExportButton } from "./atoms/export-button.component";
 import { updateSubScenarioAction } from "@/infrastructure/web/controllers/dashboard/sub-scenario.actions";
 import { ErrorHandlerResult } from "@/shared/api/error-handler";
 import { toast } from "sonner";
@@ -186,9 +187,14 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
           </TabsList>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" /> Exportar
-            </Button>
+            <SubScenarioExportButton 
+              filters={{
+                active: filters.active,
+                scenarioId: filters.scenarioId,
+                activityAreaId: filters.activityAreaId,
+                search: filters.search,
+              }}
+            />
           </div>
         </div>
 
