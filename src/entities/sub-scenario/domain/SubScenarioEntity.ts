@@ -1,8 +1,3 @@
-// Domain Entity: SubScenario
-import { ScenarioEntity } from '@/entities/scenario/domain/ScenarioEntity';
-import { ActivityAreaEntity } from '@/entities/activity-area/domain/ActivityAreaEntity';
-import { FieldSurfaceTypeEntity } from '@/entities/field-surface-type/domain/FieldSurfaceTypeEntity';
-
 export interface SubScenarioPlainObject {
   id: number;
   name: string;
@@ -10,6 +5,7 @@ export interface SubScenarioPlainObject {
   numberOfSpectators: number;
   numberOfPlayers: number;
   recommendations: string;
+  active: boolean;
   scenario: {
     id: number;
     name: string;
@@ -92,6 +88,7 @@ export class SubScenarioEntity {
   public readonly numberOfSpectators: number;
   public readonly numberOfPlayers: number;
   public readonly recommendations: string;
+  public readonly active: boolean;
   public readonly scenario: {
     id: number;
     name: string;
@@ -123,6 +120,7 @@ export class SubScenarioEntity {
     numberOfSpectators: number,
     numberOfPlayers: number,
     recommendations: string,
+    active: boolean,
     scenario: {
       id: number;
       name: string;
@@ -182,6 +180,7 @@ export class SubScenarioEntity {
     this.numberOfSpectators = numberOfSpectators;
     this.numberOfPlayers = numberOfPlayers;
     this.recommendations = recommendations?.trim() || '';
+    this.active = active;
     this.scenario = scenario;
     this.activityArea = activityArea;
     this.fieldSurfaceType = fieldSurfaceType;
@@ -203,6 +202,7 @@ export class SubScenarioEntity {
       Number(apiData.numberOfSpectators) || 0,
       Number(apiData.numberOfPlayers) || 0,
       apiData.recommendations || '',
+      Boolean(apiData.active !== undefined ? apiData.active : true),
       {
         id: apiData.scenario.id,
         name: apiData.scenario.name,
@@ -237,7 +237,7 @@ export class SubScenarioEntity {
 
   // Business logic methods
   isActive(): boolean {
-    return true; // Assuming all sub-scenarios are active if they exist
+    return this.active;
   }
 
   isFree(): boolean {
@@ -306,6 +306,7 @@ export class SubScenarioEntity {
       numberOfSpectators: this.numberOfSpectators,
       numberOfPlayers: this.numberOfPlayers,
       recommendations: this.recommendations,
+      active: this.active,
       scenario: this.scenario,
       activityArea: this.activityArea,
       fieldSurfaceType: this.fieldSurfaceType,
@@ -324,6 +325,7 @@ export class SubScenarioEntity {
       numberOfSpectators: this.numberOfSpectators,
       numberOfPlayers: this.numberOfPlayers,
       recommendations: this.recommendations,
+      active: this.active,
       scenarioId: this.scenario.id,
       activityAreaId: this.activityArea.id,
       fieldSurfaceTypeId: this.fieldSurfaceType.id,
@@ -342,6 +344,8 @@ export class SubScenarioEntity {
       typeof apiData.name === 'string' &&
       apiData.name.trim().length > 0 &&
       typeof apiData.hasCost === 'boolean' &&
+      // Recommendations can be string or undefined
+      (apiData.recommendations === undefined || typeof apiData.recommendations === 'string') &&
       apiData.scenario &&
       typeof apiData.scenario.id === 'number' &&
       apiData.scenario.id > 0 &&

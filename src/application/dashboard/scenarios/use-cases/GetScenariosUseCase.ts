@@ -1,4 +1,4 @@
-import type { IScenarioRepository, ScenarioFilters, PaginatedScenarios } from '@/entities/scenario/infrastructure/IScenarioRepository';
+import type { IScenarioRepository, ScenarioFilters, PaginatedScenarios } from '@/entities/scenario/infrastructure/scenario-repository.port';
 import { ScenarioEntity, ScenarioDomainError } from '@/entities/scenario/domain/ScenarioEntity';
 
 export class GetScenariosUseCase {
@@ -22,27 +22,6 @@ export class GetScenariosUseCase {
       // Wrap other errors in domain error
       throw new ScenarioDomainError(
         `Use case execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
-  }
-
-  async findById(id: number): Promise<ScenarioEntity | null> {
-    try {
-      if (id <= 0) {
-        throw new ScenarioDomainError('Invalid scenario ID');
-      }
-
-      return await this.scenarioRepository.getById(id);
-
-    } catch (error) {
-      console.error('Error in GetScenariosUseCase.findById:', error);
-      
-      if (error instanceof ScenarioDomainError) {
-        throw error;
-      }
-      
-      throw new ScenarioDomainError(
-        `Find by ID failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }

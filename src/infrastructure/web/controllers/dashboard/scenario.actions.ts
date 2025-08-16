@@ -9,7 +9,7 @@ import { GetScenariosUseCase } from '@/application/dashboard/scenarios/use-cases
 import { GetScenariosDataService } from '@/application/dashboard/scenarios/services/GetScenariosDataService';
 import { ErrorHandlerComposer } from '@/shared/api/error-handler';
 import { IContainer } from '@/infrastructure/config/di/simple-container';
-import { Scenario } from '@/entities/scenario/domain/Scenario';
+import { ScenarioEntity } from '@/entities/scenario/domain/ScenarioEntity';
 
 /**
  * Scenario Server Actions
@@ -42,7 +42,7 @@ export async function createScenarioAction(request: CreateScenarioRequest) {
     );
 
     // Execute use case
-    const result: Scenario = await createScenarioUseCase.execute({
+    const result: ScenarioEntity = await createScenarioUseCase.execute({
       name: request.name,
       address: request.address,
       neighborhoodId: request.neighborhoodId,
@@ -54,7 +54,7 @@ export async function createScenarioAction(request: CreateScenarioRequest) {
     // Invalidate Next.js cache
     revalidatePath('/dashboard/scenarios');
 
-    return result
+    return result.toPlainObject()
   }, 'createScenarioAction');
 }
 
@@ -87,7 +87,7 @@ export async function updateScenarioAction(
     );
 
     // Execute use case
-    const result: Scenario = await updateScenarioUseCase.execute(id, {
+    const result: ScenarioEntity = await updateScenarioUseCase.execute(id, {
       name: request.name,
       address: request.address,
       neighborhoodId: request.neighborhoodId,
@@ -98,7 +98,7 @@ export async function updateScenarioAction(
     revalidatePath('/dashboard/scenarios');
     revalidatePath(`/dashboard/scenarios/${id}`);
 
-    return result;
+    return result.toPlainObject();
   }, 'updateScenarioAction');
 }
 

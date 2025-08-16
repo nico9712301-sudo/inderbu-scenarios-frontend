@@ -1,4 +1,4 @@
-import { ActivityAreaEntity, ActivityAreaSearchCriteria } from './ActivityAreaEntity';
+import { ActivityAreaEntity, ActivityAreaSearchCriteria } from '../domain/ActivityAreaEntity';
 import { PageMeta } from '@/shared/api/pagination';
 
 export interface ActivityAreaFilters {

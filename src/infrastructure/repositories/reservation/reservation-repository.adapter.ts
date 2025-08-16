@@ -1,5 +1,3 @@
-// Infrastructure: Reservation Repository Adapter
-import { ReservationEntity, ReservationSearchCriteria, ReservationDomainError } from '@/entities/reservation/domain/ReservationEntity';
 import { 
   IReservationRepository, 
   PaginatedReservations, 
@@ -9,9 +7,14 @@ import {
   TimeslotResponseDto,
   ReservationStateDto
 } from '@/entities/reservation/infrastructure/IReservationRepository';
-import { HttpClient } from '@/shared/api/types';
+import { ReservationEntity, ReservationSearchCriteria, ReservationDomainError } from '@/entities/reservation/domain/ReservationEntity';
+
 import { BackendResponse, BackendPaginatedResponse } from '@/shared/api/backend-types';
+import { IHttpClient } from '@/shared/api/types';
+
 import { ReservationTransformer, ReservationBackend } from '@/infrastructure/transformers/ReservationTransformer';
+
+import { executeWithDomainError } from './execute-with-domain-error.wrapper';
 
 /**
  * Reservation Repository Implementation
@@ -20,10 +23,10 @@ import { ReservationTransformer, ReservationBackend } from '@/infrastructure/tra
  * Uses server-side HTTP client with authentication context.
  */
 export class ReservationRepository implements IReservationRepository {
-  constructor(private readonly httpClient: HttpClient) {}
+  constructor(private readonly httpClient: IHttpClient) {}
 
   async getAll(filters?: ReservationFilters): Promise<PaginatedReservations> {
-    try {
+    return executeWithDomainError(async () => {
       // Build query params from filters
       const params = new URLSearchParams();
       if (filters?.search) params.append('search', filters.search);
@@ -52,15 +55,11 @@ export class ReservationRepository implements IReservationRepository {
         data: transformedData,
         meta: result.meta,
       };
-
-    } catch (error) {
-      console.error('ReservationRepository: Error in getAll:', error);
-      throw new ReservationDomainError(`Failed to fetch reservations: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    }, 'Failed to fetch reservations');
   }
 
   async getByUserId(userId: number, filters?: ReservationFilters): Promise<PaginatedReservations> {
-    try {
+    return executeWithDomainError(async () => {
       // Add userId to filters
       const userFilters = {
         ...filters,
@@ -70,30 +69,20 @@ export class ReservationRepository implements IReservationRepository {
 
       // Use getAll with user filter
       return await this.getAll(userFilters);
-
-    } catch (error) {
-      console.error('ReservationRepository: Error in getByUserId:', error);
-      throw new ReservationDomainError(`Failed to fetch user reservations: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    }, `Failed to fetch user ${userId} reservations`);
   }
 
   async getById(id: number): Promise<ReservationEntity | null> {
-    try {
+    return executeWithDomainError(async () => {
       const result = await this.httpClient.get<ReservationBackend>(`/reservations/${id}`);
       
       // Transform backend data to domain entity
       return ReservationTransformer.toDomain(result) as ReservationEntity;
-    } catch (error: any) {
-      if (error.status === 404) {
-        return null;
-      }
-      console.error('ReservationRepository: Error in getById:', error);
-      throw new ReservationDomainError(`Failed to fetch reservation ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    }, `Failed to fetch reservation ${id}`);
   }
 
   async search(criteria: ReservationSearchCriteria): Promise<ReservationEntity[]> {
-    try {
+    return executeWithDomainError(async () => {
       if (!criteria.isValid()) {
         throw new ReservationDomainError('Invalid search criteria');
       }
@@ -143,18 +132,11 @@ export class ReservationRepository implements IReservationRepository {
       }
 
       return filtered;
-
-    } catch (error) {
-      console.error('ReservationRepository: Error in search:', error);
-      throw error;
-    }
+    }, 'Failed to search reservations');
   }
 
-  /**
-   * Create a new reservation
-   */
   async create(data: Omit<ReservationEntity, "id">): Promise<ReservationEntity> {
-    try {
+    return executeWithDomainError(async () => {
       // Transform domain entity to backend format for API call
       const backendData = ReservationTransformer.toBackend(data as ReservationEntity);
       
@@ -163,18 +145,11 @@ export class ReservationRepository implements IReservationRepository {
       
       // Transform response back to domain entity
       return ReservationTransformer.toDomain(result.data) as ReservationEntity;
-      
-    } catch (error) {
-      console.error('ReservationRepository: Error in create:', error);
-      throw new ReservationDomainError(`Failed to create reservation: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    }, 'Failed to create reservation');
   }
 
-  /**
-   * Update an existing reservation
-   */
   async update(id: number, data: Partial<ReservationEntity>): Promise<ReservationEntity> {
-    try {
+    return executeWithDomainError(async () => {
       // Get existing entity and merge with updates
       const existing = await this.getById(id);
       if (!existing) {
@@ -190,18 +165,11 @@ export class ReservationRepository implements IReservationRepository {
       
       // Transform response back to domain entity  
       return ReservationTransformer.toDomain(result.data) as ReservationEntity;
-      
-    } catch (error) {
-      console.error('ReservationRepository: Error in update:', error);
-      throw new ReservationDomainError(`Failed to update reservation ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    }, `Failed to update reservation ${id}`);
   }
 
-  /**
-   * Update reservation state
-   */
   async updateState(id: number, stateId: number): Promise<ReservationEntity> {
-    try {
+    return executeWithDomainError(async () => {
       // Call backend API with state update
       const result = await this.httpClient.patch<BackendResponse<ReservationBackend>>(
         `/reservations/${id}/state`, 
@@ -210,25 +178,18 @@ export class ReservationRepository implements IReservationRepository {
       
       // Transform response back to domain entity
       return ReservationTransformer.toDomain(result.data) as ReservationEntity;
-      
-    } catch (error) {
-      console.error('ReservationRepository: Error in updateState:', error);
-      throw new ReservationDomainError(`Failed to update reservation ${id} state: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    }, `Failed to update reservation ${id} state`);
   }
 
   async delete(id: number): Promise<void> {
-    try {
+    return executeWithDomainError(async () => {
       await this.httpClient.delete(`/reservations/${id}`);
-    } catch (error) {
-      console.error('ReservationRepository: Error in delete:', error);
-      throw new ReservationDomainError(`Failed to delete reservation ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    }, `Failed to delete reservation ${id}`);
   }
 
   // Legacy compatibility methods
   async getAvailableTimeSlots(subScenarioId: number, date: string): Promise<TimeslotResponseDto[]> {
-    try {
+    return executeWithDomainError(async () => {
       const url = `/reservations/availability?subScenarioId=${subScenarioId}&initialDate=${date}`;
       
       const result = await this.httpClient.get<BackendResponse<any>>(url);
@@ -247,39 +208,25 @@ export class ReservationRepository implements IReservationRepository {
       }
       
       return [];
-    } catch (error) {
-      console.error('ReservationRepository: Error in getAvailableTimeSlots:', error);
-      throw new ReservationDomainError(`Failed to fetch available timeslots: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    }, `Failed to fetch available timeslots for sub-scenario ${subScenarioId}`);
   }
 
   async createReservation(data: CreateReservationDto): Promise<CreateReservationResponseDto> {
-    try {
+    return executeWithDomainError(async () => {
       const result = await this.httpClient.post<BackendResponse<CreateReservationResponseDto>>(
         '/reservations',
         data
       );
       
       return result.data || result;
-    } catch (error) {
-      console.error('ReservationRepository: Error in createReservation:', error);
-      throw new ReservationDomainError(`Failed to create reservation: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    }, 'Failed to create reservation (legacy method)');
   }
 
   async getAllReservationStates(): Promise<ReservationStateDto[]> {
-    try {
+    return executeWithDomainError(async () => {
       const result = await this.httpClient.get<BackendResponse<ReservationStateDto[]>>('/reservations/states');
       
       return result.data || result || [];
-    } catch (error) {
-      console.error('ReservationRepository: Error in getAllReservationStates:', error);
-      throw new ReservationDomainError(`Failed to fetch reservation states: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    }, 'Failed to fetch reservation states');
   }
-}
-
-// Temporary factory function for legacy containers
-export function createReservationRepositoryAdapter(httpClient: HttpClient): IReservationRepository {
-  return new ReservationRepository(httpClient);
 }

@@ -2,15 +2,16 @@ import { INeighborhoodRepository, PaginatedNeighborhoods, NeighborhoodFilters } 
 import { NeighborhoodEntity, NeighborhoodSearchCriteria, NeighborhoodDomainError } from '@/entities/neighborhood/domain/NeighborhoodEntity';
 import { NeighborhoodTransformer } from '@/infrastructure/transformers/NeighborhoodTransformer';
 import { BackendPaginatedResponse } from '@/shared/api/backend-types';
-import { HttpClient } from '@/shared/api/types';
+import { IHttpClient } from '@/shared/api/types';
 import { Neighborhood } from '@/shared/api/domain-types';
+import { executeWithDomainError } from './execute-with-domain-error.wrapper';
 // Infrastructure: Neighborhood Repository Adapter
 
 export class NeighborhoodRepositoryAdapter implements INeighborhoodRepository {
-  constructor(private readonly httpClient: HttpClient) { }
+  constructor(private readonly httpClient: IHttpClient) { }
 
   async getAll(filters?: NeighborhoodFilters): Promise<PaginatedNeighborhoods> {
-    try {
+    return executeWithDomainError(async () => {
       // Build query params from filters
       const params = new URLSearchParams();
       if (filters?.search) params.append('search', filters.search);
@@ -33,79 +34,18 @@ export class NeighborhoodRepositoryAdapter implements INeighborhoodRepository {
         data: transformedData,
         meta: result.meta,
       };
-
-    } catch (error) {
-      console.error('NeighborhoodRepositoryAdapter: Error in getAll:', error);
-      throw new NeighborhoodDomainError(`Failed to fetch neighborhoods: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    }, 'Failed to fetch neighborhoods');
   }
 
   async getById(id: number): Promise<NeighborhoodEntity | null> {
-    try {
+    return executeWithDomainError(async () => {
       const allEntitiesResult = await this.getAll();
       return allEntitiesResult.data.find(entity => entity.id === id) || null;
-    } catch (error) {
-      console.error('NeighborhoodRepositoryAdapter: Error in getById:', error);
-      throw error;
-    }
-  }
-
-  async search(criteria: NeighborhoodSearchCriteria): Promise<NeighborhoodEntity[]> {
-    try {
-      if (!criteria.isValid()) {
-        throw new NeighborhoodDomainError('Invalid search criteria');
-      }
-
-      const allEntitiesResult = await this.getAll();
-      
-      let filtered = allEntitiesResult.data;
-
-      // Filter by search query
-      if (criteria.searchQuery) {
-        filtered = filtered.filter(entity => 
-          entity.matchesSearchQuery(criteria.searchQuery!)
-        );
-      }
-
-      // Filter by commune ID
-      if (criteria.communeId) {
-        filtered = filtered.filter(entity => 
-          entity.communeId === criteria.communeId
-        );
-      }
-
-      // Filter by city ID
-      if (criteria.cityId) {
-        filtered = filtered.filter(entity => 
-          entity.cityId === criteria.cityId
-        );
-      }
-
-      // Apply limit
-      if (criteria.limit && criteria.limit > 0) {
-        filtered = filtered.slice(0, criteria.limit);
-      }
-
-      return filtered;
-
-    } catch (error) {
-      console.error('NeighborhoodRepositoryAdapter: Error in search:', error);
-      throw error;
-    }
-  }
-
-  async findByCommuneId(communeId: number): Promise<NeighborhoodEntity[]> {
-    try {
-      const allEntitiesResult = await this.getAll();
-      return allEntitiesResult.data.filter(entity => entity.communeId === communeId);
-    } catch (error) {
-      console.error('NeighborhoodRepositoryAdapter: Error in findByCommuneId:', error);
-      throw error;
-    }
+    }, `Failed to fetch neighborhood ${id}`);
   }
 
   async create(data: Omit<NeighborhoodEntity, 'id'>): Promise<NeighborhoodEntity> {
-    try {
+    return executeWithDomainError(async () => {
       // Transform domain entity to backend format for API call
       const backendData = NeighborhoodTransformer.toBackend(data as NeighborhoodEntity);
       
@@ -114,15 +54,11 @@ export class NeighborhoodRepositoryAdapter implements INeighborhoodRepository {
       
       // Transform response back to domain entity
       return NeighborhoodTransformer.toDomain(result.data[0]);
-      
-    } catch (error) {
-      console.error('NeighborhoodRepositoryAdapter: Error in create:', error);
-      throw new NeighborhoodDomainError(`Failed to create neighborhood: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    }, 'Failed to create neighborhood');
   }
 
   async update(id: number, data: Partial<NeighborhoodEntity>): Promise<NeighborhoodEntity> {
-    try {
+    return executeWithDomainError(async () => {
       // Get existing entity and merge with updates
       const existing = await this.getById(id);
       if (!existing) {
@@ -138,24 +74,12 @@ export class NeighborhoodRepositoryAdapter implements INeighborhoodRepository {
       
       // Transform response back to domain entity  
       return NeighborhoodTransformer.toDomain(result.data[0]);
-      
-    } catch (error) {
-      console.error('NeighborhoodRepositoryAdapter: Error in update:', error);
-      throw new NeighborhoodDomainError(`Failed to update neighborhood ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    }, `Failed to update neighborhood ${id}`);
   }
 
   async delete(id: number): Promise<void> {
-    try {
+    return executeWithDomainError(async () => {
       await this.httpClient.delete(`/neighborhoods/${id}`);
-    } catch (error) {
-      console.error('NeighborhoodRepositoryAdapter: Error in delete:', error);
-      throw new NeighborhoodDomainError(`Failed to delete neighborhood ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    }, `Failed to delete neighborhood ${id}`);
   }
-}
-
-// Temporary factory function for legacy containers
-export function createNeighborhoodRepositoryAdapter(httpClient: HttpClient): INeighborhoodRepository {
-  return new NeighborhoodRepositoryAdapter(httpClient);
 }

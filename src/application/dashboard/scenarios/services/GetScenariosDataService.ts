@@ -1,6 +1,6 @@
-import { ScenarioFilters } from '@/entities/scenario/infrastructure/IScenarioRepository';
-import { GetScenariosUseCase } from '../use-cases/GetScenariosUseCase';
+import { ScenarioFilters } from '@/entities/scenario/infrastructure/scenario-repository.port';
 import { GetNeighborhoodsUseCase } from '../use-cases/GetNeighborhoodsUseCase';
+import { GetScenariosUseCase } from '../use-cases/GetScenariosUseCase';
 
 export interface IScenariosDataResponse {
   scenarios: any[]; // Using any temporarily until we unify types
@@ -17,15 +17,6 @@ export class GetScenariosDataService {
 
   async execute(filters: ScenarioFilters = {}): Promise<IScenariosDataResponse> {
     try {
-      // Business validation
-      if (filters.page !== undefined && filters.page <= 0) {
-        throw new Error('Page number must be greater than 0');
-      }
-      
-      if (filters.limit !== undefined && (filters.limit <= 0 || filters.limit > 100)) {
-        throw new Error('Limit must be between 1 and 100');
-      }
-
       // Default filters with business rules
       const defaultFilters: ScenarioFilters = {
         page: 1,

@@ -78,7 +78,7 @@ export class ClientAuthManager {
       console.log('ClientAuthManager: Calling refresh endpoint...');
       
       // Importación dinámica para evitar ciclos
-      const { createUserRepository } = await import('@/infrastructure/repositories/auth-user-repository.adapter');
+      const { createUserRepository } = await import('@/infrastructure/repositories/auth/auth-user-repository.adapter');
       const { ClientHttpClientFactory } = await import('@/shared/api/http-client-client');
       
       // Crear cliente sin auth para evitar ciclo infinito

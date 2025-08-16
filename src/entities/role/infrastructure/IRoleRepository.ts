@@ -1,6 +1,3 @@
-// Domain Layer: Role Repository Interface
-// Contract for role data access operations
-
 import { RoleEntity } from '../domain/RoleEntity';
 import { PageMeta } from '@/shared/api/pagination';
 
@@ -25,18 +22,6 @@ export interface PaginatedRoles {
  * Returns domain entities wrapped in pagination structures.
  */
 export interface IRoleRepository {
-  /**
-   * Get all roles with pagination and filters
-   */
   getAll(filters?: RoleFilters): Promise<PaginatedRoles>;
-
-  /**
-   * Get role by ID
-   */
   getById(id: number): Promise<RoleEntity>;
-
-  /**
-   * Get total role count
-   */
-  getTotalCount(): Promise<number>;
 }

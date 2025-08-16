@@ -1,6 +1,3 @@
-// DDD: Scenario Detail Domain Logic & Repository Interface
-
-// Domain Entity (extends SubScenario with full details)
 export interface ScenarioDetail {
   id: number;
   name: string;

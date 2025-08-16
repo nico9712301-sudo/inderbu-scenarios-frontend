@@ -1,11 +1,13 @@
-// Infrastructure Layer: User Repository Adapter
-// Implements IUserRepository interface using HttpClient and UserTransformer
+import { executeWithDomainError } from './execute-with-domain-error.wrapper';
 
 import { IUserRepository, UserFilters, CreateUserDto, UpdateUserDto, PaginatedUsers } from '@/entities/user/infrastructure/IUserRepository';
 import { UserEntity } from '@/entities/user/domain/UserEntity';
-import { UserTransformer, UserBackend } from '../transformers/UserTransformer';
-import { IHttpClient } from '@/shared/api/types';
+
 import { BackendPaginatedResponse } from '@/shared/api/backend-types';
+import { IHttpClient } from '@/shared/api/types';
+
+
+import { UserBackend, UserTransformer } from '@/infrastructure/transformers/UserTransformer';
 
 /**
  * User Repository Adapter
@@ -20,7 +22,7 @@ export class UserRepositoryAdapter implements IUserRepository {
   constructor(private readonly httpClient: IHttpClient) {}
 
   async getAll(filters: UserFilters): Promise<PaginatedUsers> {
-    try {
+    return executeWithDomainError(async () => {
       // Build query parameters
       const params = new URLSearchParams({
         page: (filters.page || 1).toString(),
@@ -47,15 +49,11 @@ export class UserRepositoryAdapter implements IUserRepository {
         data: transformedData,
         meta: result.meta,
       };
-
-    } catch (error) {
-      console.error('Error in UserRepositoryAdapter.getAll:', error);
-      throw error;
-    }
+    }, 'Failed to fetch users');
   }
 
   async getByRole(roleId: number, filters: UserFilters): Promise<PaginatedUsers> {
-    try {
+    return executeWithDomainError(async () => {
       // Build query parameters
       const params = new URLSearchParams({
         page: (filters.page || 1).toString(),
@@ -82,15 +80,11 @@ export class UserRepositoryAdapter implements IUserRepository {
         data: transformedData,
         meta: result.meta,
       };
-
-    } catch (error) {
-      console.error('Error in UserRepositoryAdapter.getByRole:', error);
-      throw error;
-    }
+    }, `Failed to fetch users by role ${roleId}`);
   }
 
   async getById(id: number): Promise<UserEntity> {
-    try {
+    return executeWithDomainError(async () => {
       // Input validation
       if (id <= 0) {
         throw new Error('User ID must be a positive number');
@@ -101,15 +95,11 @@ export class UserRepositoryAdapter implements IUserRepository {
       
       // Transform backend data to domain entity
       return UserTransformer.toDomain(result);
-
-    } catch (error) {
-      console.error(`Error in UserRepositoryAdapter.getById for ID ${id}:`, error);
-      throw error;
-    }
+    }, `Failed to fetch user ${id}`);
   }
 
   async create(userData: CreateUserDto): Promise<UserEntity> {
-    try {
+    return executeWithDomainError(async () => {
       // Business validation
       if (!userData.email || !userData.firstName || !userData.lastName) {
         throw new Error('Email, first name, and last name are required');
@@ -120,34 +110,26 @@ export class UserRepositoryAdapter implements IUserRepository {
       
       // Transform backend data to domain entity
       return UserTransformer.toDomain(result);
-
-    } catch (error) {
-      console.error('Error in UserRepositoryAdapter.create:', error);
-      throw error;
-    }
+    }, 'Failed to create user');
   }
 
-  async update(userData: UpdateUserDto): Promise<UserEntity> {
-    try {
+  async update(id: number, userData: Omit<UserEntity, "id">): Promise<UserEntity> {
+    return executeWithDomainError(async () => {
       // Input validation
-      if (userData.id <= 0) {
+      if (id <= 0) {
         throw new Error('User ID must be a positive number');
       }
 
       // Direct API call - simple backend response
-      const result = await this.httpClient.put<UserBackend>(`/users/${userData.id}`, userData);
+      const result = await this.httpClient.put<UserBackend>(`/users/${id}`, userData);
       
       // Transform backend data to domain entity
       return UserTransformer.toDomain(result);
-
-    } catch (error) {
-      console.error(`Error in UserRepositoryAdapter.update for ID ${userData.id}:`, error);
-      throw error;
-    }
+    }, `Failed to update user ${id}`);
   }
 
   async delete(id: number): Promise<boolean> {
-    try {
+    return executeWithDomainError(async () => {
       // Input validation
       if (id <= 0) {
         throw new Error('User ID must be a positive number');
@@ -157,15 +139,11 @@ export class UserRepositoryAdapter implements IUserRepository {
       await this.httpClient.delete(`/users/${id}`);
       
       return true;
-
-    } catch (error) {
-      console.error(`Error in UserRepositoryAdapter.delete for ID ${id}:`, error);
-      throw error;
-    }
+    }, `Failed to delete user ${id}`);
   }
 
   async getByEmail(email: string): Promise<UserEntity | null> {
-    try {
+    return executeWithDomainError(async () => {
       // Input validation
       if (!email || !email.includes('@')) {
         throw new Error('Valid email is required');
@@ -181,43 +159,27 @@ export class UserRepositoryAdapter implements IUserRepository {
 
       // Transform backend data to domain entity
       return UserTransformer.toDomain(result);
-
-    } catch (error) {
-      // If it's a 404, return null instead of throwing
-      if (error instanceof Error && error.message.includes('404')) {
-        return null;
-      }
-      
-      console.error(`Error in UserRepositoryAdapter.getByEmail for ${email}:`, error);
-      throw error;
-    }
+    }, `Failed to fetch user by email ${email}`);
   }
 
   async emailExists(email: string): Promise<boolean> {
-    try {
+    return executeWithDomainError(async () => {
       const user = await this.getByEmail(email);
       return user !== null;
-    } catch (error) {
-      console.error(`Error in UserRepositoryAdapter.emailExists for ${email}:`, error);
-      return false;
-    }
+    }, `Failed to check if email exists ${email}`);
   }
 
   async getTotalCount(): Promise<number> {
-    try {
+    return executeWithDomainError(async () => {
       // Direct API call for total count
       const result = await this.httpClient.get<{ count: number }>('/users/count');
       
       return result.count;
-
-    } catch (error) {
-      console.error('Error in UserRepositoryAdapter.getTotalCount:', error);
-      throw error;
-    }
+    }, 'Failed to get users total count');
   }
 
   async getCountByRole(roleId: number): Promise<number> {
-    try {
+    return executeWithDomainError(async () => {
       // Input validation
       if (roleId <= 0) {
         throw new Error('Role ID must be a positive number');
@@ -227,10 +189,6 @@ export class UserRepositoryAdapter implements IUserRepository {
       const result = await this.httpClient.get<{ count: number }>(`/users/role/${roleId}/count`);
       
       return result.count;
-
-    } catch (error) {
-      console.error(`Error in UserRepositoryAdapter.getCountByRole for role ${roleId}:`, error);
-      throw error;
-    }
+    }, `Failed to get user count by role ${roleId}`);
   }
 }

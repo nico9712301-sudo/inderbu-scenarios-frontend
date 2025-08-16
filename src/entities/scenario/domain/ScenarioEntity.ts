@@ -29,28 +29,6 @@ export interface ScenarioSearchCriteria {
   isValid(): boolean;
 }
 
-export class ScenarioSearchCriteria {
-  constructor(
-    public readonly searchQuery?: string,
-    public readonly neighborhoodId?: number,
-    public readonly active?: boolean,
-    public readonly limit?: number
-  ) {}
-
-  isValid(): boolean {
-    if (this.limit !== undefined && (this.limit <= 0 || this.limit > 1000)) {
-      return false;
-    }
-    if (this.neighborhoodId !== undefined && this.neighborhoodId <= 0) {
-      return false;
-    }
-    if (this.searchQuery && this.searchQuery.length > 200) {
-      return false;
-    }
-    return true;
-  }
-}
-
 export class ScenarioDomainError extends Error {
   constructor(message: string, public readonly code?: string) {
     super(message);
@@ -80,26 +58,6 @@ export class ScenarioEntity {
     createdAt?: Date,
     updatedAt?: Date
   ) {
-    // Domain validation
-    if (id <= 0) {
-      throw new ScenarioDomainError('Scenario ID must be positive');
-    }
-    if (!name || name.trim().length === 0) {
-      throw new ScenarioDomainError('Scenario name cannot be empty');
-    }
-    if (name.length > 255) {
-      throw new ScenarioDomainError('Scenario name cannot exceed 255 characters');
-    }
-    if (!address || address.trim().length === 0) {
-      throw new ScenarioDomainError('Scenario address cannot be empty');
-    }
-    if (address.length > 500) {
-      throw new ScenarioDomainError('Scenario address cannot exceed 500 characters');
-    }
-    if (description && description.length > 2000) {
-      throw new ScenarioDomainError('Scenario description cannot exceed 2000 characters');
-    }
-
     this.id = id;
     this.name = name.trim();
     this.address = address.trim();

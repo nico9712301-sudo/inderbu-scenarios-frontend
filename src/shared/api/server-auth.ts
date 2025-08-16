@@ -1,6 +1,6 @@
 import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
 import { cookies } from 'next/headers';
-import { createUserRepository } from '@/infrastructure/repositories/auth-user-repository.adapter';
+import { createUserRepository } from '@/infrastructure/repositories/auth/auth-user-repository.adapter';
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import 'server-only';
 

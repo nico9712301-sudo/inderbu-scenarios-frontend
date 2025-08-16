@@ -1,10 +1,12 @@
 import { GetScenariosDataService, IScenariosDataResponse } from '@/application/dashboard/scenarios/services/GetScenariosDataService';
+import { ScenarioFilters } from '@/entities/scenario/infrastructure/scenario-repository.port';
+
 import { ScenariosPage } from '@/presentation/features/dashboard/scenarios/pages/scenarios.page';
-import { ScenarioFilters } from '@/entities/scenario/infrastructure/IScenarioRepository';
+import { serializeScenariosData } from '@/presentation/utils/serialization.utils';
+
 import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
 import { IContainer } from '@/infrastructure/config/di/simple-container';
 import { TOKENS } from '@/infrastructure/config/di/tokens';
-import { serializeScenariosData } from '@/presentation/utils/serialization.utils';
 
 interface ScenariosRouteProps {
   searchParams: Promise<{
@@ -46,7 +48,7 @@ export default async function ScenariosRoute(props: ScenariosRouteProps) {
     // Execute Use Case through Application Layer - returns pure Domain Entities
     const domainResult: IScenariosDataResponse = await getScenariosDataService.execute(filters);
 
-    console.log('ScenariosRoute - Domain Result:', domainResult);
+    console.log('ScenariosRoute - Domain Result:', domainResult.scenarios);
     
     
     // Presentation Layer responsibility: Serialize domain entities for client components

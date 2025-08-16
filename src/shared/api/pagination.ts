@@ -1,10 +1,4 @@
-/**
- * Pagination Types and Interfaces
- * Consolidated pagination utilities for the application
- */
-
-// Re-export existing PageMetaDto as PageMeta for backward compatibility
-export { PageMetaDto as PageMeta } from './types';
+import  { PageMetaDto as PageMeta } from './types';
 
 // Pagination options interface (consolidated from legacy api.ts)
 export interface PageOptions {

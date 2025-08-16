@@ -1,5 +1,6 @@
 import { Scenario, CreateScenarioData } from '@/entities/scenario/domain/Scenario';
-import { IScenarioRepository } from '@/entities/scenario/infrastructure/IScenarioRepository';
+import { ScenarioEntity } from '@/entities/scenario/domain/ScenarioEntity';
+import { IScenarioRepository } from '@/entities/scenario/infrastructure/scenario-repository.port';
 
 export interface CreateScenarioCommand {
   name: string;
@@ -12,7 +13,7 @@ export class CreateScenarioUseCase {
     private readonly scenarioRepository: IScenarioRepository
   ) {}
 
-  async execute(command: CreateScenarioCommand): Promise<Scenario> {
+  async execute(command: CreateScenarioCommand): Promise<ScenarioEntity> {
     try {
       // Business validation
       if (!command.name?.trim()) {

@@ -1,6 +1,3 @@
-// Domain Entity: UserEntity
-// Rich domain entity with business logic and behavior encapsulation
-
 import { EUserRole } from '@/shared/enums/user-role.enum';
 
 // Plain Object interface for client component serialization
@@ -18,6 +15,16 @@ export interface UserPlainObject {
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+
+/**
+ * User Domain Error for repository operations
+ */
+export class UserDomainError extends Error {
+  constructor(message: string, public code?: string) {
+    super(message);
+    this.name = 'UserDomainError';
+  }
 }
 
 /**
@@ -41,20 +48,7 @@ export class UserEntity {
     public readonly isActive: boolean,
     public readonly createdAt?: string,
     public readonly updatedAt?: string
-  ) {
-    // Domain validation
-    if (id <= 0) {
-      throw new Error('User ID must be a positive number');
-    }
-    
-    if (!email || !email.includes('@')) {
-      throw new Error('Valid email is required');
-    }
-    
-    if (!firstName.trim() || !lastName.trim()) {
-      throw new Error('First name and last name are required');
-    }
-  }
+  ) {}
 
   /**
    * Factory method to create UserEntity from API data

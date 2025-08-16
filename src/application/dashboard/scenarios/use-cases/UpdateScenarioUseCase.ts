@@ -1,5 +1,6 @@
 import { Scenario, UpdateScenarioData } from '@/entities/scenario/domain/Scenario';
-import { IScenarioRepository } from '@/entities/scenario/infrastructure/IScenarioRepository';
+import { ScenarioEntity } from '@/entities/scenario/domain/ScenarioEntity';
+import { IScenarioRepository } from '@/entities/scenario/infrastructure/scenario-repository.port';
 
 export interface UpdateScenarioCommand {
   name?: string;
@@ -13,7 +14,7 @@ export class UpdateScenarioUseCase {
     private readonly scenarioRepository: IScenarioRepository
   ) {}
 
-  async execute(id: number, command: UpdateScenarioCommand): Promise<Scenario> {
+  async execute(id: number, command: UpdateScenarioCommand): Promise<ScenarioEntity> {
     const updateData = command;
     
     try {

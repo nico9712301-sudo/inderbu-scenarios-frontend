@@ -1,9 +1,10 @@
 'use client';
 
+import { AuthModal } from '@/presentation/features/auth/components/organisms/auth-modal';
 import { useAuth } from '@/presentation/features/auth/model/use-auth';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { AuthModal } from '@/presentation/features/auth';
 import { useState, useEffect } from 'react';
+
 
 
 export default function LoginPage() {
@@ -57,7 +58,7 @@ export default function LoginPage() {
           <p className="text-gray-600">Accede a tu cuenta para continuar</p>
         </div>
         
-        <AuthModal 
+        <AuthModal
           isOpen={isModalOpen}
           onClose={handleModalClose}
           onLoginSuccess={handleLoginSuccess}

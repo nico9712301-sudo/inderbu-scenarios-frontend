@@ -49,7 +49,8 @@ export async function createSubScenarioAction(data: CreateSubScenarioRequest) {
     // Cache invalidation
     revalidatePath('/dashboard/sub-scenarios');
 
-    return subScenario;
+    // Serialize to plain object for Next.js compatibility
+    return subScenario.toPlainObject();
   }, 'createSubScenario');
 }
 
@@ -81,7 +82,8 @@ export async function updateSubScenarioAction(id: number, data: UpdateSubScenari
     // Cache invalidation
     revalidatePath('/dashboard/sub-scenarios');
 
-    return subScenario;
+    // Serialize to plain object for Next.js compatibility
+    return subScenario.toPlainObject();
   }, 'updateSubScenario');
 }
 
@@ -145,9 +147,15 @@ export async function getSubScenariosAction(request: GetSubScenariosRequest = {}
       active: request.active,
     });
 
+    // Serialize SubScenarioEntity instances to plain objects for Next.js compatibility
+    const serializedResult = {
+      data: result.data.map(subScenario => subScenario.toPlainObject()),
+      meta: result.meta,
+    };
+
     return {
       success: true,
-      data: result,
+      data: serializedResult,
     };
   }, 'getSubScenariosAction');
 }

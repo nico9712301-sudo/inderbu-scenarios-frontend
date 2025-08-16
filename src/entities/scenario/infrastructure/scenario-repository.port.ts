@@ -1,5 +1,5 @@
 import { PageMeta } from '@/shared/api/pagination';
-import { ScenarioEntity, ScenarioSearchCriteria } from '../domain/ScenarioEntity';
+import { ScenarioEntity } from '../domain/ScenarioEntity';
 
 export interface ScenarioFilters {
   page?: number;
@@ -17,7 +17,6 @@ export interface PaginatedScenarios {
 export interface IScenarioRepository {
   getAll(filters?: ScenarioFilters): Promise<PaginatedScenarios>;
   getById(id: number): Promise<ScenarioEntity | null>;
-  search(criteria: ScenarioSearchCriteria): Promise<ScenarioEntity[]>;
   create(data: Omit<ScenarioEntity, 'id'>): Promise<ScenarioEntity>;
   update(id: number, data: Partial<ScenarioEntity>): Promise<ScenarioEntity>;
   delete(id: number): Promise<void>;

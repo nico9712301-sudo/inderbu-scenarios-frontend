@@ -1,11 +1,10 @@
 import { IReservationRepository } from '@/entities/reservation/infrastructure/IReservationRepository';
 import { ReservationEntity } from '@/entities/reservation/domain/ReservationEntity';
-import { PageMeta } from '@/shared/api/pagination';
+import { PageMetaDto } from '@/shared/api';
 
-// Application Service Response (Domain Entities)
 export interface IUserReservationsDataResponse {
   reservations: ReservationEntity[];     // Domain entities
-  meta: PageMeta;                        // Pagination metadata
+  meta: PageMetaDto;                        // Pagination metadata
   metadata: {
     userId: number;
     accessedAt: Date;

@@ -2,48 +2,50 @@ import { SimpleContainer, IContainer } from './simple-container';
 import { TOKENS, Environment } from './tokens';
 
 // Repository imports
-import { ScenarioRepository } from '@/infrastructure/repositories/scenario-repository.adapter';
-import { NeighborhoodRepositoryAdapter } from '@/infrastructure/repositories/neighborhood-repository.adapter';
-import { ActivityAreaRepositoryAdapter } from '@/infrastructure/repositories/activity-area-repository.adapter';
-import { ReservationRepository } from '@/infrastructure/repositories/reservation-repository.adapter';
-import { FieldSurfaceTypeRepositoryAdapter } from '@/infrastructure/repositories/field-surface-type-repository.adapter';
-import { UserRepositoryAdapter } from '@/infrastructure/repositories/user-repository.adapter';
-import { RoleRepositoryAdapter } from '@/infrastructure/repositories/role-repository.adapter';
-import type { IActivityAreaRepository } from '@/entities/activity-area/domain/IActivityAreaRepository';
-import type { ISubScenarioRepository } from '@/entities/sub-scenario/infrastructure/ISubScenarioRepository';
+import { FieldSurfaceTypeRepositoryAdapter } from '@/infrastructure/repositories/field-surface-type/field-surface-type-repository.adapter';
+import { ActivityAreaRepositoryAdapter } from '@/infrastructure/repositories/activity-area/activity-area-repository.adapter';
+import { NeighborhoodRepositoryAdapter } from '@/infrastructure/repositories/neighborhood/neighborhood-repository.adapter';
+import { SubScenarioRepository } from '@/infrastructure/repositories/sub-scenario/sub-scenario-repository.adapter';
+import { ReservationRepository } from '@/infrastructure/repositories/reservation/reservation-repository.adapter';
+import { ScenarioRepository } from '@/infrastructure/repositories/scenario/scenario-repository.adapter';
+import { UserRepositoryAdapter } from '@/infrastructure/repositories/user/user-repository.adapter';
+import { RoleRepositoryAdapter } from '@/infrastructure/repositories/role/role-repository.adapter';
+
+// Domain imports
 import type { IFieldSurfaceTypeRepository } from '@/entities/field-surface-type/domain/IFieldSurfaceTypeRepository';
 import type { IReservationRepository } from '@/entities/reservation/infrastructure/IReservationRepository';
-import type { IUserRepository } from '@/entities/user/infrastructure/IUserRepository';
+import type { ISubScenarioRepository } from '@/entities/sub-scenario/infrastructure/ISubScenarioRepository';
+import { INeighborhoodRepository } from '@/entities/neighborhood/infrastructure/INeighborhoodRepository';
+import { IScenarioRepository } from '@/entities/scenario/infrastructure/scenario-repository.port';
 import type { IRoleRepository } from '@/entities/role/infrastructure/IRoleRepository';
+import type { IUserRepository } from '@/entities/user/infrastructure/IUserRepository';
 
 // Use Case imports
-import { CreateScenarioUseCase } from '@/application/dashboard/scenarios/use-cases/CreateScenarioUseCase';
-import { UpdateScenarioUseCase } from '@/application/dashboard/scenarios/use-cases/UpdateScenarioUseCase';
-import { GetScenariosDataService } from '@/application/dashboard/scenarios/services/GetScenariosDataService';
-import { GetScenariosUseCase } from '@/application/dashboard/scenarios/use-cases/GetScenariosUseCase';
-import { GetNeighborhoodsUseCase } from '@/application/dashboard/scenarios/use-cases/GetNeighborhoodsUseCase';
-import { GetActivityAreasUseCase } from '@/application/dashboard/activity-areas/use-cases/GetActivityAreasUseCase';
+import { GetUserReservationsUseCase as AppGetUserReservationsUseCase } from '@/application/reservations/use-cases/GetUserReservationsUseCase';
+import { UploadSubScenarioImagesUseCase } from '@/application/dashboard/sub-scenarios/use-cases/UploadSubScenarioImagesUseCase';
 import { GetFieldSurfaceTypesUseCase } from '@/application/dashboard/field-surface-types/use-cases/GetFieldSurfaceTypesUseCase';
-import { GetSubScenariosUseCase } from '@/application/dashboard/sub-scenarios/use-cases/GetSubScenariosUseCase';
 import { GetSubScenariosDataService } from '@/application/dashboard/sub-scenarios/services/GetSubScenariosDataService';
 import { CreateSubScenarioUseCase } from '@/application/dashboard/sub-scenarios/use-cases/CreateSubScenarioUseCase';
 import { UpdateSubScenarioUseCase } from '@/application/dashboard/sub-scenarios/use-cases/UpdateSubScenarioUseCase';
-import { UploadSubScenarioImagesUseCase } from '@/application/dashboard/sub-scenarios/use-cases/UploadSubScenarioImagesUseCase';
-import { GetHomeDataService } from '@/application/home/services/GetHomeDataService';
-import { GetHomeDataUseCase } from '@/application/home/use-cases/GetHomeDataUseCase';
 import { GetUserReservationsDataService } from '@/application/reservations/services/GetUserReservationsDataService';
-import { GetUserReservationsUseCase as AppGetUserReservationsUseCase } from '@/application/reservations/use-cases/GetUserReservationsUseCase';
+import { GetActivityAreasUseCase } from '@/application/dashboard/activity-areas/use-cases/GetActivityAreasUseCase';
+import { GetSubScenariosUseCase } from '@/application/dashboard/sub-scenarios/use-cases/GetSubScenariosUseCase';
+import { GetNeighborhoodsUseCase } from '@/application/dashboard/scenarios/use-cases/GetNeighborhoodsUseCase';
+import { GetScenariosDataService } from '@/application/dashboard/scenarios/services/GetScenariosDataService';
+import { CreateScenarioUseCase } from '@/application/dashboard/scenarios/use-cases/CreateScenarioUseCase';
+import { UpdateScenarioUseCase } from '@/application/dashboard/scenarios/use-cases/UpdateScenarioUseCase';
 import { GetClientsDataService } from '@/application/dashboard/clients/services/GetClientsDataService';
-import { GetUsersUseCase } from '@/application/dashboard/clients/use-cases/GetUsersUseCase';
+import { GetScenariosUseCase } from '@/application/dashboard/scenarios/use-cases/GetScenariosUseCase';
 import { GetUserByIdUseCase } from '@/application/dashboard/clients/use-cases/GetUserByIdUseCase';
+import { GetUsersUseCase } from '@/application/dashboard/clients/use-cases/GetUsersUseCase';
 import { GetRolesUseCase } from '@/application/dashboard/clients/use-cases/GetRolesUseCase';
+import { GetHomeDataUseCase } from '@/application/home/use-cases/GetHomeDataUseCase';
+import { GetHomeDataService } from '@/application/home/services/GetHomeDataService';
 
 // HTTP Client imports  
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
-import { IScenarioRepository } from '@/entities/scenario/infrastructure/IScenarioRepository';
-import { INeighborhoodRepository } from '@/entities/neighborhood/infrastructure/INeighborhoodRepository';
-import { SubScenarioRepository } from '@/infrastructure/repositories/sub-scenario-repository.adapter';
+import { IActivityAreaRepository } from '@/entities/activity-area/infrastructure/actvity-area-repository.port';
 
 /**
  * Container Factory

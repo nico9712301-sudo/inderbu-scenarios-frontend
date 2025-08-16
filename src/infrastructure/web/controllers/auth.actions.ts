@@ -1,6 +1,6 @@
 'use server';
 
-import { createUserRepository } from '@/infrastructure/repositories/auth-user-repository.adapter';
+import { createUserRepository } from '@/infrastructure/repositories/auth/auth-user-repository.adapter';
 import { extractUserFromToken } from '@/entities/user/model/types';
 import {
   loginSchema,

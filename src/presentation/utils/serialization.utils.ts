@@ -15,6 +15,9 @@ import { IScenariosDataResponse } from '@/application/dashboard/scenarios/servic
 import { IClientsDataResponse } from '@/application/dashboard/clients/services/GetClientsDataService';
 import { IHomeDataResponse } from '@/application/home/services/GetHomeDataService';
 
+// Presentation Layer
+import { GetScenarioDetailResponse } from '@/presentation/features/scenarios/detail/application/GetScenarioDetailUseCase';
+
 // Serialized version of ISubScenariosDataResponse for client components
 export interface ISubScenariosDataClientResponse {
   subScenarios: SubScenarioPlainObject[]; // Serialized from domain entities
@@ -213,5 +216,20 @@ export function serializeClientsData(
     meta: domainResponse.meta,
     filters: domainResponse.filters,
     filterOptions: domainResponse.filterOptions,
+  };
+}
+
+/**
+ * Serializes ScenarioDetailResponse for client components
+ * This handles the specific structure returned by GetScenarioDetailUseCase
+ */
+export function serializeScenarioDetailData(
+  domainResponse: GetScenarioDetailResponse
+): any {
+  // Since ScenarioDetail is already a domain object, we need to serialize it properly
+  // For now, returning as-is to maintain compatibility, but should be improved with proper types
+  return {
+    scenario: domainResponse.scenario, // TODO: Add proper serialization when ScenarioDetail has toPlainObject
+    metadata: domainResponse.metadata, // Metadata should already be plain objects
   };
 }

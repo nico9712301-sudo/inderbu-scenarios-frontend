@@ -103,7 +103,7 @@ export function ScenariosPage({
     if (!scenario) return;
 
     try {
-      const newActiveState = !scenario.active;
+      const newActiveState: boolean = !scenario.active;
       
       const result: ErrorHandlerResult<Scenario> = await updateScenarioAction(scenario.id, {
         active: newActiveState,

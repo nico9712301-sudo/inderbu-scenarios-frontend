@@ -5,26 +5,35 @@ import {
 } from '@/entities/scenario/domain/scenario-detail.domain';
 import { ScenarioDetailPage } from '@/presentation/features/scenarios/detail/components/pages/ScenarioDetailPage';
 import { createScenarioDetailContainer } from '@/presentation/features/scenarios/detail/di';
+import { serializeScenarioDetailData } from '@/presentation/utils/serialization.utils';
 import { redirect, notFound } from 'next/navigation';
 interface PageProps {
   params: { id: string };
 }
 
+/**
+ * Scenario Detail Page Route (Server Component)
+ * 
+ * Next.js App Router page that handles individual scenario details.
+ * Uses dependency injection to get data and render the presentation layer.
+ * Currently using legacy DI system - TODO: Migrate to standard ContainerFactory
+ */
 export default async function ScenarioDetailRoute({ params }: PageProps) {
   const { id } = await params;
   
-  // DDD: Dependency injection - build complete container
-  const { scenarioDetailService } = createScenarioDetailContainer();
-
   try {
-    // DDD: Execute use case through service layer
-    // All business logic, validation, and data fetching happens in domain/application layers
-    const result = await scenarioDetailService.getScenarioDetail(id);
+    // DDD: Dependency injection - build complete container (Legacy pattern - TODO: migrate)
+    const { getScenarioDetailUseCase } = createScenarioDetailContainer();
+    
+    // Execute Use Case through Application Layer - returns pure Domain Entities
+    const domainResult = await getScenarioDetailUseCase.execute({ id });
+    
+    // Presentation Layer responsibility: Serialize domain entities for client components
+    const serializedResult = serializeScenarioDetailData(domainResult);
 
-    // Atomic Design: Render page template with clean separation
-    // PASS SERVER ACTION AS PROP
+    // Atomic Design: Render page template with serialized data (plain objects)
     return <ScenarioDetailPage
-      initialData={result} 
+      initialData={serializedResult} 
     />;
 
   } catch (error) {
@@ -57,9 +66,9 @@ export async function generateMetadata({ params }: PageProps) {
   const { id } = await params;
   
   try {
-    // Use the same DI container for metadata generation
-    const { scenarioDetailService } = createScenarioDetailContainer();
-    const result = await scenarioDetailService.getScenarioDetail(id);
+    // Use the same DI container for metadata generation (Legacy pattern - TODO: migrate)
+    const { getScenarioDetailUseCase } = createScenarioDetailContainer();
+    const result = await getScenarioDetailUseCase.execute({ id });
     
     return {
       title: `${result.scenario.name} | Reserva tu Espacio Deportivo`,

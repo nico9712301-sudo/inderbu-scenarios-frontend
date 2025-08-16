@@ -57,7 +57,7 @@ export interface IUserRepository {
   getByRole(roleId: number, filters: UserFilters): Promise<PaginatedUsers>;
   getById(id: number): Promise<UserEntity>;
   create(userData: CreateUserDto): Promise<UserEntity>;
-  update(userData: UpdateUserDto): Promise<UserEntity>;
+  update(id: number, userData: UpdateUserDto): Promise<UserEntity>;
   delete(id: number): Promise<boolean>;
   getByEmail(email: string): Promise<UserEntity | null>;
   emailExists(email: string): Promise<boolean>;

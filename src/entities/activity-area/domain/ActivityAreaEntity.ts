@@ -1,6 +1,3 @@
-// Domain Entity: Activity Area
-// Represents the core business concept of an activity area with rich behavior
-
 import { ActivityArea } from '@/shared/api/domain-types';
 
 export class ActivityAreaEntity {

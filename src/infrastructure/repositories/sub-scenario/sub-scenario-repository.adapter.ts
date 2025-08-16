@@ -1,15 +1,20 @@
+import { executeWithDomainError } from './execute-with-domain-error.wrapper';
+
+import { ISubScenarioRepository, SubScenariosFilters } from '@/entities/sub-scenario/infrastructure/ISubScenarioRepository';
 import { PaginatedSubScenarios } from '@/entities/sub-scenario/domain/sub-scenario.domain';
 import { SubScenarioEntity } from '@/entities/sub-scenario/domain/SubScenarioEntity';
-import { ISubScenarioRepository, SubScenariosFilters } from '@/entities/sub-scenario/infrastructure/ISubScenarioRepository';
+
 import { SubScenarioTransformer, SubScenarioBackend } from '@/infrastructure/transformers/SubScenarioTransformer';
-import { IHttpClient } from '@/shared/api/http-client-server';
-import { BackendPaginatedResponse } from '@/shared/api/backend-types';
+
+import { BackendPaginatedResponse, BackendResponse } from '@/shared/api/backend-types';
+import { IHttpClient } from '@/shared/api/types';
+
 
 export class SubScenarioRepository implements ISubScenarioRepository {
   constructor(private readonly httpClient: IHttpClient) {}
   
   async getAll(filters: SubScenariosFilters): Promise<PaginatedSubScenarios> {
-    try {
+    return executeWithDomainError(async () => {
       // Build query params
       const params = new URLSearchParams();
       if (filters.page) params.append('page', filters.page.toString());
@@ -34,68 +39,59 @@ export class SubScenarioRepository implements ISubScenarioRepository {
         data: transformedData,
         meta: result.meta,
       };
-    } catch (error) {
-      console.error('Error in SubScenarioRepository.getAll:', error);
-      throw error;
-    }
+    }, 'Failed to fetch sub-scenarios');
   }
 
   async create(data: Omit<SubScenarioEntity, "id"> & { images?: any[] }): Promise<SubScenarioEntity> {
-    try {
+    return executeWithDomainError(async () => {
       // Transform domain entity to backend format for API call
       const backendData = SubScenarioTransformer.toBackend(data as SubScenarioEntity);
       
-      // Direct API call - simple backend response
-      const result = await this.httpClient.post<SubScenarioBackend>('/sub-scenarios', backendData);
+      // Direct API call - backend returns wrapped response
+      const result = await this.httpClient.post<BackendResponse<SubScenarioBackend>>('/sub-scenarios', backendData);
       
-      // Transform backend data to domain entity
-      return SubScenarioTransformer.toDomain(result);
-    } catch (error) {
-      console.error('Error in SubScenarioRepository.create:', error);
-      throw error;
-    }
+      // Extract data and transform to domain entity
+      return SubScenarioTransformer.toDomain(result.data);
+    }, 'Failed to create sub-scenario');
   }
 
   async update(id: number, data: Partial<SubScenarioEntity>): Promise<SubScenarioEntity> {
-    try {
-      // Transform domain entity to backend format for API call
-      const backendData = SubScenarioTransformer.toBackend(data as SubScenarioEntity);
+    return executeWithDomainError(async () => {
+      // Transform domain entity to backend format for API call - now handles Partial<T>
+      const backendData = SubScenarioTransformer.toBackend(data);
       
-      // Direct API call - simple backend response
-      const result = await this.httpClient.put<SubScenarioBackend>(`/sub-scenarios/${id}`, backendData);
+      // Direct API call - backend returns wrapped response
+      const result = await this.httpClient.put<BackendResponse<SubScenarioBackend>>(`/sub-scenarios/${id}`, backendData);
       
-      // Transform backend data to domain entity
-      return SubScenarioTransformer.toDomain(result);
-    } catch (error) {
-      console.error('Error in SubScenarioRepository.update:', error);
-      throw error;
-    }
+      // Extract data and transform to domain entity
+      return SubScenarioTransformer.toDomain(result.data);
+    }, `Failed to update sub-scenario ${id}`);
   }
 
   async getById(id: number): Promise<SubScenarioEntity | null> {
-    try {
+    return executeWithDomainError(async () => {
       // Input validation
       if (id <= 0) {
         throw new Error('Sub-scenario ID must be a positive number');
       }
 
-      // Direct API call - simple backend response
-      const result = await this.httpClient.get<SubScenarioBackend>(`/sub-scenarios/${id}`);
-      
-      // Transform backend data to domain entity
-      return SubScenarioTransformer.toDomain(result);
-
-    } catch (error: any) {
-      if (error?.status === 404) {
-        return null;
+      try {
+        // Direct API call - backend returns wrapped response
+        const result = await this.httpClient.get<BackendResponse<SubScenarioBackend>>(`/sub-scenarios/${id}`);
+        
+        // Extract data and transform to domain entity
+        return SubScenarioTransformer.toDomain(result.data);
+      } catch (error: any) {
+        if (error?.status === 404) {
+          return null;
+        }
+        throw error;
       }
-      console.error(`Error in SubScenarioRepository.getById for ID ${id}:`, error);
-      throw error;
-    }
+    }, `Failed to fetch sub-scenario ${id}`);
   }
 
   async delete(id: number): Promise<void> {
-    try {
+    return executeWithDomainError(async () => {
       // Input validation
       if (id <= 0) {
         throw new Error('Sub-scenario ID must be a positive number');
@@ -103,10 +99,6 @@ export class SubScenarioRepository implements ISubScenarioRepository {
 
       // Make API request (soft delete - set isActive to false)
       await this.httpClient.delete(`/sub-scenarios/${id}`);
-
-    } catch (error) {
-      console.error(`Error in SubScenarioRepository.delete for ID ${id}:`, error);
-      throw error;
-    }
+    }, `Failed to delete sub-scenario ${id}`);
   }
 }
