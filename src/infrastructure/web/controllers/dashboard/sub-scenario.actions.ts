@@ -8,6 +8,7 @@ import { UpdateSubScenarioUseCase } from '@/application/dashboard/sub-scenarios/
 import { UploadSubScenarioImagesUseCase, ImageUploadData } from '@/application/dashboard/sub-scenarios/use-cases/UploadSubScenarioImagesUseCase';
 import { ErrorHandlerComposer } from '@/shared/api/error-handler';
 import { IContainer } from '@/infrastructure/config/di/simple-container';
+import { SubScenarioEntity } from '@/entities/sub-scenario/domain/SubScenarioEntity';
 
 /**
  * Sub-Scenario Server Actions
@@ -34,6 +35,7 @@ export interface CreateSubScenarioRequest {
   scenarioId: number;
   activityAreaId: number;
   fieldSurfaceTypeId: number;
+  active: boolean;
   images?: any[];
 }
 
@@ -44,7 +46,7 @@ export async function createSubScenarioAction(data: CreateSubScenarioRequest) {
     const createSubScenarioUseCase = container.get<CreateSubScenarioUseCase>(TOKENS.CreateSubScenarioUseCase);
 
     // Execute Use Case
-    const subScenario = await createSubScenarioUseCase.execute(data);
+    const subScenario: SubScenarioEntity = await createSubScenarioUseCase.execute(data);
 
     // Cache invalidation
     revalidatePath('/dashboard/sub-scenarios');
@@ -77,7 +79,7 @@ export async function updateSubScenarioAction(id: number, data: UpdateSubScenari
     const updateSubScenarioUseCase = container.get<UpdateSubScenarioUseCase>(TOKENS.UpdateSubScenarioUseCase);
 
     // Execute Use Case
-    const subScenario = await updateSubScenarioUseCase.execute(id, data);
+    const subScenario: SubScenarioEntity = await updateSubScenarioUseCase.execute(id, data);
 
     // Cache invalidation
     revalidatePath('/dashboard/sub-scenarios');
@@ -99,9 +101,10 @@ export async function uploadSubScenarioImagesAction(
     // Dependency Injection: Get container and resolve use case
     const container: IContainer = ContainerFactory.createContainer();
     const uploadSubScenarioImagesUseCase = container.get<UploadSubScenarioImagesUseCase>(TOKENS.UploadSubScenarioImagesUseCase);
+    console.log("Uploading images for sub-scenario ID:", subScenarioId, "with images:", images);
 
     // Execute Use Case
-    const uploadedImages = await uploadSubScenarioImagesUseCase.execute(subScenarioId, images);
+    const uploadedImages: SubScenarioImage[] = await uploadSubScenarioImagesUseCase.execute(subScenarioId, images);
 
     // Cache invalidation
     revalidatePath('/dashboard/sub-scenarios');
@@ -115,6 +118,7 @@ export async function uploadSubScenarioImagesAction(
 // =============================================================================
 
 import { GetSubScenariosUseCase } from '@/application/dashboard/sub-scenarios/use-cases/GetSubScenariosUseCase';
+import { SubScenarioImage } from '@/shared/api';
 
 export interface GetSubScenariosRequest {
   page?: number;

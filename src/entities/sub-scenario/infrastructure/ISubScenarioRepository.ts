@@ -1,11 +1,13 @@
-import { SubScenarioEntity, SubScenarioSearchCriteria } from '@/entities/sub-scenario/domain/SubScenarioEntity';
-import { PageMeta } from '@/shared/api/pagination';
+import { SubScenarioEntity } from '@/entities/sub-scenario/domain/SubScenarioEntity';
+import { PageMetaDto } from '@/shared/api';
 
 export interface SubScenariosFilters {
   search?: string;
   scenarioId?: number;
   activityAreaId?: number;
   neighborhoodId?: number;
+  fieldSurfaceTypeId?: number;
+  hasCost?: boolean;
   active?: boolean;
   limit?: number;
   page?: number;
@@ -13,7 +15,7 @@ export interface SubScenariosFilters {
 
 export interface PaginatedSubScenarios {
   data: SubScenarioEntity[];
-  meta: PageMeta;
+  meta: PageMetaDto;
 }
 
 export interface ISubScenarioRepository {
@@ -21,6 +23,7 @@ export interface ISubScenarioRepository {
   getById(id: number): Promise<SubScenarioEntity | null>;
   create(data: Omit<SubScenarioEntity, "id"> & { images?: any[] }): Promise<SubScenarioEntity>;
   update(id: number, data: Partial<SubScenarioEntity>): Promise<SubScenarioEntity>;
+  updateActiveStatus(id: number, active: boolean): Promise<SubScenarioEntity>;
   delete(id: number): Promise<void>;
 }
 

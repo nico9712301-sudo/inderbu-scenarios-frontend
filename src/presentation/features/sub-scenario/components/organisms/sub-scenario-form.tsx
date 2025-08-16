@@ -1,13 +1,13 @@
 "use client";
 
-import { Scenario } from "@/shared/api/domain-types";
+import { Scenario, SubScenarioImage } from "@/shared/api/domain-types";
 import { ActivityAreaPlainObject } from "@/entities/activity-area/domain/ActivityAreaEntity";
 import { Textarea } from "@/shared/ui/textarea";
 import { Switch } from "@/shared/ui/switch";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { SubScenarioImagesSection } from "./sub-scenario-images-section";
-import { ImageUploadData } from "@/application/dashboard/sub-scenarios/use-cases/UploadSubScenarioImagesUseCase";
+import { ImageUploadData, ImageSlotManagement } from "@/application/dashboard/sub-scenarios/use-cases/UploadSubScenarioImagesUseCase";
 
 
 interface Props {
@@ -17,8 +17,14 @@ interface Props {
   fieldSurfaceTypes: { id: number; name: string }[];
   onChange(v: any): void;
   onImagesChange?: (images: ImageUploadData[]) => void;
+  onImageManagementChange?: (imageManagement: ImageSlotManagement) => void;
   images?: ImageUploadData[];
   showImages?: boolean;
+  imageGallery?: {
+    featured?: SubScenarioImage;
+    additional: SubScenarioImage[];
+    count: number;
+  };
 }
 
 export function SubScenarioForm({
@@ -28,8 +34,10 @@ export function SubScenarioForm({
   fieldSurfaceTypes,
   onChange,
   onImagesChange,
+  onImageManagementChange,
   images = [],
   showImages = false,
+  imageGallery,
 }: Props) {
   const set = (k: string, v: any) => onChange({ ...value, [k]: v });
 
@@ -160,7 +168,10 @@ export function SubScenarioForm({
       {showImages && (
         <SubScenarioImagesSection
           images={images}
+          imageGallery={imageGallery}
           onChange={(imgs) => {
+            // console.log("SubScenarioForm - Images changed:", imgs);
+            
             // Use onImagesChange if provided, otherwise fallback to set
             if (onImagesChange) {
               onImagesChange(imgs);
@@ -168,6 +179,7 @@ export function SubScenarioForm({
               set("images", imgs);
             }
           }}
+          onImageManagementChange={onImageManagementChange}
         />
       )}
     </>

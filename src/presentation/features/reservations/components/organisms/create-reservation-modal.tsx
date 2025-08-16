@@ -42,7 +42,10 @@ export interface SubScenarioDto {
 import { createReservationRepository } from "@/entities/reservation/infrastructure/reservation-repository.adapter";
 import { ClientHttpClientFactory } from "@/shared/api/http-client-client";
 // DDD Architecture imports for Users
-import { getUsersAction, getUserByIdAction } from "@/infrastructure/web/controllers/dashboard/user.actions";
+import {
+  getUsersAction,
+  getUserByIdAction,
+} from "@/infrastructure/web/controllers/dashboard/user.actions";
 import type { UserPlainObject } from "@/entities/user/domain/UserEntity";
 
 // Legacy types for compatibility during migration
@@ -67,9 +70,13 @@ import { Modal } from "@/shared/ui/modal";
 import debounce from "lodash/debounce";
 import { toast } from "sonner";
 import { TimeSlotDto } from "@/entities/reservation/model/types";
-import { createReservationAction, CreateReservationResult } from "@/infrastructure/web/controllers/create-reservation.action";
-
-
+import {
+  createReservationAction,
+  CreateReservationResult,
+} from "@/infrastructure/web/controllers/create-reservation.action";
+import { ErrorHandlerResult } from "@/shared/api/error-handler";
+import { SubScenarioPlainObject } from "@/entities/sub-scenario/domain/SubScenarioEntity";
+import { PageMetaDto } from "@/shared/api";
 
 interface CreateReservationModalProps {
   open: boolean;
@@ -99,7 +106,7 @@ export const CreateReservationModal = ({
   // Guardar el usuario seleccionado en estado
   const [selectedUser, setSelectedUser] = useState<UserDto | null>(null);
   const [selectedScenario, setSelectedScenario] = useState<ScenarioDto | null>(
-    null,
+    null
   );
   const [selectedSubScenario, setSelectedSubScenario] =
     useState<SubScenarioDto | null>(null);
@@ -133,14 +140,14 @@ export const CreateReservationModal = ({
         // Transform DDD entities to legacy format for compatibility
         const mappedUsers = users.map((u: any) => ({
           id: u.id,
-          first_name: u.firstName || u.first_name || '',
-          last_name: u.lastName || u.last_name || '',
-          email: u.email || '',
+          first_name: u.firstName || u.first_name || "",
+          last_name: u.lastName || u.last_name || "",
+          email: u.email || "",
           phone: u.phone,
           neighborhood: u.neighborhood?.name,
           address: u.address,
           role: u.role?.name,
-          active: u.isActive !== false
+          active: u.isActive !== false,
         }));
         setUsers(mappedUsers);
       } catch (error) {
@@ -150,7 +157,7 @@ export const CreateReservationModal = ({
         setLoadingUsers(false);
       }
     }, 300),
-    [],
+    []
   );
 
   // Debounce para búsqueda de escenarios
@@ -170,7 +177,7 @@ export const CreateReservationModal = ({
           id: s.id,
           name: s.name,
           address: s.address,
-          active: s.active
+          active: s.active,
         }));
         setScenarios(mappedScenarios);
       } catch (error) {
@@ -180,7 +187,7 @@ export const CreateReservationModal = ({
         setLoadingScenarios(false);
       }
     }, 300),
-    [],
+    []
   );
 
   // Debounce para búsqueda de subescenarios
@@ -190,19 +197,28 @@ export const CreateReservationModal = ({
 
       setLoadingSubScenarios(true);
       try {
-        const response = await getSubScenariosAction({
+        const response: ErrorHandlerResult<{
+          success: boolean;
+          data: {
+            data: SubScenarioPlainObject[];
+            meta: PageMetaDto;
+          };
+        }> = await getSubScenariosAction({
           scenarioId: scenarioId,
           search: term,
           page: 1,
-          limit: 10
+          limit: 10,
         });
-        const subScenarios = response.data?.data || [];
+        if (!response.success) {
+          throw new Error("Error en la respuesta del servidor");
+        }
+        const subScenarios = response.data.data.data || [];
         // Transform DDD entities to legacy format for compatibility
         const mappedSubScenarios = subScenarios.map((s: any) => ({
           id: s.id,
           name: s.name,
           scenarioId: s.scenario?.id || scenarioId,
-          active: true
+          active: true,
         }));
         setSubScenarios(mappedSubScenarios);
       } catch (error) {
@@ -212,7 +228,7 @@ export const CreateReservationModal = ({
         setLoadingSubScenarios(false);
       }
     }, 300),
-    [],
+    []
   );
 
   // Función para depurar y mostrar el usuario seleccionado en consola
@@ -243,7 +259,7 @@ export const CreateReservationModal = ({
             id: s.id,
             name: s.name,
             address: s.address,
-            active: s.active
+            active: s.active,
           }));
           setScenarios(scenData);
         } catch (err) {
@@ -270,7 +286,7 @@ export const CreateReservationModal = ({
           const response = await getSubScenariosAction({
             scenarioId: scenarioId,
             page: 1,
-            limit: 10
+            limit: 10,
           });
           const subScenarios = response.data?.data || [];
           // Transform to legacy format
@@ -278,7 +294,7 @@ export const CreateReservationModal = ({
             id: s.id,
             name: s.name,
             scenarioId: s.scenario?.id || scenarioId,
-            active: true
+            active: true,
           }));
           setSubScenarios(transformedSubScenarios);
         } catch (error) {
@@ -308,14 +324,14 @@ export const CreateReservationModal = ({
             // Transform DDD entity to legacy format for compatibility
             const user = {
               id: userResponse.id,
-              first_name: userResponse.firstName || '',
-              last_name: userResponse.lastName || '',
-              email: userResponse.email || '',
+              first_name: userResponse.firstName || "",
+              last_name: userResponse.lastName || "",
+              email: userResponse.email || "",
               phone: userResponse.phone,
               neighborhood: userResponse.neighborhood?.name,
               address: userResponse.address,
               role: userResponse.role?.name,
-              active: userResponse.isActive !== false
+              active: userResponse.isActive !== false,
             };
             setSelectedUser(user);
           }
@@ -330,7 +346,7 @@ export const CreateReservationModal = ({
   useEffect(() => {
     if (newReservation.scenarioId && !selectedScenario) {
       const scenario = scenarios.find(
-        (s) => s.id.toString() === newReservation.scenarioId,
+        (s) => s.id.toString() === newReservation.scenarioId
       );
       if (scenario) setSelectedScenario(scenario);
     }
@@ -340,7 +356,7 @@ export const CreateReservationModal = ({
   useEffect(() => {
     if (newReservation.subScenarioId && !selectedSubScenario) {
       const subScenario = subScenarios.find(
-        (ss) => ss.id.toString() === newReservation.subScenarioId,
+        (ss) => ss.id.toString() === newReservation.subScenarioId
       );
       if (subScenario) setSelectedSubScenario(subScenario);
     }
@@ -350,7 +366,7 @@ export const CreateReservationModal = ({
   useEffect(() => {
     if (newReservation.timeSlotId && !selectedTimeSlot) {
       const slot = availableTimeSlots.find(
-        (slot) => slot.id.toString() === newReservation.timeSlotId,
+        (slot) => slot.id.toString() === newReservation.timeSlotId
       );
       if (slot) setSelectedTimeSlot(slot);
     }
@@ -368,7 +384,7 @@ export const CreateReservationModal = ({
             id: s.id,
             name: s.name,
             address: s.address,
-            active: s.active
+            active: s.active,
           }));
           setScenarios(scenData);
         } catch (err) {
@@ -408,20 +424,20 @@ export const CreateReservationModal = ({
         // Use DDD repository pattern for timeslots with cookies authentication
         const httpClient = ClientHttpClientFactory.createClientWithCookies();
         const repository = createReservationRepository(httpClient);
-        
+
         const slots = await repository.getAvailableTimeSlots(
           parseInt(subScenarioId),
-          reservationDate,
+          reservationDate
         );
-        
+
         // Convert TimeslotResponseDto[] to match component interface
-        const convertedSlots = slots.map(slot => ({
+        const convertedSlots = slots.map((slot) => ({
           id: slot.id,
           startTime: slot.startTime,
           endTime: slot.endTime,
           available: slot.isAvailable, // Map isAvailable to available
         }));
-        
+
         setAvailableTimeSlots(convertedSlots);
       } catch (error) {
         console.error("Error al cargar horarios disponibles:", error);
@@ -449,10 +465,10 @@ export const CreateReservationModal = ({
         },
         comments: comments || undefined,
       });
-      
+
       if (result.success) {
         toast.success(result.message || "Reserva creada correctamente.");
-        
+
         // Llamar al callback de éxito si existe
         if (onSuccess) {
           onSuccess();
@@ -463,7 +479,7 @@ export const CreateReservationModal = ({
         toast.error(result.error || "No se pudo crear la reserva");
       }
     } catch (err: any) {
-      console.error('Create reservation exception:', err);
+      console.error("Create reservation exception:", err);
       toast.error(err.message ?? "Ocurrió un error al crear la reserva");
     } finally {
       setLoading(false);
@@ -521,7 +537,7 @@ export const CreateReservationModal = ({
               onValueChange={(v) => {
                 setNewReservation({ ...newReservation, clientId: v });
                 const user: UserDto | undefined = users.find(
-                  (u) => u.id.toString() === v,
+                  (u) => u.id.toString() === v
                 );
                 if (user) setSelectedUser(user);
               }}
@@ -682,7 +698,7 @@ export const CreateReservationModal = ({
                 onValueChange={(v) => {
                   setNewReservation({ ...newReservation, subScenarioId: v });
                   const subScenario = subScenarios.find(
-                    (ss) => ss.id.toString() === v,
+                    (ss) => ss.id.toString() === v
                   );
                   if (subScenario) setSelectedSubScenario(subScenario);
                 }}
@@ -781,7 +797,7 @@ export const CreateReservationModal = ({
                 onValueChange={(v) => {
                   setNewReservation({ ...newReservation, timeSlotId: v });
                   const slot = availableTimeSlots.find(
-                    (slot) => slot.id.toString() === v,
+                    (slot) => slot.id.toString() === v
                   );
                   if (slot) setSelectedTimeSlot(slot);
                 }}

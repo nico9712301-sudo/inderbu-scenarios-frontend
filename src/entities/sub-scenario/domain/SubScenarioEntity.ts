@@ -1,5 +1,5 @@
 export interface SubScenarioPlainObject {
-  id: number;
+  id?: number;
   name: string;
   hasCost: boolean;
   numberOfSpectators: number;
@@ -30,50 +30,6 @@ export interface SubScenarioPlainObject {
   createdAt?: string;
   updatedAt?: string;
 }
-
-export interface SubScenarioSearchCriteria {
-  searchQuery?: string;
-  scenarioId?: number;
-  activityAreaId?: number;
-  fieldSurfaceTypeId?: number;
-  hasCost?: boolean;
-  active?: boolean;
-  limit?: number;
-
-  isValid(): boolean;
-}
-
-export class SubScenarioSearchCriteria {
-  constructor(
-    public readonly searchQuery?: string,
-    public readonly scenarioId?: number,
-    public readonly activityAreaId?: number,
-    public readonly fieldSurfaceTypeId?: number,
-    public readonly hasCost?: boolean,
-    public readonly active?: boolean,
-    public readonly limit?: number
-  ) {}
-
-  isValid(): boolean {
-    if (this.limit !== undefined && (this.limit <= 0 || this.limit > 1000)) {
-      return false;
-    }
-    if (this.scenarioId !== undefined && this.scenarioId <= 0) {
-      return false;
-    }
-    if (this.activityAreaId !== undefined && this.activityAreaId <= 0) {
-      return false;
-    }
-    if (this.fieldSurfaceTypeId !== undefined && this.fieldSurfaceTypeId <= 0) {
-      return false;
-    }
-    if (this.searchQuery && this.searchQuery.length > 200) {
-      return false;
-    }
-    return true;
-  }
-}
-
 export class SubScenarioDomainError extends Error {
   constructor(message: string, public readonly code?: string) {
     super(message);
@@ -82,13 +38,13 @@ export class SubScenarioDomainError extends Error {
 }
 
 export class SubScenarioEntity {
-  public readonly id: number;
+  public readonly id?: number; // Ahora es opcional
   public readonly name: string;
   public readonly hasCost: boolean;
   public readonly numberOfSpectators: number;
   public readonly numberOfPlayers: number;
   public readonly recommendations: string;
-  public readonly active: boolean;
+  public active: boolean;
   public readonly scenario: {
     id: number;
     name: string;
@@ -114,7 +70,6 @@ export class SubScenarioEntity {
   public readonly updatedAt?: Date;
 
   constructor(
-    id: number,
     name: string,
     hasCost: boolean,
     numberOfSpectators: number,
@@ -143,11 +98,12 @@ export class SubScenarioEntity {
       };
     },
     createdAt?: Date,
-    updatedAt?: Date
+    updatedAt?: Date,
+    id?: number // ID opcional al final del constructor
   ) {
     // Domain validation
-    if (id <= 0) {
-      throw new SubScenarioDomainError('SubScenario ID must be positive');
+    if (id !== undefined && id <= 0) {
+      throw new SubScenarioDomainError('SubScenario ID must be positive when provided');
     }
     if (!name || name.trim().length === 0) {
       throw new SubScenarioDomainError('SubScenario name cannot be empty');
@@ -196,7 +152,6 @@ export class SubScenarioEntity {
     }
 
     return new SubScenarioEntity(
-      apiData.id,
       apiData.name,
       Boolean(apiData.hasCost),
       Number(apiData.numberOfSpectators) || 0,
@@ -222,7 +177,40 @@ export class SubScenarioEntity {
       },
       apiData.imageGallery,
       apiData.createdAt ? new Date(apiData.createdAt) : undefined,
-      apiData.updatedAt ? new Date(apiData.updatedAt) : undefined
+      apiData.updatedAt ? new Date(apiData.updatedAt) : undefined,
+      apiData.id // ID opcional al final
+    );
+  }
+
+  // Nuevo factory method para crear sin ID (útil para nuevas entidades)
+  static create(data: {
+    name: string;
+    hasCost: boolean;
+    numberOfSpectators: number;
+    numberOfPlayers: number;
+    recommendations: string;
+    active: boolean;
+    scenario: {
+      id: number;
+      name: string;
+      address: string;
+      neighborhood?: { id: number; name: string };
+    };
+    activityArea: { id: number; name: string };
+    fieldSurfaceType: { id: number; name: string };
+    imageGallery?: any;
+  }): SubScenarioEntity {
+    return new SubScenarioEntity(
+      data.name,
+      data.hasCost,
+      data.numberOfSpectators,
+      data.numberOfPlayers,
+      data.recommendations,
+      data.active,
+      data.scenario,
+      data.activityArea,
+      data.fieldSurfaceType,
+      data.imageGallery
     );
   }
 
@@ -250,6 +238,17 @@ export class SubScenarioEntity {
 
   hasImages(): boolean {
     return Boolean(this.imageGallery && this.imageGallery.count > 0);
+  }
+
+  // Método para actualizar el estado activo (DDD approach)
+  updateActiveStatus(newActiveStatus: boolean): void {
+    // Validar invariantes de negocio si aplica
+    // Por ejemplo: "No se puede desactivar si hay reservas activas"
+    // if (!newActiveStatus && this.hasActiveReservations()) {
+    //   throw new SubScenarioDomainError('Cannot deactivate sub-scenario with active reservations');
+    // }
+    
+    this.active = newActiveStatus;
   }
 
   getFeaturedImage(): string | null {
@@ -297,10 +296,38 @@ export class SubScenarioEntity {
     return this.fieldSurfaceType.id === fieldSurfaceTypeId;
   }
 
+  // Método para verificar si es una nueva entidad
+  isNewEntity(): boolean {
+    return this.id === undefined;
+  }
+
+  // Método para crear una copia con ID (útil después de guardar en BD)
+  withId(id: number): SubScenarioEntity {
+    if (id <= 0) {
+      throw new SubScenarioDomainError('ID must be positive');
+    }
+    
+    return new SubScenarioEntity(
+      this.name,
+      this.hasCost,
+      this.numberOfSpectators,
+      this.numberOfPlayers,
+      this.recommendations,
+      this.active,
+      this.scenario,
+      this.activityArea,
+      this.fieldSurfaceType,
+      this.imageGallery,
+      this.createdAt,
+      this.updatedAt,
+      id
+    );
+  }
+
   // Serialization for Next.js Client Components
   toPlainObject(): SubScenarioPlainObject {
     return {
-      id: this.id,
+      id: this.id, // Optional id, undefined for entities without ID (DDD compliant)
       name: this.name,
       hasCost: this.hasCost,
       numberOfSpectators: this.numberOfSpectators,
@@ -318,8 +345,7 @@ export class SubScenarioEntity {
 
   // Convert to API format for backend calls
   toApiFormat(): any {
-    return {
-      id: this.id,
+    const apiFormat: any = {
       name: this.name,
       hasCost: this.hasCost,
       numberOfSpectators: this.numberOfSpectators,
@@ -332,6 +358,13 @@ export class SubScenarioEntity {
       createdAt: this.createdAt?.toISOString(),
       updatedAt: this.updatedAt?.toISOString(),
     };
+
+    // Solo incluir ID si existe
+    if (this.id !== undefined) {
+      apiFormat.id = this.id;
+    }
+
+    return apiFormat;
   }
 
   // Validation helpers
@@ -339,8 +372,8 @@ export class SubScenarioEntity {
     return (
       apiData &&
       typeof apiData === 'object' &&
-      typeof apiData.id === 'number' &&
-      apiData.id > 0 &&
+      // ID ya no es requerido
+      (apiData.id === undefined || (typeof apiData.id === 'number' && apiData.id > 0)) &&
       typeof apiData.name === 'string' &&
       apiData.name.trim().length > 0 &&
       typeof apiData.hasCost === 'boolean' &&

@@ -55,11 +55,6 @@ export function CreateSubScenarioDialog({ open, onOpenChange, handleSubScenarioC
     }
   });
 
-  const handleSave = async () => {
-    await handleCreate();
-  };
-
-  console.log("Activity Areas from create-sub-scenario-dialog:", activityAreas);
   
 
   return (
@@ -137,7 +132,7 @@ export function CreateSubScenarioDialog({ open, onOpenChange, handleSubScenarioC
           <Button
             className="bg-teal-600 hover:bg-teal-700"
             size="sm"
-            onClick={handleSave}
+            onClick={handleCreate}
             disabled={isSubmitting}
           >
             {isSubmitting ? "Guardando..." : "Guardar"}

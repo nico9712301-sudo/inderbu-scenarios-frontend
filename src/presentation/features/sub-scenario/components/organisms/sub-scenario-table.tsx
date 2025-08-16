@@ -149,8 +149,8 @@ export function SubScenarioTable({
                   </td>
                 </tr>
               ) : rows.length ? (
-                rows.map((r) => (
-                  <tr key={r.id} className="border-b hover:bg-gray-50">
+                rows.map((r, index) => (
+                  <tr key={r.id !== undefined ? `sub-scenario-id-${r.id}` : `sub-scenario-temp-${index}`} className="border-b hover:bg-gray-50">
                     {columns.map((c) => (
                       <td key={c.id} className="px-4 py-3 text-sm">
                         {c.cell(r)}

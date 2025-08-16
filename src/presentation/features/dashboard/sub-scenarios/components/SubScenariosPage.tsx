@@ -56,7 +56,7 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
     try {
       const newActiveState = !subScenario.active;
 
-      const result: ErrorHandlerResult<SubScenario> = await updateSubScenarioAction(subScenario.id, {
+      const result= await updateSubScenarioAction(subScenario.id, {
         active: newActiveState,
       });
 
@@ -114,6 +114,11 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
   };
 
   const handleOpenEditModal = (subScenario: SubScenario) => {
+    console.log('SubScenariosPage - Opening edit modal for subScenario:', {
+      id: subScenario.id,
+      name: subScenario.name,
+      fullObject: subScenario
+    });
     setSelected(subScenario);
     setEditOpen(true);
   };
@@ -122,7 +127,7 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
     await toggleSubScenarioStatus(subScenario);
   }, [toggleSubScenarioStatus, router]);
 
-  console.log("Activity Areas from SubscenariosPage", activityAreas);  
+  // console.log("Activity Areas from SubscenariosPage", activityAreas);  
 
 
   return (

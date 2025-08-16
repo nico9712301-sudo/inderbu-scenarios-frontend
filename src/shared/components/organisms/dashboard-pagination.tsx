@@ -81,8 +81,8 @@ export function DashboardPagination({
     return null;
   }
 
-  console.log("Pagination Meta:", meta);
-  console.log('El limite que deberia ser: ', limit);
+  // console.log("Pagination Meta:", meta);
+  // console.log('El limite que deberia ser: ', limit);
 
   return (
     <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 ${className}`}>

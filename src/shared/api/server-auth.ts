@@ -10,30 +10,30 @@ const REFRESH_TOKEN_KEY = 'refresh_token';
 // Server-side token management CON refresh automático
 export async function getToken(): Promise<string | null> {
   try {
-    console.log('Server Auth: Getting token from cookies...');
+    // console.log('Server Auth: Getting token from cookies...');
     const cookieStore: ReadonlyRequestCookies = await cookies();
     
     // Debug: List all available cookies
     const allCookies = cookieStore.getAll();
-    console.log('Available cookies:', allCookies.map(c => ({ name: c.name, hasValue: !!c.value })));
+    // console.log('Available cookies:', allCookies.map(c => ({ name: c.name, hasValue: !!c.value })));
     
     const tokenCookie = cookieStore.get(TOKEN_KEY);
-    console.log(`Token cookie (${TOKEN_KEY}):`, tokenCookie ? { name: tokenCookie.name, hasValue: !!tokenCookie.value, length: tokenCookie.value?.length } : 'Not found');
+    // console.log(`Token cookie (${TOKEN_KEY}):`, tokenCookie ? { name: tokenCookie.name, hasValue: !!tokenCookie.value, length: tokenCookie.value?.length } : 'Not found');
     
     const token = tokenCookie?.value || null;
     
     if (token) {
-      console.log('Server Auth: Token found, length:', token.length);
+      // console.log('Server Auth: Token found, length:', token.length);
       // Check if token is expired
       const isExpired = isTokenExpired(token);
-      console.log('Token expired:', isExpired);
+      // console.log('Token expired:', isExpired);
       
       if (isExpired) {
-        console.log('Server Auth: Token is expired, attempting refresh...');
+        // console.log('Server Auth: Token is expired, attempting refresh...');
         return await refreshTokenIfNeeded();
       }
     } else {
-      console.log('Server Auth: No token found in cookies');
+      // console.log('Server Auth: No token found in cookies');
     }
     
     return token;
@@ -46,17 +46,17 @@ export async function getToken(): Promise<string | null> {
 // Nueva función para refresh automático
 async function refreshTokenIfNeeded(): Promise<string | null> {
   try {
-    console.log('Server Auth: Attempting to refresh token...');
+    // console.log('Server Auth: Attempting to refresh token...');
     
     const cookieStore = await cookies();
     const refreshToken = cookieStore.get(REFRESH_TOKEN_KEY)?.value;
     
     if (!refreshToken) {
-      console.log('Server Auth: No refresh token available');
+      // console.log('Server Auth: No refresh token available');
       return null;
     }
     
-    console.log('Server Auth: Refresh token found, calling refresh endpoint...');
+    // console.log('Server Auth: Refresh token found, calling refresh endpoint...');
     
     // Crear repository sin auth (para evitar ciclo infinito)
     const httpClient = ClientHttpClientFactory.createClient();
@@ -65,7 +65,7 @@ async function refreshTokenIfNeeded(): Promise<string | null> {
     // Llamar al endpoint de refresh
     const tokens = await userRepository.refreshToken(refreshToken);
     
-    console.log('Server Auth: Token refreshed successfully');
+    // console.log('Server Auth: Token refreshed successfully');
     
     // Guardar nuevos tokens en cookies
     cookieStore.set(TOKEN_KEY, tokens.access_token, {
@@ -84,7 +84,7 @@ async function refreshTokenIfNeeded(): Promise<string | null> {
       });
     }
     
-    console.log('Server Auth: New tokens saved to cookies');
+    // console.log('Server Auth: New tokens saved to cookies');
     return tokens.access_token;
     
   } catch (error) {
@@ -95,7 +95,7 @@ async function refreshTokenIfNeeded(): Promise<string | null> {
       const cookieStore = await cookies();
       cookieStore.delete(TOKEN_KEY);
       cookieStore.delete(REFRESH_TOKEN_KEY);
-      console.log('Server Auth: Cleared expired tokens');
+      // console.log('Server Auth: Cleared expired tokens');
     } catch (clearError) {
       console.error('Server Auth: Error clearing tokens:', clearError);
     }

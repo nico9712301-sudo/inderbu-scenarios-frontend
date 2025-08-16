@@ -1,8 +1,9 @@
 import { useCallback, useState, useRef, useEffect } from "react";
 import { createSubScenarioAction, updateSubScenarioAction, uploadSubScenarioImagesAction } from "@/infrastructure/web/controllers/dashboard/sub-scenario.actions";
-import { ImageUploadData } from "@/application/dashboard/sub-scenarios/use-cases/UploadSubScenarioImagesUseCase";
+import { ImageUploadData, ImageSlotManagement } from "@/application/dashboard/sub-scenarios/use-cases/UploadSubScenarioImagesUseCase";
 import { ErrorHandlerResult } from "@/shared/api/error-handler";
-import { SubScenario } from "@/shared/api";
+import { SubScenario, SubScenarioImage } from "@/shared/api";
+import { SubScenarioPlainObject } from "@/entities/sub-scenario/domain/SubScenarioEntity";
 
 // Types
 export interface SubScenarioFormData {
@@ -23,7 +24,14 @@ export interface SubScenarioFormData {
     id: string;
     name?: string;
   };
-  images: ImageUploadData[];
+  active?: boolean; // Assuming active is always true on creation
+  images?: ImageUploadData[]; // Optional for creation, required for update
+  imageGallery?: {
+    featured?: SubScenarioImage;
+    additional: SubScenarioImage[];
+    count: number;
+  };
+  imageManagement?: ImageSlotManagement;
 }
 
 export interface SubScenarioFormErrors {
@@ -61,6 +69,7 @@ const getDefaultFormData = (): SubScenarioFormData => ({
     id: "",
     name: "",
   },
+  active: true, // Assuming active is always true on creation
   images: [],
 });
 
@@ -111,7 +120,6 @@ export function useSubScenarioForm({ initialData, onSuccess, onError }: UseSubSc
   );
   const [errors, setErrors] = useState<SubScenarioFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
 
   // Update form field
   const updateField = useCallback((field: keyof SubScenarioFormData, value: string | number | boolean) => {
@@ -179,6 +187,11 @@ export function useSubScenarioForm({ initialData, onSuccess, onError }: UseSubSc
     setFormData(prev => ({ ...prev, images }));
   }, []);
 
+  // Update image management specifically
+  const updateImageManagement = useCallback((imageManagement: ImageSlotManagement) => {
+    setFormData(prev => ({ ...prev, imageManagement }));
+  }, []);
+
   // Validate form
   const validate = useCallback(() => {
     const formErrors = validateSubScenarioForm(formData);
@@ -197,7 +210,7 @@ export function useSubScenarioForm({ initialData, onSuccess, onError }: UseSubSc
       }
 
       // Step 1: Create the sub-scenario without images
-      const result: ErrorHandlerResult<SubScenario> = await createSubScenarioAction({
+      const result = await createSubScenarioAction({
         name: formData.name,
         hasCost: formData.hasCost,
         numberOfSpectators: formData.numberOfSpectators,
@@ -205,6 +218,7 @@ export function useSubScenarioForm({ initialData, onSuccess, onError }: UseSubSc
         recommendations: formData.recommendations,
         scenarioId: parseInt(formData.scenario.id),
         activityAreaId: parseInt(formData.activityArea.id),
+        active: formData.active!, // Assuming active is always true on creation
         fieldSurfaceTypeId: parseInt(formData.fieldSurfaceType.id),
       });
 
@@ -214,30 +228,30 @@ export function useSubScenarioForm({ initialData, onSuccess, onError }: UseSubSc
       }
 
       // Extract the actual sub-scenario data from the backend response
-      const subScenario = result.data.data;
-
+      const subScenario: SubScenarioPlainObject = result.data;
+      // console.log("Sub-scenario created with form data:", formData, "and backend response:", subScenario);
       // Step 2: Upload images if any exist
-      if (formData.images.length > 0) {
+      if (formData.images && formData.images.length > 0) {
         try {
-          const imageResult = await uploadSubScenarioImagesAction(subScenario.id, formData.images);
+          const imageResult = await uploadSubScenarioImagesAction(subScenario.id!, formData.images);
           
           if (!imageResult.success) {
             // Sub-scenario was created but images failed - show partial success
             onError?.(`Sub-escenario creado, pero falló la subida de imágenes: ${imageResult.error}`);
-            onSuccess?.(subScenario); // Still call success for the sub-scenario
+            onSuccess?.(subScenario as SubScenario); // Still call success for the sub-scenario
             return true;
           }
         } catch (imageError) {
           console.error('Image upload error:', imageError);
           // Sub-scenario was created but images failed - show partial success
           onError?.("Sub-escenario creado, pero falló la subida de imágenes");
-          onSuccess?.(subScenario); // Still call success for the sub-scenario
+          onSuccess?.(subScenario as SubScenario); // Still call success for the sub-scenario
           return true;
         }
       }
 
       // Step 3: Success for both sub-scenario and images
-      onSuccess?.(subScenario);
+      onSuccess?.(subScenario as SubScenario);
       return true;
     } catch (error) {
       console.error('Form submission error:', error);
@@ -258,7 +272,8 @@ export function useSubScenarioForm({ initialData, onSuccess, onError }: UseSubSc
         return false;
       }
 
-      const result: ErrorHandlerResult<SubScenario> = await updateSubScenarioAction(id, {
+      // Step 1: Update the sub-scenario basic data
+      const result = await updateSubScenarioAction(id, {
         name: formData.name,
         hasCost: formData.hasCost,
         numberOfSpectators: formData.numberOfSpectators,
@@ -269,13 +284,37 @@ export function useSubScenarioForm({ initialData, onSuccess, onError }: UseSubSc
         fieldSurfaceTypeId: parseInt(formData.fieldSurfaceType.id),
       });
 
-      if (result.success) {
-        onSuccess?.(result.data);
-        return true;
-      } else {
+      if (!result.success) {
         onError?.(result.error || "Error al actualizar sub-escenario");
         return false;
       }
+
+      // Step 2: Handle image management if there are changes
+      if (formData.imageManagement) {
+        try {
+          const { ManageSubScenarioImagesUseCase } = await import('@/application/dashboard/sub-scenarios/use-cases/ManageSubScenarioImagesUseCase');
+          const imageUseCase = new ManageSubScenarioImagesUseCase();
+          
+          const imageResult = await imageUseCase.manageAllImages(id, formData.imageManagement);
+          
+          if (!imageResult.success) {
+            // Sub-scenario was updated but images failed - show partial success
+            onError?.(`Sub-escenario actualizado, pero falló la gestión de imágenes: ${imageResult.error}`);
+            onSuccess?.(result.data as SubScenario); // Still call success for the sub-scenario
+            return true;
+          }
+        } catch (imageError) {
+          console.error('Image management error:', imageError);
+          // Sub-scenario was updated but images failed - show partial success
+          onError?.("Sub-escenario actualizado, pero falló la gestión de imágenes");
+          onSuccess?.(result.data as SubScenario); // Still call success for the sub-scenario
+          return true;
+        }
+      }
+
+      // Step 3: Success for both sub-scenario and images
+      onSuccess?.(result.data as SubScenario);
+      return true;
     } catch (error) {
       console.error('Form submission error:', error);
       onError?.("Error inesperado al actualizar sub-escenario");
@@ -312,6 +351,12 @@ export function useSubScenarioForm({ initialData, onSuccess, onError }: UseSubSc
         id: subScenario.fieldSurfaceType?.id?.toString() || "",
         name: subScenario.fieldSurfaceType?.name || "",
       },
+      active: subScenario.active ?? true, // Assuming active is always true on creation
+      imageGallery: {
+        featured: subScenario.imageGallery?.featured || undefined,
+        additional: subScenario.imageGallery?.additional || [],
+        count: subScenario.imageGallery?.count || 0,
+      }
     });
     setErrors({});
   }, []);
@@ -329,6 +374,7 @@ export function useSubScenarioForm({ initialData, onSuccess, onError }: UseSubSc
     updateActivityArea,
     updateFieldSurfaceType,
     updateImages,
+    updateImageManagement,
     validate,
     handleCreate,
     handleUpdate,

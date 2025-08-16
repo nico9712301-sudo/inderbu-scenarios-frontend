@@ -1,4 +1,4 @@
-import { PageMeta } from '@/shared/api/pagination';
+import { PageMetaDto } from '@/shared/api';
 import { ScenarioEntity } from '../domain/ScenarioEntity';
 
 export interface ScenarioFilters {
@@ -11,7 +11,7 @@ export interface ScenarioFilters {
 
 export interface PaginatedScenarios {
   data: ScenarioEntity[];
-  meta: PageMeta;
+  meta: PageMetaDto;
 }
 
 export interface IScenarioRepository {

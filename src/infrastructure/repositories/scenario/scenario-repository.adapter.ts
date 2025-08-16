@@ -69,6 +69,7 @@ export class ScenarioRepository implements IScenarioRepository {
 
   async create(data: Omit<ScenarioEntity, "id">): Promise<ScenarioEntity> {
     return executeWithDomainError(async () => {
+      console.log("Creating scenario with data:", data);
       // Transform domain entity to backend format for API call
       const backendData = ScenarioTransformer.toBackend(data as ScenarioEntity);
 

@@ -6,17 +6,27 @@ import { useRef, useMemo, useEffect } from "react";
 import { Label } from "@/shared/ui/label";
 import { FILE_UPLOAD, FileValidation } from "@/shared/constants/file-upload.constants";
 import { toast } from "sonner";
+import { SubScenarioImage } from "@/shared/api/domain-types";
 
 // Global cache for blob URLs to prevent recreation across renders
 const blobUrlCache = new Map<string, string>();
 
+export type ImageValue = File | SubScenarioImage | null;
+
+export interface ImageChangeAction {
+  type: 'keep' | 'replace' | 'delete';
+  newFile?: File;
+  existingImage?: SubScenarioImage;
+}
+
 interface SingleImageInputProps {
   label: string;
   description?: string;
-  value?: File | null;
-  onChange: (file: File | null) => void;
+  value?: ImageValue;
+  onChange: (action: ImageChangeAction) => void;
   isFeature?: boolean;
   placeholder?: string;
+  existingImage?: SubScenarioImage;
 }
 
 export function SingleImageInput({
@@ -25,41 +35,51 @@ export function SingleImageInput({
   value,
   onChange,
   isFeature = false,
-  placeholder = "Haz clic para seleccionar imagen"
+  placeholder = "Haz clic para seleccionar imagen",
+  existingImage
 }: SingleImageInputProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-
-  // Use only the value from props - remove local state confusion
-  const currentFile = value;
+  // Determine current image state
+  const currentImage = value;
+  const isFile = currentImage instanceof File;
+  const isExistingImage = currentImage && !isFile;
   
-  // Use global cache to prevent blob URL recreation across renders
-  const fileIdentity = currentFile ? `${currentFile.name}-${currentFile.size}-${currentFile.lastModified}` : null;
+  // Use global cache to prevent blob URL recreation across renders (only for File objects)
+  const fileIdentity = isFile ? `${currentImage.name}-${currentImage.size}-${currentImage.lastModified}` : null;
   
-  const blobUrl = useMemo(() => {
-    if (!currentFile || !fileIdentity) return null;
-    
-    // Check if we already have a blob URL for this file
-    if (blobUrlCache.has(fileIdentity)) {
-      return blobUrlCache.get(fileIdentity)!;
+  // Get image URL for display
+  const imageUrl = useMemo(() => {
+    if (isFile && fileIdentity) {
+      // Check if we already have a blob URL for this file
+      if (blobUrlCache.has(fileIdentity)) {
+        return blobUrlCache.get(fileIdentity)!;
+      }
+      
+      // Create new blob URL and cache it
+      const url = URL.createObjectURL(currentImage as File);
+      blobUrlCache.set(fileIdentity, url);
+      return url;
     }
     
-    // Create new blob URL and cache it
-    const url = URL.createObjectURL(currentFile);
-    blobUrlCache.set(fileIdentity, url);
-    return url;
-  }, [fileIdentity, currentFile, label]);
+    if (isExistingImage) {
+      const existingImg = currentImage as SubScenarioImage;
+      return existingImg.url || existingImg.path;
+    }
+    
+    return null;
+  }, [isFile, isExistingImage, fileIdentity, currentImage]);
   
-  // Cleanup blob URL when component unmounts or file changes
+  // Cleanup blob URL when component unmounts or file changes (only for File objects)
   useEffect(() => {
     return () => {
-      if (fileIdentity && blobUrlCache.has(fileIdentity)) {
+      if (isFile && fileIdentity && blobUrlCache.has(fileIdentity)) {
         const cachedUrl = blobUrlCache.get(fileIdentity)!;
         URL.revokeObjectURL(cachedUrl);
         blobUrlCache.delete(fileIdentity);
       }
     };
-  }, [fileIdentity, label]);
+  }, [isFile, fileIdentity]);
   
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,11 +110,18 @@ export function SingleImageInput({
     }
     
     // File is valid, proceed
-    onChange(file);
+    onChange({
+      type: 'replace',
+      newFile: file,
+      existingImage: isExistingImage ? currentImage as SubScenarioImage : undefined
+    });
   };
   
   const handleRemove = () => {
-    onChange(null);
+    onChange({
+      type: 'delete',
+      existingImage: isExistingImage ? currentImage as SubScenarioImage : undefined
+    });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -138,16 +165,28 @@ export function SingleImageInput({
         />
 
         {/* Image preview or upload area */}
-        {currentFile ? (
+        {currentImage ? (
           <div className="relative group">
             <div className="w-full h-32 rounded-lg border-2 border-gray-200 bg-gray-50 overflow-hidden">
               <img
-                src={blobUrl || ''}
+                src={imageUrl || ''}
                 alt="Preview"
                 className="w-full h-full object-cover"
                 style={{ maxWidth: '100%', maxHeight: '128px' }}
               />
             </div>
+            
+            {/* Image type indicator */}
+            {isExistingImage && (
+              <div className="absolute top-2 left-2 px-2 py-1 bg-blue-500 text-white text-xs rounded">
+                Actual
+              </div>
+            )}
+            {isFile && (
+              <div className="absolute top-2 left-2 px-2 py-1 bg-green-500 text-white text-xs rounded">
+                Nuevo
+              </div>
+            )}
             
             {/* Remove button positioned outside overlay */}
             <Button

@@ -13,17 +13,17 @@ import { IHttpClient } from '@/shared/api/types';
 export class SubScenarioRepository implements ISubScenarioRepository {
   constructor(private readonly httpClient: IHttpClient) {}
   
-  async getAll(filters: SubScenariosFilters): Promise<PaginatedSubScenarios> {
+  async getAll(filters?: SubScenariosFilters): Promise<PaginatedSubScenarios> {
     return executeWithDomainError(async () => {
       // Build query params
       const params = new URLSearchParams();
-      if (filters.page) params.append('page', filters.page.toString());
-      if (filters.limit) params.append('limit', filters.limit.toString());
-      if (filters.search) params.append('search', filters.search);
-      if (filters.scenarioId) params.append('scenarioId', filters.scenarioId.toString());
-      if (filters.activityAreaId) params.append('activityAreaId', filters.activityAreaId.toString());
-      if (filters.neighborhoodId) params.append('neighborhoodId', filters.neighborhoodId.toString());
-      if (filters.active !== undefined) params.append('active', filters.active.toString());
+      if (filters?.page) params.append('page', filters.page.toString());
+      if (filters?.limit) params.append('limit', filters.limit.toString());
+      if (filters?.search) params.append('search', filters.search);
+      if (filters?.scenarioId) params.append('scenarioId', filters.scenarioId.toString());
+      if (filters?.activityAreaId) params.append('activityAreaId', filters.activityAreaId.toString());
+      if (filters?.neighborhoodId) params.append('neighborhoodId', filters.neighborhoodId.toString());
+      if (filters?.active !== undefined) params.append('active', filters.active.toString());
 
       // Call HTTP client - backend returns BackendPaginatedResponse
       const result = await this.httpClient.get<BackendPaginatedResponse<SubScenarioBackend>>(
@@ -66,6 +66,33 @@ export class SubScenarioRepository implements ISubScenarioRepository {
       // Extract data and transform to domain entity
       return SubScenarioTransformer.toDomain(result.data);
     }, `Failed to update sub-scenario ${id}`);
+  }
+
+  async updateActiveStatus(id: number, active: boolean): Promise<SubScenarioEntity> {
+    return executeWithDomainError(async () => {
+      // Input validation
+      if (id <= 0) {
+        throw new Error('Sub-scenario ID must be a positive number');
+      }
+
+      // Get current entity
+      const currentEntity = await this.getById(id);
+      if (!currentEntity) {
+        throw new Error(`Sub-scenario with ID ${id} not found`);
+      }
+
+      // Use domain method to update active status
+      currentEntity.updateActiveStatus(active);
+
+      // Transform only the active field for backend update
+      const backendData = { active: currentEntity.active };
+      
+      // Direct API call - backend returns wrapped response
+      const result = await this.httpClient.put<BackendResponse<SubScenarioBackend>>(`/sub-scenarios/${id}`, backendData);
+      
+      // Extract data and transform to domain entity
+      return SubScenarioTransformer.toDomain(result.data);
+    }, `Failed to update sub-scenario active status ${id}`);
   }
 
   async getById(id: number): Promise<SubScenarioEntity | null> {

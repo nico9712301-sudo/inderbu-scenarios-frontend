@@ -36,6 +36,8 @@ export function EditSubScenarioDialog({
   activityAreas,
   fieldSurfaceTypes,
 }: Props) {
+
+  
   
   const {
     formData,
@@ -46,6 +48,7 @@ export function EditSubScenarioDialog({
     updateActivityArea,
     updateFieldSurfaceType,
     updateImages,
+    updateImageManagement,
     handleUpdate,
     loadSubScenario,
     hasError,
@@ -72,7 +75,19 @@ export function EditSubScenarioDialog({
   }, [subScenario, open, loadSubScenario]);
 
   const handleSave = async () => {
-    if (!subScenario) return;
+    // console.log({subScenarioToBeUpdated: subScenario});
+    
+    if (!subScenario) {
+      console.error('EditSubScenarioDialog - No subScenario provided');
+      return;
+    }
+    
+    if (!subScenario.id || subScenario.id <= 0) {
+      console.error('EditSubScenarioDialog - Invalid subScenario ID:', subScenario.id);
+      return;
+    }
+    
+    // console.log('EditSubScenarioDialog - Updating subScenario with ID:', subScenario.id);
     await handleUpdate(subScenario.id);
   };
 
@@ -97,6 +112,7 @@ export function EditSubScenarioDialog({
             scenarioId: formData.scenario.id ? parseInt(formData.scenario.id) : undefined,
             activityAreaId: formData.activityArea.id ? parseInt(formData.activityArea.id) : undefined,
             fieldSurfaceTypeId: formData.fieldSurfaceType.id ? parseInt(formData.fieldSurfaceType.id) : undefined,
+            active: formData.active,
           }}
           onChange={(newValue) => {
             // Transform the flat structure back to the hook structure
@@ -122,7 +138,9 @@ export function EditSubScenarioDialog({
             }
           }}
           onImagesChange={updateImages}
+          onImageManagementChange={updateImageManagement}
           images={formData.images}
+          imageGallery={formData.imageGallery}
           scenarios={scenarios}
           activityAreas={activityAreas}
           fieldSurfaceTypes={fieldSurfaceTypes}

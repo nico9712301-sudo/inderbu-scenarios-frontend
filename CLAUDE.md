@@ -98,6 +98,43 @@ Contains business logic orchestration and application-specific use cases:
 
 **Architecture Pattern**: Application Services orchestrate multiple Use Cases for cross-domain operations. Use Cases handle single-domain business logic. Commands pattern legacy for complex workflows.
 
+##### Use Case Specialization Pattern
+
+Use Cases implement intelligent routing based on operation complexity:
+
+- **Simple Operations**: Direct delegation to specialized repository methods for single-field updates
+- **Complex Operations**: Full entity construction and validation for multi-field updates
+- **Domain Method Integration**: Use Cases leverage domain entity methods for business logic
+
+Example Use Case routing:
+
+```typescript
+export class UpdateSubScenarioUseCase {
+  async execute(
+    id: number,
+    command: UpdateSubScenarioCommand,
+  ): Promise<SubScenarioEntity> {
+    // Detect simple status toggle
+    const isSimpleStatusToggle =
+      Object.keys(command).length === 1 && "active" in command;
+
+    if (isSimpleStatusToggle) {
+      // Use specialized repository method
+      return await this.subScenarioRepository.updateActiveStatus(
+        id,
+        command.active!,
+      );
+    }
+
+    // Handle complex updates with full entity construction
+    const entity = SubScenarioTransformer.toDomain(entityData, {
+      forUpdate: true,
+    });
+    return await this.subScenarioRepository.update(id, entity);
+  }
+}
+```
+
 #### Domain Layer (`src/entities/`)
 
 Core business entities and domain logic:
@@ -107,6 +144,41 @@ Core business entities and domain logic:
 - **Domain Services**: Domain-specific business logic
 - **API Queries**: React Query configurations (`[entity]/api/`)
 
+##### Domain Entity Methods Pattern
+
+Domain entities include specific business methods to maintain domain logic encapsulation:
+
+- **Business Logic Methods**: Methods like `isActive()`, `isFree()`, `hasImages()` for domain queries
+- **State Modification Methods**: Methods like `updateActiveStatus()` for controlled state changes with business validation
+- **Factory Methods**: Static methods like `fromApiData()` and `create()` for entity construction
+- **DDD Compliance**: ID-less entity creation following DDD principles where entities can exist without persistence identifiers
+
+Example implementation:
+
+```typescript
+export class SubScenarioEntity {
+  // Business query methods
+  isActive(): boolean {
+    return this.active;
+  }
+
+  // Controlled state modification with business validation
+  updateActiveStatus(newActiveStatus: boolean): void {
+    // Domain validation logic here
+    this.active = newActiveStatus;
+    this.updatedAt = new Date();
+  }
+
+  // Factory methods for different construction scenarios
+  static fromApiData(apiData: any): SubScenarioEntity {
+    /* ... */
+  }
+  static create(data: CreateEntityData): SubScenarioEntity {
+    /* ... */
+  }
+}
+```
+
 #### Infrastructure Layer (`src/infrastructure/`)
 
 External concerns and technical implementations:
@@ -115,6 +187,38 @@ External concerns and technical implementations:
 - **DI Configuration**: Simple DI setup (`config/di/`) with string-based tokens and lightweight container
 - **Web Controllers**: Server Actions (`web/controllers/`) with ErrorHandlerComposer for consistent error handling
 - **External Services**: HTTP clients and third-party integrations
+
+##### Repository Pattern Enhancements
+
+Repositories implement specialized methods for domain-specific operations:
+
+- **Generic CRUD**: Standard `getAll()`, `getById()`, `create()`, `update()`, `delete()` methods
+- **Domain-Specific Methods**: Specialized methods like `updateActiveStatus()` for business-specific operations
+- **Domain Integration**: Repository methods call domain entity methods to maintain business logic encapsulation
+
+Example repository implementation:
+
+```typescript
+export class SubScenarioRepositoryAdapter implements ISubScenarioRepository {
+  async updateActiveStatus(
+    id: number,
+    active: boolean,
+  ): Promise<SubScenarioEntity> {
+    // Get current entity
+    const currentEntity = await this.getById(id);
+
+    // Use domain method for business logic
+    currentEntity.updateActiveStatus(active);
+
+    // Send minimal data to backend
+    const result = await this.httpClient.put(`/sub-scenarios/${id}`, {
+      active: currentEntity.active,
+    });
+
+    return SubScenarioTransformer.toDomain(result.data);
+  }
+}
+```
 
 #### Presentation Layer (`src/presentation/`)
 

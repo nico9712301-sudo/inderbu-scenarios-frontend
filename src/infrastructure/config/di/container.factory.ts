@@ -162,7 +162,7 @@ export class ContainerFactory {
         break;
     }
 
-    console.log('Container created successfully');
+    // console.log('Container created successfully');
     return container;
   }
 
@@ -355,7 +355,7 @@ export class ContainerFactory {
    */
   private static configureDevelopment(container: SimpleContainer): void {
     // Development-specific logging, monitoring, etc.
-    console.log('🔧 Development environment configured');
+    // console.log('🔧 Development environment configured');
   }
 
   /**

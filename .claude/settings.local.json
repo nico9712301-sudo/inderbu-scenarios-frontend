@@ -23,7 +23,11 @@
       "WebFetch(domain:learn.microsoft.com)",
       "WebFetch(domain:blog.cleancoder.com)"
     ],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": [
+      "/mnt/c/Users/ASUS/OneDrive/Desktop/projects/inderbu-scenarios-backend/src/infrastructure/adapters/inbound/http/dtos/sub-scenarios",
+      "/mnt/c/Users/ASUS/OneDrive/Desktop/projects/inderbu-scenarios-backend/src/core/application/services"
+    ]
   },
   "enableAllProjectMcpServers": false
 }

@@ -1,6 +1,7 @@
+import { IScenarioRepository } from '@/entities/scenario/infrastructure/scenario-repository.port';
+import { ScenarioTransformer } from '@/infrastructure/transformers/ScenarioTransformer';
 import { Scenario, CreateScenarioData } from '@/entities/scenario/domain/Scenario';
 import { ScenarioEntity } from '@/entities/scenario/domain/ScenarioEntity';
-import { IScenarioRepository } from '@/entities/scenario/infrastructure/scenario-repository.port';
 
 export interface CreateScenarioCommand {
   name: string;
@@ -29,13 +30,8 @@ export class CreateScenarioUseCase {
       }
 
       // Convert command to domain data
-      const createData: CreateScenarioData = {
-        name: command.name.trim(),
-        address: command.address.trim(),
-        neighborhoodId: command.neighborhoodId,
-      }; 
-
-      return await this.scenarioRepository.create(createData);
+      const scenario: ScenarioEntity = ScenarioTransformer.toDomain(command);
+      return await this.scenarioRepository.create(scenario);
     } catch (error) {
       console.error('Error in CreateScenarioUseCase:', error);
       throw error;
