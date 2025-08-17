@@ -1,7 +1,3 @@
-// Domain Entity: RoleEntity
-// Rich domain entity for user roles
-
-// Plain Object interface for client component serialization
 export interface RolePlainObject {
   id: number;
   name: string;

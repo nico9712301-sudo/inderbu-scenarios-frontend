@@ -245,7 +245,7 @@ src/
 - ✅ **Added**: BackendResponse unwrapping to prevent double data nesting
 - ✅ **Fixed**: Modal flicker by correct callback ordering
 
-### 🔍 **Get Scenarios Flow (Server-Side Rendering with DI Container):**
+### **Get Scenarios Flow (Server-Side Rendering with DI Container):**
 
 ```
 1. Server Component (app/dashboard/scenarios/page.tsx)

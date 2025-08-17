@@ -28,8 +28,6 @@ export const PeriodHeader = ({
           </span>
         </div>
         {availableCount > 0 && (
-          // <Tooltip content={`Seleccionar todos los horarios disponibles de ${period.name.toLowerCase()}`} side="top">
-          <Tooltip>
             <Button
               variant="ghost"
               size="sm"
@@ -41,7 +39,6 @@ export const PeriodHeader = ({
             >
               + Seleccionar todo
             </Button>
-          </Tooltip>
         )}
       </div>
       <div className="flex items-center gap-2">

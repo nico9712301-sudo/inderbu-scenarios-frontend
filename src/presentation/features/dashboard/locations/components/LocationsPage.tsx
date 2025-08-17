@@ -29,11 +29,9 @@ import {
 import { createNeighborhoodAction, updateNeighborhoodAction } from "@/infrastructure/web/controllers/dashboard/neighborhood.actions";
 import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
 import { createCommuneAction, updateCommuneAction } from "@/infrastructure/web/controllers/dashboard/commune.actions";
-import { useMultiEntityPagination } from "@/shared/hooks/use-dashboard-pagination";
 import { LocationsDataResponse } from "../application/GetLocationsDataUseCase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { City } from "../domain/repositories/ILocationRepository";
 import { useRouter, useSearchParams } from "next/navigation";
 import { memo, useCallback, useState } from "react";
 import { Button } from "@/shared/ui/button";
@@ -195,17 +193,17 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
   } : null;
   
   // Multi-entity pagination hook for URL state management
-  const {
-    updateEntityPage,
-  } = useMultiEntityPagination('/dashboard/locations', ['commune', 'neighborhood']);
+  // const {
+  //   updateEntityPage,
+  // } = useMultiEntityPagination('/dashboard/locations', ['commune', 'neighborhood']);
 
   // Pagination handlers with smooth navigation like sub-scenarios
   const handleCommunePageChange = (newPage: number) => {
-    updateEntityPage('commune', newPage);
+    // updateEntityPage('commune', newPage);
   };
 
   const handleNeighborhoodPageChange = (newPage: number) => {
-    updateEntityPage('neighborhood', newPage);
+    // updateEntityPage('neighborhood', newPage);
   };
 
   const handleCommuneLimitChange = (newLimit: number) => {

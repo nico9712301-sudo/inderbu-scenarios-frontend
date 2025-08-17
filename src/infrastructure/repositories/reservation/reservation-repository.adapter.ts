@@ -5,7 +5,9 @@ import {
   CreateReservationDto,
   CreateReservationResponseDto,
   TimeslotResponseDto,
-  ReservationStateDto
+  ReservationStateDto,
+  AvailabilityConfiguration,
+  SimplifiedAvailabilityResponse
 } from '@/entities/reservation/infrastructure/IReservationRepository';
 import { ReservationEntity, ReservationSearchCriteria, ReservationDomainError } from '@/entities/reservation/domain/ReservationEntity';
 
@@ -228,5 +230,54 @@ export class ReservationRepository implements IReservationRepository {
       
       return result.data || result || [];
     }, 'Failed to fetch reservation states');
+  }
+
+  // Migrated from legacy: Availability configuration method
+  async getAvailabilityForConfiguration(config: AvailabilityConfiguration): Promise<SimplifiedAvailabilityResponse> {
+    return executeWithDomainError(async () => {
+      const searchParams = new URLSearchParams({
+        subScenarioId: config.subScenarioId.toString(),
+        initialDate: config.initialDate,
+      });
+
+      if (config.finalDate) {
+        searchParams.set('finalDate', config.finalDate);
+      }
+
+      if (config.weekdays && config.weekdays.length > 0) {
+        searchParams.set('weekdays', config.weekdays.join(','));
+      }
+
+      const cacheConfig = {
+        next: {
+          tags: [
+            `availability-config-${config.subScenarioId}-${config.initialDate}`,
+            `availability-${config.subScenarioId}`,
+            "availability",
+          ],
+          revalidate: 300, // 5 minutos
+        },
+      };
+
+      console.log(
+        `Calling availability configuration endpoint: /reservations/availability?${searchParams.toString()}`
+      );
+
+      const url = `/reservations/availability?${searchParams.toString()}`;
+
+      const response = await this.httpClient.get<BackendResponse<SimplifiedAvailabilityResponse>>(
+        url, 
+        cacheConfig
+      );
+
+      // Handle both nested and direct response formats
+      const data = response.data || response;
+
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid response format from availability configuration API');
+      }
+
+      return data;
+    }, `Failed to fetch availability configuration for sub-scenario ${config.subScenarioId}`);
   }
 }

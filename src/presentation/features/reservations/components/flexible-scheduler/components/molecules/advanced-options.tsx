@@ -24,9 +24,9 @@ export const AdvancedOptions = ({
           Reservar varios días
         </Label>
         {/* <Tooltip content="Activa esta opción si quieres reservar el mismo horario para múltiples días" side="top"> */}
-        <Tooltip>
+        {/* <Tooltip>
           <Info className="h-4 w-4 text-gray-400 cursor-help" />
-        </Tooltip>
+        </Tooltip> */}
       </div>
 
       {config.hasDateRange && (
@@ -41,9 +41,9 @@ export const AdvancedOptions = ({
               Seleccionar días específicos de la semana
             </Label>
             {/* <Tooltip content="Si activas esta opción, solo se reservarán los días de la semana que selecciones" side="top"> */}
-            <Tooltip>
+            {/* <Tooltip>
               <Info className="h-4 w-4 text-gray-400 cursor-help" />
-            </Tooltip>
+            </Tooltip> */}
           </div>
 
           {config.hasWeekdaySelection && (

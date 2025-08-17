@@ -4,9 +4,10 @@ import { IGetScenarioByIdResponse } from "../../interfaces/get-scenario-by-id-re
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { FiGrid, FiMapPin, FiTag, FiUser, FiUsers } from "react-icons/fi";
 import { scenarioInfoCardItem } from "./scenario-info-card-item";
+import { SubScenarioBackend } from "@/infrastructure/transformers/SubScenarioTransformer";
 
 
-type Props = { subScenario: IGetScenarioByIdResponse };
+type Props = { subScenario: SubScenarioBackend };
 
 export function ScenarioInfoCard({ subScenario }: Props) {
   return (
@@ -45,7 +46,7 @@ export function ScenarioInfoCard({ subScenario }: Props) {
           {scenarioInfoCardItem(
             "Barrio",
             FiMapPin,
-            subScenario.scenario.neighborhood.name,
+            subScenario.scenario.neighborhood?.name,
           )}
           {scenarioInfoCardItem(
             "Costo",

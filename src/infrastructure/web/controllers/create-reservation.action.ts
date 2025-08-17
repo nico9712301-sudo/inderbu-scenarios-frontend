@@ -1,11 +1,16 @@
 'use server';
 
-import { createReservationRepository, ReservationRepository } from '@/entities/reservation/infrastructure/reservation-repository.adapter';
-import { CreateReservationDto, CreateReservationResponseDto, CreateReservationSchema } from '@/entities/reservation/model/types';
-import { ClientHttpClient, ClientHttpClientFactory } from '@/shared/api/http-client-client';
+import { createReservationRepository } from '@/entities/reservation/infrastructure/reservation-repository.adapter';
+import { 
+  CreateReservationDto, 
+  CreateReservationResponseDto,
+  CreateReservationSchema
+} from '@/entities/reservation/model/types';
+import { IHttpClient } from '@/shared/api/types';
+import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
-import { createServerAuthContext, ServerAuthContext } from '@/shared/api/server-auth';
-import { createFormDataValidator } from '@/shared/utils/utils';
+import { createServerAuthContext } from '@/shared/api/server-auth';
+// Removed createFormDataValidator import to avoid server/client boundary issues
 import { revalidateTag } from 'next/cache';
 
 /**
@@ -23,16 +28,16 @@ export interface CreateReservationResult {
   fieldErrors?: Record<string, string[]>;
 }
 
-const validateCreateReservation = createFormDataValidator(CreateReservationSchema);
+// Removed module-level validator to avoid server/client boundary issues
 
 export async function createReservationAction(
   command: CreateReservationDto
 ): Promise<CreateReservationResult> {
   try {
     // Create repository with server-side authentication context
-    const authContext: ServerAuthContext = createServerAuthContext();
-    const httpClient: ClientHttpClient = ClientHttpClientFactory.createClient(authContext);
-    const repository: ReservationRepository = createReservationRepository(httpClient);
+    const authContext = createServerAuthContext();
+    const httpClient: IHttpClient = ClientHttpClientFactory.createClient(authContext);
+    const repository = createReservationRepository(httpClient);
 
     console.log('Creating reservation with command:', command);
 
@@ -84,8 +89,23 @@ export async function createReservationFromFormAction(
   formData: FormData
 ): Promise<CreateReservationResult> {
   try {
-    // Validate input
-    const command = validateCreateReservation(formData);
+    // Convert FormData to object manually (server-safe way)
+    const data: Record<string, any> = {};
+    for (const [key, value] of formData.entries()) {
+      // Handle arrays (multiple values with same key)
+      if (data[key]) {
+        if (Array.isArray(data[key])) {
+          data[key].push(value);
+        } else {
+          data[key] = [data[key], value];
+        }
+      } else {
+        data[key] = value;
+      }
+    }
+
+    // Validate with Zod schema directly (server-safe)
+    const command = CreateReservationSchema.parse(data);
 
     // Use ServerHttpClientFactory for server actions
     const httpClient = ServerHttpClientFactory.createServerWithAuth();

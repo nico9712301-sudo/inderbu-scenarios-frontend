@@ -121,7 +121,7 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
 
   // Auto-consultar cuando cambie la configuración
   useEffect(() => {
-    console.log('🔍 Availability config changed:', availabilityConfig);
+    console.log('Availability config changed:', availabilityConfig);
     checkAvailability(availabilityConfig);
   }, [availabilityConfig, checkAvailability]);
 
@@ -153,12 +153,6 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
               <FiLoader className="h-4 w-4 animate-spin text-blue-500" />
             )}
             
-            {/* <Tooltip content="Selecciona una fecha y horarios para crear tu reserva. ¡Es súper fácil!" side="bottom"> */}
-            <Tooltip>
-              <Button variant="ghost" size="sm" className="ml-auto">
-                <HelpCircle className="h-4 w-4" />
-              </Button>
-            </Tooltip>
           </CardTitle>
           <CardDescription>
             {availabilityError && (

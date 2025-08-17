@@ -24,6 +24,8 @@ import type { IUserRepository } from '@/entities/user/infrastructure/IUserReposi
 import { GetUserReservationsUseCase as AppGetUserReservationsUseCase } from '@/application/reservations/use-cases/GetUserReservationsUseCase';
 import { UploadSubScenarioImagesUseCase } from '@/application/dashboard/sub-scenarios/use-cases/UploadSubScenarioImagesUseCase';
 import { GetFieldSurfaceTypesUseCase } from '@/application/dashboard/field-surface-types/use-cases/GetFieldSurfaceTypesUseCase';
+import { GetScenarioDetailUseCase, GetScenarioDetailUseCaseImpl } from '@/application/scenario-detail/GetScenarioDetailUseCase';
+import { GetAvailabilityUseCase, GetAvailabilityUseCaseImpl } from '@/application/availability/use-cases/GetAvailabilityUseCase';
 import { GetSubScenariosDataService } from '@/application/dashboard/sub-scenarios/services/GetSubScenariosDataService';
 import { CreateSubScenarioUseCase } from '@/application/dashboard/sub-scenarios/use-cases/CreateSubScenarioUseCase';
 import { UpdateSubScenarioUseCase } from '@/application/dashboard/sub-scenarios/use-cases/UpdateSubScenarioUseCase';
@@ -38,14 +40,20 @@ import { GetClientsDataService } from '@/application/dashboard/clients/services/
 import { GetScenariosUseCase } from '@/application/dashboard/scenarios/use-cases/GetScenariosUseCase';
 import { GetUserByIdUseCase } from '@/application/dashboard/clients/use-cases/GetUserByIdUseCase';
 import { GetUsersUseCase } from '@/application/dashboard/clients/use-cases/GetUsersUseCase';
+import { CreateUserUseCase } from '@/application/dashboard/clients/use-cases/CreateUserUseCase';
+import { UpdateUserUseCase } from '@/application/dashboard/clients/use-cases/UpdateUserUseCase';
 import { GetRolesUseCase } from '@/application/dashboard/clients/use-cases/GetRolesUseCase';
 import { GetHomeDataUseCase } from '@/application/home/use-cases/GetHomeDataUseCase';
 import { GetHomeDataService } from '@/application/home/services/GetHomeDataService';
+import { GetAdminUsersDataService } from '@/application/dashboard/admin-users/services/GetAdminUsersDataService';
 
 // HTTP Client imports  
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
 import { IActivityAreaRepository } from '@/entities/activity-area/infrastructure/actvity-area-repository.port';
+
+// Infrastructure imports
+import { EventBus, createInMemoryEventBus } from '@/shared/infrastructure/InMemoryEventBus';
 
 /**
  * Container Factory
@@ -215,6 +223,12 @@ export class ContainerFactory {
     container.bind<IRoleRepository>(TOKENS.IRoleRepository)
       .to(() => new RoleRepositoryAdapter(createHttpClient()))
       .singleton();
+
+    // Event Bus (singleton)
+    container.bind<EventBus>(TOKENS.EventBus)
+      .to(() => createInMemoryEventBus())
+      .singleton();
+
   }
 
   /**
@@ -341,12 +355,43 @@ export class ContainerFactory {
         container.get<IRoleRepository>(TOKENS.IRoleRepository)
       ));
 
+    // Create User Use Case
+    container.bind<CreateUserUseCase>(TOKENS.CreateUserUseCase)
+      .to(() => new CreateUserUseCase(
+        container.get<IUserRepository>(TOKENS.IUserRepository)
+      ));
+
+    // Update User Use Case
+    container.bind<UpdateUserUseCase>(TOKENS.UpdateUserUseCase)
+      .to(() => new UpdateUserUseCase(
+        container.get<IUserRepository>(TOKENS.IUserRepository)
+      ));
+
     // Get Clients Data Service (application service)
     container.bind<GetClientsDataService>(TOKENS.GetClientsDataService)
       .to(() => new GetClientsDataService(
         container.get<GetUsersUseCase>(TOKENS.GetUsersUseCase),
         container.get<GetRolesUseCase>(TOKENS.GetRolesUseCase),
         container.get<GetNeighborhoodsUseCase>(TOKENS.GetNeighborhoodsUseCase)
+      ));
+
+    // Get Admin Users Data Service (application service)
+    container.bind<GetAdminUsersDataService>(TOKENS.GetAdminUsersDataService)
+      .to(() => new GetAdminUsersDataService(
+        container.get<GetUsersUseCase>(TOKENS.GetUsersUseCase),
+        container.get<GetRolesUseCase>(TOKENS.GetRolesUseCase)
+      ));
+
+    // Get Scenario Detail Use Case (transient for isolation)
+    container.bind<GetScenarioDetailUseCase>(TOKENS.GetScenarioDetailUseCase)
+      .to(() => new GetScenarioDetailUseCaseImpl(
+        container.get<ISubScenarioRepository>(TOKENS.ISubScenarioRepository),
+      ));
+
+    // Get Availability Use Case (transient for isolation)
+    container.bind<GetAvailabilityUseCase>(TOKENS.GetAvailabilityUseCase)
+      .to(() => new GetAvailabilityUseCaseImpl(
+        container.get<IReservationRepository>(TOKENS.IReservationRepository)
       ));
   }
 

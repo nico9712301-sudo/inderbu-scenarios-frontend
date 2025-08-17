@@ -10,6 +10,8 @@ import { TOKENS } from '@/infrastructure/config/di/tokens';
 
 import { GetUserByIdUseCase } from '@/application/dashboard/clients/use-cases/GetUserByIdUseCase';
 import { GetUsersUseCase } from '@/application/dashboard/clients/use-cases/GetUsersUseCase';
+import { CreateUserUseCase } from '@/application/dashboard/clients/use-cases/CreateUserUseCase';
+import { UpdateUserUseCase } from '@/application/dashboard/clients/use-cases/UpdateUserUseCase';
 
 import { CreateUserDto, UpdateUserDto } from '@/entities/user/infrastructure/IUserRepository';
 import { UserEntity } from '@/entities/user/domain/UserEntity';
@@ -48,7 +50,7 @@ export async function getUserByIdAction(id: number) {
 
     console.log('Get user by ID result:', result);
     
-    return result;
+    return result.toPlainObject();
   }, 'getUserByIdAction');
 }
 
@@ -107,27 +109,19 @@ export async function createUserAction(data: CreateUserDto) {
       throw new Error('Valid email is required');
     }
 
-    // TODO: Implement CreateUserUseCase when available
-    // For now, use direct repository approach temporarily
-    console.warn('CreateUserUseCase not implemented yet, using direct approach');
-    
-    // Get dependencies from Simple DI container (for future use case)
+    // Get dependencies from Simple DI container
     const container: IContainer = ContainerFactory.createContainer();
-    
-    // TODO: Replace with use case when implemented
-    // const createUserUseCase = container.get<CreateUserUseCase>(
-    //   TOKENS.CreateUserUseCase
-    // );
-    // const result: UserEntity = await createUserUseCase.execute(data);
+    const createUserUseCase = container.get<CreateUserUseCase>(
+      TOKENS.CreateUserUseCase
+    );
 
-    // Temporary direct implementation
-    // This should be replaced with proper Use Case implementation
-    throw new Error('CreateUserUseCase not implemented yet');
+    // Execute use case
+    const result: UserEntity = await createUserUseCase.execute(data);
 
     // Invalidate Next.js cache
     revalidatePath('/dashboard/clients');
 
-    // return result;
+    return result;
   }, 'createUserAction');
 }
 
@@ -146,28 +140,20 @@ export async function updateUserAction(id: number, data: UpdateUserDto) {
       throw new Error('Valid email is required');
     }
 
-    // TODO: Implement UpdateUserUseCase when available
-    // For now, use direct repository approach temporarily
-    console.warn('UpdateUserUseCase not implemented yet, using direct approach');
-    
-    // Get dependencies from Simple DI container (for future use case)
+    // Get dependencies from Simple DI container
     const container: IContainer = ContainerFactory.createContainer();
-    
-    // TODO: Replace with use case when implemented
-    // const updateUserUseCase = container.get<UpdateUserUseCase>(
-    //   TOKENS.UpdateUserUseCase
-    // );
-    // const result: UserEntity = await updateUserUseCase.execute(id, data);
+    const updateUserUseCase = container.get<UpdateUserUseCase>(
+      TOKENS.UpdateUserUseCase
+    );
 
-    // Temporary direct implementation
-    // This should be replaced with proper Use Case implementation
-    throw new Error('UpdateUserUseCase not implemented yet');
+    // Execute use case
+    const result: UserEntity = await updateUserUseCase.execute(id, data);
 
     // Invalidate Next.js cache
     revalidatePath('/dashboard/clients');
     revalidatePath(`/dashboard/clients/${id}`);
 
-    // return result;
+    return result;
   }, 'updateUserAction');
 }
 

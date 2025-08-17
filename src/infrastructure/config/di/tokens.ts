@@ -52,6 +52,16 @@ export const TOKENS = {
   CreateSubScenarioUseCase: 'CreateSubScenarioUseCase',
   UpdateSubScenarioUseCase: 'UpdateSubScenarioUseCase',
   UploadSubScenarioImagesUseCase: 'UploadSubScenarioImagesUseCase',
+  
+  // =============================================================================
+  // USE CASES - SCENARIO DETAIL (Application Layer)
+  // =============================================================================
+  GetScenarioDetailUseCase: 'GetScenarioDetailUseCase',
+
+  // =============================================================================
+  // USE CASES - AVAILABILITY (Application Layer)
+  // =============================================================================
+  GetAvailabilityUseCase: 'GetAvailabilityUseCase',
 
   // =============================================================================
   // USE CASES - HOME (Application Layer)
@@ -68,6 +78,8 @@ export const TOKENS = {
   // =============================================================================
   GetUsersUseCase: 'GetUsersUseCase',
   GetUserByIdUseCase: 'GetUserByIdUseCase',
+  CreateUserUseCase: 'CreateUserUseCase',
+  UpdateUserUseCase: 'UpdateUserUseCase',
   GetRolesUseCase: 'GetRolesUseCase',
 
   // =============================================================================
@@ -78,6 +90,7 @@ export const TOKENS = {
   GetHomeDataService: 'GetHomeDataService',
   GetUserReservationsDataService: 'GetUserReservationsDataService',
   GetClientsDataService: 'GetClientsDataService',
+  GetAdminUsersDataService: 'GetAdminUsersDataService',
 
   // =============================================================================
   // INFRASTRUCTURE SERVICES
@@ -86,6 +99,7 @@ export const TOKENS = {
   AuthContext: 'AuthContext',
   Logger: 'Logger',
   ErrorHandler: 'ErrorHandler',
+  EventBus: 'EventBus',
 
   // =============================================================================
   // CONFIGURATION

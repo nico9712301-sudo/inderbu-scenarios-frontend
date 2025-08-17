@@ -1,9 +1,6 @@
-// Infrastructure: User Domain Transformer
-// Bidirectional conversion between backend API types and domain entities
-
 import { UserEntity } from '@/entities/user/domain/UserEntity';
 import { createDomainTransformer, IDomainTransformer } from './DomainTransformer';
-import { EUserRole } from '@/shared/enums/user-role.enum';
+import { RoleEntity } from '@/entities/role/domain/RoleEntity';
 
 // Backend user type (matching API response)
 export interface UserBackend {
@@ -11,19 +8,20 @@ export interface UserBackend {
   dni?: number;
   firstName?: string;
   lastName?: string;
-  first_name?: string;  // Backend inconsistency
-  last_name?: string;   // Backend inconsistency
+  first_name?: string; // Backend inconsistency
+  last_name?: string;  // Backend inconsistency
   email: string;
   phone?: string;
-  roleId?: number;
-  role?: EUserRole | string;  // Can be enum or string from backend
   address?: string;
-  neighborhoodId?: number;
-  isActive?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-  
-  // Additional backend fields that might be present
+  active?: boolean;
+
+  role?: {
+    id: number;
+    name: string;
+    description: string;
+    isActive?: boolean;
+  };
+
   neighborhood?: {
     id: number;
     name: string;
@@ -36,6 +34,20 @@ export interface UserBackend {
       };
     };
   };
+
+  commune?: {
+    id: number;
+    name: string;
+    city?: { id: number; name: string };
+  };
+
+  city?: { id: number; name: string };
+
+  roleId?: number;
+  neighborhoodId?: number;
+
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Validation functions
@@ -60,100 +72,111 @@ function isValidUserDomain(entity: any): entity is UserEntity {
   );
 }
 
-// Helper function to convert roleId to EUserRole
-function getRoleFromId(roleId?: number): EUserRole {
-  if (!roleId) return EUserRole.INDEPENDIENTE;
-  
-  switch (roleId) {
-    case 1: return EUserRole.SUPER_ADMIN;
-    case 2: return EUserRole.ADMIN;
-    case 3: return EUserRole.INDEPENDIENTE;
-    case 4: return EUserRole.CLUB_DEPORTIVO;
-    case 5: return EUserRole.ENTRENADOR;
-    default: return EUserRole.INDEPENDIENTE;
-  }
-}
-
-// Helper function to normalize role from backend (string or enum)
-function normalizeRole(backendRole: any, roleId?: number): EUserRole {
-  // If role is provided as enum, use it
-  if (typeof backendRole === 'number' && Object.values(EUserRole).includes(backendRole)) {
-    return backendRole as EUserRole;
-  }
-  
-  // If role is provided as string, try to match it
-  if (typeof backendRole === 'string') {
-    const roleUpperCase = backendRole.toUpperCase();
-    switch (roleUpperCase) {
-      case 'SUPER_ADMIN': return EUserRole.SUPER_ADMIN;
-      case 'ADMIN': return EUserRole.ADMIN;
-      case 'INDEPENDIENTE': return EUserRole.INDEPENDIENTE;
-      case 'CLUB_DEPORTIVO': return EUserRole.CLUB_DEPORTIVO;
-      case 'ENTRENADOR': return EUserRole.ENTRENADOR;
-      default: break;
-    }
-  }
-  
-  // Fallback to roleId conversion
-  return getRoleFromId(roleId);
-}
-
-// Create the transformer using the generic factory
-export const UserTransformer: IDomainTransformer<UserBackend, UserEntity> = 
+// Transformer
+export const UserTransformer: IDomainTransformer<UserBackend, UserEntity> =
   createDomainTransformer(
-    // Backend → Domain transformation
-    (backendData: UserBackend): UserEntity => {
-      // Handle backend inconsistencies and normalize data
-      const normalizedData = {
-        id: backendData.id,
-        dni: backendData.dni || 0,
-        firstName: backendData.firstName || backendData.first_name || '',
-        lastName: backendData.lastName || backendData.last_name || '',
-        email: backendData.email,
-        phone: backendData.phone || '',
-        roleId: backendData.roleId || 3, // Default to INDEPENDIENTE
-        role: normalizeRole(backendData.role, backendData.roleId),
-        address: backendData.address || '',
-        neighborhoodId: backendData.neighborhoodId || 0,
-        isActive: backendData.isActive ?? true,
-        createdAt: backendData.createdAt,
-        updatedAt: backendData.updatedAt,
-      };
+    // Backend → Domain
+    (backendData: UserBackend | Partial<UserBackend>): UserEntity => {
+      if (
+        backendData == null ||
+        typeof backendData !== 'object' ||
+        typeof backendData.id !== 'number' ||
+        typeof backendData.email !== 'string'
+      ) {
+        throw new Error('Invalid backend data: missing required fields');
+      }
 
-      return UserEntity.fromApiData(normalizedData);
+      const roleEntity = backendData.role
+        ? RoleEntity.fromApiData(backendData.role)
+        : new RoleEntity(
+            backendData.roleId || 3,
+            'Usuario Independiente',
+            'Usuario independiente por defecto',
+            true
+          );
+
+      return UserEntity.fromApiData({
+        ...backendData,
+        role: roleEntity,
+        neighborhood: backendData.neighborhood
+          ? {
+              id: backendData.neighborhood.id,
+              name: backendData.neighborhood.name,
+              commune: backendData.neighborhood.commune
+                ? {
+                    id: backendData.neighborhood.commune.id,
+                    name: backendData.neighborhood.commune.name,
+                    city: backendData.neighborhood.commune.city
+                      ? {
+                          id: backendData.neighborhood.commune.city.id,
+                          name: backendData.neighborhood.commune.city.name,
+                        }
+                      : null,
+                  }
+                : null,
+            }
+          : null,
+        commune: backendData.commune
+          ? {
+              id: backendData.commune.id,
+              name: backendData.commune.name,
+              city: backendData.commune.city
+                ? {
+                    id: backendData.commune.city.id,
+                    name: backendData.commune.city.name,
+                  }
+                : null,
+            }
+          : null,
+        city: backendData.city
+          ? {
+              id: backendData.city.id,
+              name: backendData.city.name,
+            }
+          : null,
+      });
     },
 
-    // Domain → Backend transformation  
-    (domainEntity: UserEntity): UserBackend => {
+    // Domain → Backend
+    (domainEntity: UserEntity | Partial<UserEntity>): UserBackend | Partial<UserBackend> => {
       return {
-        id: domainEntity.id,
+        id: domainEntity.id!,
         dni: domainEntity.dni,
         firstName: domainEntity.firstName,
         lastName: domainEntity.lastName,
-        email: domainEntity.email,
+        email: domainEntity.email!,
         phone: domainEntity.phone,
-        roleId: domainEntity.roleId,
-        role: domainEntity.role,
         address: domainEntity.address,
+        active: domainEntity.isActive,
+        role: domainEntity.role ? domainEntity.role.toApiFormat() : undefined,
+        neighborhood: domainEntity.neighborhood,
+        commune: domainEntity.commune,
+        city: domainEntity.city,
+        roleId: domainEntity.roleId,
         neighborhoodId: domainEntity.neighborhoodId,
-        isActive: domainEntity.isActive,
         createdAt: domainEntity.createdAt,
         updatedAt: domainEntity.updatedAt,
       };
     },
 
-    // Validation functions
+    // Validations
     isValidUserBackend,
     isValidUserDomain
   );
 
-// Specialized transformers for collections
+// Helpers for collections
 export function transformUsersFromBackend(backendUsers: UserBackend[]): UserEntity[] {
   return backendUsers.map(userData => UserTransformer.toDomain(userData));
 }
 
 export function transformUsersToBackend(domainUsers: UserEntity[]): UserBackend[] {
-  return domainUsers.map(userEntity => UserTransformer.toBackend(userEntity));
+  return domainUsers.map(userEntity => {
+    const backendUser = UserTransformer.toBackend(userEntity);
+    if (backendUser.id === undefined) {
+      throw new Error('UserBackend.id is required');
+    }
+    return backendUser as UserBackend;
+  });
 }
 
 // Specialized transformer for user with neighborhood details

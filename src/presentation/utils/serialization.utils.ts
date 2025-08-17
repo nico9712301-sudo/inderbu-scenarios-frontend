@@ -13,10 +13,12 @@ import { ISubScenariosDataResponse } from '@/application/dashboard/sub-scenarios
 import { IUserReservationsDataResponse } from '@/application/reservations/services/GetUserReservationsDataService';
 import { IScenariosDataResponse } from '@/application/dashboard/scenarios/services/GetScenariosDataService';
 import { IClientsDataResponse } from '@/application/dashboard/clients/services/GetClientsDataService';
+import { IAdminUsersDataResponse } from '@/application/dashboard/admin-users/services/GetAdminUsersDataService';
+import { SubScenarioBackend } from '@/infrastructure/transformers/SubScenarioTransformer';
 import { IHomeDataResponse } from '@/application/home/services/GetHomeDataService';
+import { AvailabilityResult } from '@/application/availability/use-cases/GetAvailabilityUseCase';
 
 // Presentation Layer
-import { GetScenarioDetailResponse } from '@/presentation/features/scenarios/detail/application/GetScenarioDetailUseCase';
 
 // Serialized version of ISubScenariosDataResponse for client components
 export interface ISubScenariosDataClientResponse {
@@ -59,6 +61,14 @@ export interface IClientsDataClientResponse {
   users: UserPlainObject[]; // Serialized from domain entities
   roles: RolePlainObject[]; // Serialized from domain entities
   neighborhoods: NeighborhoodPlainObject[]; // Serialized from domain entities
+  meta: any;           // Keep as-is (already plain object from API)
+  filters: any;        // Keep as-is (already plain object)
+}
+
+// Serialized version of IAdminUsersDataResponse for client components
+export interface IAdminUsersDataClientResponse {
+  users: UserPlainObject[]; // Serialized from domain entities (admin only)
+  roles: RolePlainObject[]; // Serialized from domain entities (admin roles only)
   meta: any;           // Keep as-is (already plain object from API)
   filters: any;        // Keep as-is (already plain object)
   filterOptions: any;  // Keep as-is (already plain object)
@@ -215,7 +225,152 @@ export function serializeClientsData(
     neighborhoods: serializeNeighborhoods(domainResponse.neighborhoods), // Serialize domain entities
     meta: domainResponse.meta,
     filters: domainResponse.filters,
+  };
+}
+
+/**
+ * Serializes complete AdminUsersDataResponse for client components
+ * This is the presentation layer's responsibility - not the application service
+ */
+export function serializeAdminUsersData(
+  domainResponse: IAdminUsersDataResponse
+): IAdminUsersDataClientResponse {
+  return {
+    users: serializeUsers(domainResponse.users), // Serialize domain entities (admin only)
+    roles: serializeRoles(domainResponse.roles), // Serialize domain entities (admin roles only)
+    meta: domainResponse.meta,
+    filters: domainResponse.filters,
     filterOptions: domainResponse.filterOptions,
+  };
+}
+
+// Serialized version of ScenarioDetail for client components
+export interface SerializedScenarioDetail {
+  id: number;
+  name: string;
+  hasCost: boolean;
+  numberOfSpectators: number;
+  numberOfPlayers: number;
+  recommendations: string;
+  scenario: {
+    id: number;
+    name: string;
+    address: string;
+    neighborhood: { id: number; name: string };
+  };
+  activityArea: { id: number; name: string };
+  fieldSurfaceType: { id: number; name: string };
+  imageGallery?: {
+    featured?: {
+      id: number;
+      path: string;
+      url: string;
+      isFeature: boolean;
+      displayOrder: number;
+      subScenarioId: number;
+      current?: boolean;
+      createdAt: string;
+    };
+    additional: any[];
+    count: number;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Serialized version of GetScenarioDetailResponse for client components
+export interface SerializedScenarioDetailResponse {
+  scenario: SubScenarioBackend;
+}
+
+/**
+ * Serializes a SubScenarioEntity to SerializedScenarioDetail format
+ * Preserves all information including imageGallery structure
+ */
+export function serializeSubScenarioAsScenarioDetail(
+  subScenario: SubScenarioEntity
+): SerializedScenarioDetail {
+  return {
+    id: subScenario.id!,
+    name: subScenario.name,
+    hasCost: subScenario.hasCost,
+    numberOfSpectators: subScenario.numberOfSpectators,
+    numberOfPlayers: subScenario.numberOfPlayers,
+    recommendations: subScenario.recommendations,
+    scenario: {
+      id: subScenario.scenario.id,
+      name: subScenario.scenario.name,
+      address: subScenario.scenario.address,
+      neighborhood: subScenario.scenario.neighborhood || { id: 0, name: 'Sin barrio' },
+    },
+    activityArea: {
+      id: subScenario.activityArea.id,
+      name: subScenario.activityArea.name,
+    },
+    fieldSurfaceType: {
+      id: subScenario.fieldSurfaceType.id,
+      name: subScenario.fieldSurfaceType.name,
+    },
+    imageGallery: subScenario.imageGallery ? {
+      featured: subScenario.imageGallery.featured ? {
+        id: subScenario.imageGallery.featured.id,
+        path: subScenario.imageGallery.featured.path,
+        url: subScenario.imageGallery.featured.url,
+        isFeature: subScenario.imageGallery.featured.isFeature,
+        displayOrder: subScenario.imageGallery.featured.displayOrder,
+        subScenarioId: subScenario.imageGallery.featured.subScenarioId,
+        current: (subScenario.imageGallery.featured as any).current,
+        createdAt: subScenario.imageGallery.featured.createdAt,
+      } : undefined,
+      additional: subScenario.imageGallery.additional || [],
+      count: subScenario.imageGallery.count,
+    } : undefined,
+    createdAt: subScenario.createdAt?.toISOString(),
+    updatedAt: subScenario.updatedAt?.toISOString(),
+  };
+}
+
+/**
+ * Serializes a ScenarioDetail to SerializedScenarioDetail format
+ * Handles Date to string conversion and ensures all data is serializable
+ */
+export function serializeScenarioDetail(subScenario: SubScenarioEntity): SubScenarioBackend {
+
+  return {
+    id: subScenario.id,
+    name: subScenario.name,
+    hasCost: subScenario.hasCost,
+    numberOfSpectators: subScenario.numberOfSpectators,
+    numberOfPlayers: subScenario.numberOfPlayers,
+    recommendations: subScenario.recommendations,
+    scenario: {
+      id: subScenario.scenario.id,
+      name: subScenario.scenario.name,
+      address: subScenario.scenario.address,
+      neighborhood: subScenario.scenario.neighborhood,
+    },
+    activityArea: {
+      id: subScenario.activityArea.id,
+      name: subScenario.activityArea.name,
+    },
+    fieldSurfaceType: {
+      id: subScenario.fieldSurfaceType.id,
+      name: subScenario.fieldSurfaceType.name,
+    },
+    imageGallery: subScenario.imageGallery ? {
+      featured: subScenario.imageGallery.featured ? {
+        id: subScenario.imageGallery.featured.id,
+        path: subScenario.imageGallery.featured.path,
+        url: subScenario.imageGallery.featured.url,
+        isFeature: subScenario.imageGallery.featured.isFeature,
+        displayOrder: subScenario.imageGallery.featured.displayOrder,
+        subScenarioId: subScenario.imageGallery.featured.subScenarioId,
+        current: subScenario.imageGallery.featured.current,
+        createdAt: subScenario.imageGallery.featured.createdAt,
+      } : undefined,
+      additional: subScenario.imageGallery.additional || [],
+      count: subScenario.imageGallery.count,
+    } : undefined,
   };
 }
 
@@ -224,12 +379,68 @@ export function serializeClientsData(
  * This handles the specific structure returned by GetScenarioDetailUseCase
  */
 export function serializeScenarioDetailData(
-  domainResponse: GetScenarioDetailResponse
-): any {
-  // Since ScenarioDetail is already a domain object, we need to serialize it properly
-  // For now, returning as-is to maintain compatibility, but should be improved with proper types
+  domainResponse: SubScenarioEntity
+): SerializedScenarioDetailResponse {
   return {
-    scenario: domainResponse.scenario, // TODO: Add proper serialization when ScenarioDetail has toPlainObject
-    metadata: domainResponse.metadata, // Metadata should already be plain objects
+    scenario: serializeScenarioDetail(domainResponse),
+  };
+}
+
+// Serialized version of AvailabilityResult for client components
+export interface SerializedAvailabilityResponse {
+  subScenarioId: number;
+  requestedConfiguration: {
+    initialDate: string;
+    finalDate?: string;
+    weekdays?: number[];
+  };
+  calculatedDates: string[];
+  timeSlots: {
+    id: number;
+    startTime: string;
+    endTime: string;
+    isAvailableInAllDates: boolean;
+  }[];
+  stats: {
+    totalDates: number;
+    totalTimeslots: number;
+    totalSlots: number;
+    availableSlots: number;
+    occupiedSlots: number;
+    globalAvailabilityPercentage: number;
+    datesWithFullAvailability: number;
+    datesWithNoAvailability: number;
+  };
+  queriedAt: string;
+}
+
+/**
+ * Serializes AvailabilityResult for client components
+ * Handles the availability data structure for SSR
+ */
+export function serializeAvailabilityData(
+  availabilityResult: AvailabilityResult
+): SerializedAvailabilityResponse {
+  return {
+    subScenarioId: availabilityResult.subScenarioId,
+    requestedConfiguration: availabilityResult.requestedConfiguration,
+    calculatedDates: availabilityResult.calculatedDates,
+    timeSlots: availabilityResult.timeSlots.map(slot => ({
+      id: slot.id,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      isAvailableInAllDates: slot.isAvailableInAllDates,
+    })),
+    stats: {
+      totalDates: availabilityResult.stats.totalDates,
+      totalTimeslots: availabilityResult.stats.totalTimeslots,
+      totalSlots: availabilityResult.stats.totalSlots,
+      availableSlots: availabilityResult.stats.availableSlots,
+      occupiedSlots: availabilityResult.stats.occupiedSlots,
+      globalAvailabilityPercentage: availabilityResult.stats.globalAvailabilityPercentage,
+      datesWithFullAvailability: availabilityResult.stats.datesWithFullAvailability,
+      datesWithNoAvailability: availabilityResult.stats.datesWithNoAvailability,
+    },
+    queriedAt: availabilityResult.queriedAt,
   };
 }

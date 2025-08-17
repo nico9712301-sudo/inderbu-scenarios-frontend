@@ -1,5 +1,5 @@
+import { PageMetaDto } from '@/shared/api';
 import { ReservationEntity, ReservationSearchCriteria } from '../domain/ReservationEntity';
-import { PageMeta } from '@/shared/api/pagination';
 
 export interface ReservationFilters {
   page?: number;
@@ -16,7 +16,7 @@ export interface ReservationFilters {
 
 export interface PaginatedReservations {
   data: ReservationEntity[];
-  meta: PageMeta;
+  meta: PageMetaDto;
 }
 
 // DTOs for legacy compatibility
@@ -52,6 +52,45 @@ export interface ReservationStateDto {
   description?: string;
 }
 
+// Availability interfaces migrated from legacy
+export interface AvailabilityConfiguration {
+  subScenarioId: number;
+  initialDate: string;
+  finalDate?: string;
+  weekdays?: number[];
+}
+
+export interface TimeSlotBasic {
+  id: number;
+  startTime: string;
+  endTime: string;
+  isAvailableInAllDates: boolean;
+}
+
+export interface AvailabilityStats {
+  totalDates: number;
+  totalTimeslots: number;
+  totalSlots: number;
+  availableSlots: number;
+  occupiedSlots: number;
+  globalAvailabilityPercentage: number;
+  datesWithFullAvailability: number;
+  datesWithNoAvailability: number;
+}
+
+export interface SimplifiedAvailabilityResponse {
+  subScenarioId: number;
+  requestedConfiguration: {
+    initialDate: string;
+    finalDate?: string;
+    weekdays?: number[];
+  };
+  calculatedDates: string[];
+  timeSlots: TimeSlotBasic[];
+  stats: AvailabilityStats;
+  queriedAt: string;
+}
+
 // Clean repository interface working only with Domain Entities
 export interface IReservationRepository {
   getAll(filters?: ReservationFilters): Promise<PaginatedReservations>;
@@ -67,4 +106,7 @@ export interface IReservationRepository {
   getAvailableTimeSlots(subScenarioId: number, date: string): Promise<TimeslotResponseDto[]>;
   createReservation(data: CreateReservationDto): Promise<CreateReservationResponseDto>;
   getAllReservationStates(): Promise<ReservationStateDto[]>;
+  
+  // Availability configuration method migrated from legacy
+  getAvailabilityForConfiguration(config: AvailabilityConfiguration): Promise<SimplifiedAvailabilityResponse>;
 }

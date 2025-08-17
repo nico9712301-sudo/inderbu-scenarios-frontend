@@ -1,17 +1,15 @@
-// Domain Layer: User Repository Interface
-// Contract for user data access operations
-
+import { PageMetaDto } from '@/shared/api';
 import { UserEntity } from '../domain/UserEntity';
-import { PageMeta } from '@/shared/api/pagination';
 
 // User filters for querying
 export interface UserFilters {
   page?: number;
   limit?: number;
   search?: string;
-  roleId?: number;
+  roleId?: number[];
   neighborhoodId?: number;
   isActive?: boolean;
+  adminOnly?: boolean; // Filter to only include admin and super-admin users
 }
 
 // DTO for creating users
@@ -43,7 +41,7 @@ export interface UpdateUserDto {
 // Paginated users response
 export interface PaginatedUsers {
   data: UserEntity[];
-  meta: PageMeta;
+  meta: PageMetaDto;
 }
 
 /**

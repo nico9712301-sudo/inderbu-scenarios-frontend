@@ -1,3 +1,5 @@
+import { DomainEvent } from '@/entities/reservation/domain/reservation.domain';
+
 export interface ScenarioDetail {
   id: number;
   name: string;
@@ -13,6 +15,22 @@ export interface ScenarioDetail {
   };
   activityArea: { id: number; name: string };
   fieldSurfaceType: { id: number; name: string };
+  imageGallery?: {
+    featured?: {
+      id: number;
+      path: string;
+      url: string;
+      isFeature: boolean;
+      displayOrder: number;
+      subScenarioId: number;
+      current?: boolean;
+      createdAt: string;
+    };
+    additional: any[];
+    count: number;
+  };
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // DDD: Domain Repository Interface
@@ -104,6 +122,22 @@ export class ScenarioDetailMapper {
         address: rawData.scenario?.address || "Sin dirección",
         neighborhood: rawData.scenario?.neighborhood || { id: 1, name: "Centro" },
       },
+      imageGallery: rawData.imageGallery ? {
+        featured: rawData.imageGallery.featured ? {
+          id: rawData.imageGallery.featured.id,
+          path: rawData.imageGallery.featured.path,
+          url: rawData.imageGallery.featured.url,
+          isFeature: rawData.imageGallery.featured.isFeature,
+          displayOrder: rawData.imageGallery.featured.displayOrder,
+          subScenarioId: rawData.imageGallery.featured.subScenarioId,
+          current: rawData.imageGallery.featured.current,
+          createdAt: rawData.imageGallery.featured.createdAt,
+        } : undefined,
+        additional: rawData.imageGallery.additional || [],
+        count: rawData.imageGallery.count || 0,
+      } : undefined,
+      createdAt: rawData.createdAt instanceof Date ? rawData.createdAt : (rawData.createdAt ? new Date(rawData.createdAt) : undefined),
+      updatedAt: rawData.updatedAt instanceof Date ? rawData.updatedAt : (rawData.updatedAt ? new Date(rawData.updatedAt) : undefined),
     };
   }
 
@@ -144,25 +178,31 @@ export class ScenarioAccessDeniedError extends Error {
 }
 
 // DDD: Domain Events
-export class ScenarioDetailAccessedEvent {
+export class ScenarioDetailAccessedEvent extends DomainEvent {
   constructor(
     public readonly scenarioId: ScenarioId,
     public readonly scenarioName: string,
     public readonly accessedAt: Date = new Date()
-  ) {}
+  ) {
+    super();
+  }
 }
 
-export class ScenarioDetailNotFoundEvent {
+export class ScenarioDetailNotFoundEvent extends DomainEvent {
   constructor(
     public readonly attemptedId: string,
     public readonly timestamp: Date = new Date()
-  ) {}
+  ) {
+    super();
+  }
 }
 
-export class ScenarioDetailLoadedEvent {
+export class ScenarioDetailLoadedEvent extends DomainEvent {
   constructor(
     public readonly scenario: ScenarioDetail,
     public readonly loadTime: number,
     public readonly timestamp: Date = new Date()
-  ) {}
+  ) {
+    super();
+  }
 }

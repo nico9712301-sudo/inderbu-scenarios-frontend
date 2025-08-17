@@ -64,6 +64,7 @@ export class SubScenarioEntity {
       path: string;
       subScenarioId: number;
       url: string;
+      current: boolean;
     };
   };
   public readonly createdAt?: Date;

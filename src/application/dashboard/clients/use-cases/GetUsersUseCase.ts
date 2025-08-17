@@ -1,4 +1,5 @@
 import { IUserRepository, UserFilters, PaginatedUsers } from '@/entities/user/infrastructure/IUserRepository';
+import { EUserRole } from '@/shared/enums/user-role.enum';
 
 /**
  * Get Users Use Case

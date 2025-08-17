@@ -9,7 +9,7 @@ import {
   UpdateReservationStateCommand,
 } from "../model/types";
 import { PaginatedApiResponse, SimpleApiResponse } from "@/shared/api/types";
-import { HttpClient } from "@/shared/api/types";
+import { IHttpClient } from "@/shared/api/types";
 
 // Interfaces para nueva API de disponibilidad
 interface AvailabilityConfiguration {
@@ -73,7 +73,7 @@ export interface ReservationRepository {
 }
 
 export class ApiReservationRepository implements ReservationRepository {
-  constructor(private httpClient: HttpClient) {}
+  constructor(private httpClient: IHttpClient) {}
 
   async getByUserId(
     userId: number,
@@ -342,7 +342,7 @@ export class ApiReservationRepository implements ReservationRepository {
 
 // Factory function for creating repository instances - now accepts both Client and Server HTTP clients
 export const createReservationRepository = (
-  httpClient: HttpClient
+  httpClient: IHttpClient
 ): ReservationRepository => {
   return new ApiReservationRepository(httpClient);
 };

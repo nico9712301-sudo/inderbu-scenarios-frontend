@@ -1,28 +1,13 @@
 "use client";
 
-import {
-  createUserAction,
-  updateUserAction,
-  getUserByIdAction,
-} from "@/infrastructure/web/controllers/dashboard/user.actions";
-import { exportUsersToCSV } from "@/application/dashboard/clients/actions/ExportActions";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
+import { createUserAction, updateUserAction, getUserByIdAction } from "@/infrastructure/web/controllers/dashboard/user.actions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
-import { IClientsDataClientResponse } from "@/presentation/utils/serialization.utils";
+import { IAdminUsersDataClientResponse } from "@/presentation/utils/serialization.utils";
 import { UserDrawer } from "@/presentation/features/dashboard/components/user-drawer";
 import { useDashboardPagination } from "@/shared/hooks/use-dashboard-pagination";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import {
-  NeighborhoodPlainObject,
-  UserPlainObject,
-} from "@/entities/user/domain/UserEntity";
+import { UserPlainObject } from "@/entities/user/domain/UserEntity";
 import { Download, FileEdit, Plus, Search } from "lucide-react";
 import { StatusBadge } from "@/shared/ui/status-badge";
 import { Button } from "@/shared/ui/button";
@@ -31,19 +16,17 @@ import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ErrorHandlerResult } from "@/shared/api/error-handler";
 
 // Type alias for cleaner code in this component
 type User = UserPlainObject;
 
-interface ClientsPageProps {
-  initialData: IClientsDataClientResponse;
+interface AdminUsersPageProps {
+  initialData: IAdminUsersDataClientResponse;
 }
 
-export function ClientsPage({ initialData }: ClientsPageProps) {
+export function AdminUsersPage({ initialData }: AdminUsersPageProps) {
   const router = useRouter();
-  console.log("Initial Data:", initialData);
-
+  
   // Pagination and filters using standardized hook
   const {
     filters,
@@ -53,14 +36,14 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
     onFilterChange,
     buildPageMeta,
   } = useDashboardPagination({
-    baseUrl: "/dashboard/clients",
+    baseUrl: '/dashboard/options',
     defaultLimit: 10,
   });
 
   // Local state from initial data
   const [users] = useState(initialData.users);
   const [roles] = useState(initialData.roles);
-  const [neighborhoods] = useState(initialData.neighborhoods);
+  const [filterOptions] = useState(initialData.filterOptions);
 
   // Build page meta from initial data
   const pageMeta = buildPageMeta(initialData.meta.totalItems);
@@ -73,36 +56,21 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
 
   // Handle filter changes
   const handleRoleChange = (roleId: string) => {
-    onFilterChange({
-      roleId: roleId === "all" ? undefined : roleId || undefined,
-    });
-  };
-
-  const handleNeighborhoodChange = (neighborhoodId: string) => {
-    onFilterChange({
-      neighborhoodId:
-        neighborhoodId === "all" ? undefined : neighborhoodId || undefined,
-    });
+    onFilterChange({ roleId: roleId === 'all' ? undefined : roleId || undefined });
   };
 
   const handleStatusChange = (isActive: string) => {
-    onFilterChange({
-      isActive: isActive === "all" ? undefined : isActive || undefined,
-    });
+    onFilterChange({ isActive: isActive === 'all' ? undefined : isActive || undefined });
   };
 
-  // Export handler
+  // Export handler (placeholder - can be implemented later)
   const handleExport = async () => {
     try {
       setLoading(true);
-      toast.info("Iniciando exportación...");
-
-      await exportUsersToCSV(filters);
-
-      toast.success("Clientes exportados exitosamente");
+      toast.info('Exportación de administradores en desarrollo...');
     } catch (error) {
-      console.error("Export error:", error);
-      toast.error("Error al exportar clientes");
+      console.error('Export error:', error);
+      toast.error('Error al exportar administradores');
     } finally {
       setLoading(false);
     }
@@ -117,22 +85,21 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
   const handleOpenDrawer = async (user: User) => {
     try {
       setLoading(true);
-
+      
       // Get full user details
-      const result: ErrorHandlerResult<UserPlainObject> =
-        await getUserByIdAction(user.id);
-
+      const result = await getUserByIdAction(user.id);
+      
       if (result.success) {
         setSelectedUser(result.data);
         setIsDrawerOpen(true);
       } else {
-        toast.error("Error al cargar usuario", {
+        toast.error("Error al cargar administrador", {
           description: result.error,
         });
       }
     } catch (error: any) {
-      console.error("Error fetching user details:", error);
-      toast.error("Error al cargar usuario");
+      console.error("Error fetching admin user details:", error);
+      toast.error("Error al cargar administrador");
     } finally {
       setLoading(false);
     }
@@ -141,9 +108,9 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
   const handleSaveDrawer = async (data: Partial<User>) => {
     try {
       const isUpdate = Boolean(selectedUser?.id);
-
+      
       if (isUpdate) {
-        // Update existing user
+        // Update existing admin user
         const updateData = {
           dni: data.dni,
           firstName: data.firstName,
@@ -153,21 +120,21 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
           address: data.address,
           roleId: data.roleId,
           neighborhoodId: data.neighborhoodId,
-          active: data.active,
+          isActive: data.isActive,
         };
 
         const result = await updateUserAction(selectedUser!.id, updateData);
-
+        
         if (result.success) {
-          toast.success("Usuario actualizado exitosamente");
+          toast.success("Administrador actualizado exitosamente");
           router.refresh();
         } else {
-          toast.error("Error al actualizar usuario", {
+          toast.error("Error al actualizar administrador", {
             description: result.error,
           });
         }
       } else {
-        // Create new user
+        // Create new admin user - ensure role is admin or super-admin
         const createData = {
           dni: data.dni!,
           firstName: data.firstName!,
@@ -175,25 +142,25 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
           email: data.email!,
           phone: data.phone!,
           address: data.address!,
-          roleId: data.roleId!,
+          roleId: data.roleId! <= 2 ? data.roleId! : 2, // Default to admin if not super-admin
           neighborhoodId: data.neighborhoodId!,
-          active: data.active ?? true,
+          isActive: data.isActive ?? true,
         };
 
         const result = await createUserAction(createData);
-
+        
         if (result.success) {
-          toast.success("Usuario creado exitosamente");
+          toast.success("Administrador creado exitosamente");
           router.refresh();
         } else {
-          toast.error("Error al crear usuario", {
+          toast.error("Error al crear administrador", {
             description: result.error,
           });
         }
       }
     } catch (error: any) {
-      console.error("Error saving user:", error);
-      toast.error("Error al guardar usuario");
+      console.error("Error saving admin user:", error);
+      toast.error("Error al guardar administrador");
     }
   };
 
@@ -209,9 +176,7 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
       header: "Nombre",
       cell: (row: User) => (
         <span>
-          {(row.firstName || row.firstName || "") +
-            " " +
-            (row.lastName || row.lastName || "")}
+          {(row.firstName || "") + " " + (row.lastName || "")}
         </span>
       ),
     },
@@ -223,18 +188,17 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
     {
       id: "role",
       header: "Rol",
-      cell: (row: User) => <span>{row.role.name || "N/A"}</span>,
-    },
-    {
-      id: "neighborhood",
-      header: "Barrio",
-      cell: (row: User) => <span>{row.neighborhood?.name || "N/A"}</span>,
+      cell: (row: User) => (
+        <Badge variant={row.roleId === 1 ? "default" : "secondary"}>
+          {row.roleId === 1 ? "Super Admin" : "Admin"}
+        </Badge>
+      ),
     },
     {
       id: "status",
       header: "Estado",
       cell: (row: User) => (
-        <StatusBadge status={row.active ? "active" : "inactive"} />
+        <StatusBadge status={row.isActive ? "active" : "inactive"} />
       ),
     },
     {
@@ -261,16 +225,16 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
         {/* Header row with title and actions button */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-2">
-            <CardTitle>Listado de Clientes</CardTitle>
+            <CardTitle>Administradores</CardTitle>
             <Badge variant="outline">{data.length}</Badge>
           </div>
-
+          
           {/* Action buttons */}
           <div className="flex items-center gap-2">
             {/* Export button - visible on desktop */}
             <div className="hidden sm:flex">
-              <Button
-                variant="outline"
+              <Button 
+                variant="outline" 
                 size="sm"
                 onClick={handleExport}
                 disabled={loading}
@@ -279,11 +243,11 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
                 Exportar
               </Button>
             </div>
-
+            
             {/* Mobile: Show/Hide filters button */}
             <div className="sm:hidden">
-              <Button
-                variant="outline"
+              <Button 
+                variant="outline" 
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
               >
@@ -295,78 +259,41 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
         </div>
 
         {/* Filters section */}
-        <div
-          className={`space-y-4 ${showFilters ? "block" : "hidden"} sm:block`}
-        >
+        <div className={`space-y-4 ${showFilters ? 'block' : 'hidden'} sm:block`}>
           {/* Search bar - full width on mobile */}
           <div className="relative">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               className="pl-10 w-full"
               placeholder="Buscar por nombre, email o DNI..."
-              value={filters.search || ""}
+              value={filters.search || ''}
               onChange={(e) => onSearch(e.target.value)}
             />
           </div>
 
           {/* Filter selects - responsive grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <Select
-              value={filters.roleId?.toString() || "all"}
-              onValueChange={handleRoleChange}
-            >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Select value={filters.roleId?.toString() || 'all'} onValueChange={handleRoleChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Filtrar por rol" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los roles</SelectItem>
-                {roles.map((role: any) => (
-                  <SelectItem key={role.id} value={role.id}>
-                    {role.name}
+                {filterOptions.roles.map((role:any) => (
+                  <SelectItem key={role.value} value={role.value}>
+                    {role.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-
-            <Select
-              value={filters.neighborhoodId?.toString() || "all"}
-              onValueChange={handleNeighborhoodChange}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por barrio" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los barrios</SelectItem>
-                {neighborhoods.map((neighborhood: any) => (
-                  <SelectItem
-                    key={neighborhood.id}
-                    value={neighborhood.id}
-                  >
-                    {neighborhood.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={filters.isActive?.toString() || "all"}
-              onValueChange={handleStatusChange}
-            >
+            
+            <Select value={filters.isActive?.toString() || 'all'} onValueChange={handleStatusChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                {[
-                  {
-                    value: "true",
-                    label: "Activos",
-                  },
-                  {
-                    value: "false",
-                    label: "Inactivos",
-                  },
-                ].map((status: any) => (
+                {filterOptions.status.map((status: any) => (
                   <SelectItem key={status.value} value={status.value}>
                     {status.label}
                   </SelectItem>
@@ -377,15 +304,15 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
 
           {/* Mobile export button */}
           <div className="sm:hidden">
-            <Button
-              variant="outline"
+            <Button 
+              variant="outline" 
               size="sm"
               onClick={handleExport}
               disabled={loading}
               className="w-full"
             >
               <Download className="h-4 w-4 mr-2" />
-              Exportar Clientes
+              Exportar Administradores
             </Button>
           </div>
         </div>
@@ -397,10 +324,7 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
             <thead>
               <tr className="border-b">
                 {columns.map((col) => (
-                  <th
-                    key={col.id}
-                    className="px-4 py-3 text-left text-sm font-medium text-gray-500"
-                  >
+                  <th key={col.id} className="px-4 py-3 text-left text-sm font-medium text-gray-500">
                     {col.header}
                   </th>
                 ))}
@@ -419,11 +343,8 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="p-8 text-center text-sm text-gray-500"
-                  >
-                    No se encontraron clientes
+                  <td colSpan={columns.length} className="p-8 text-center text-sm text-gray-500">
+                    No se encontraron administradores
                   </td>
                 </tr>
               )}
@@ -435,23 +356,21 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
         <div className="md:hidden space-y-3 p-4">
           {data.length ? (
             data.map((user) => (
-              <div
-                key={user.id}
-                className="border rounded-lg p-4 space-y-2 bg-white hover:bg-gray-50"
-              >
+              <div key={user.id} className="border rounded-lg p-4 space-y-2 bg-white hover:bg-gray-50">
                 <div className="flex items-center justify-between">
                   <div className="font-medium">
                     {(user.firstName || "") + " " + (user.lastName || "")}
                   </div>
-                  <StatusBadge status={user.active ? "active" : "inactive"} />
+                  <div className="flex items-center gap-2">
+                    <Badge variant={user.roleId === 1 ? "default" : "secondary"} className="text-xs">
+                      {user.roleId === 1 ? "Super Admin" : "Admin"}
+                    </Badge>
+                    <StatusBadge status={user.isActive ? "active" : "inactive"} />
+                  </div>
                 </div>
                 <div className="text-sm text-gray-600">
                   <div>DNI: {user.dni}</div>
                   <div>Email: {user.email}</div>
-                  <div>Rol: {user.role.name || "N/A"}</div>
-                  {user.neighborhoodId && (
-                    <div>Barrio: {user.neighborhoodId}</div>
-                  )}
                 </div>
                 <div className="flex justify-end pt-2">
                   <Button
@@ -468,10 +387,11 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
             ))
           ) : (
             <div className="text-center py-8 text-sm text-gray-500">
-              No se encontraron clientes
+              No se encontraron administradores
             </div>
           )}
         </div>
+        
         {showPagination && (
           <div className="border-t p-4">
             <DashboardPagination
@@ -491,27 +411,33 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-2xl font-bold tracking-tight">
-            Gestión de Clientes
-          </h1>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Administradores
+            </h1>
+            <p className="text-muted-foreground">
+              Gestiona los usuarios administradores del sistema
+            </p>
+          </div>
           <div className="flex items-center gap-2">
             <Button onClick={handleCreateUser}>
               <Plus className="h-4 w-4 mr-2" />
-              Nuevo Cliente
+              Nuevo Administrador
             </Button>
           </div>
         </div>
 
-        {/* Tabs */}
-        {renderTable(users, false)}
+        {/* Single table view - no tabs */}
+        {renderTable(users, true)}
       </div>
 
-      {/* User Drawer */}
+      {/* User Drawer - only allow admin roles */}
       <UserDrawer
         open={isDrawerOpen}
         user={selectedUser}
         onClose={() => setIsDrawerOpen(false)}
         onSave={handleSaveDrawer}
+        adminOnly={true} // Pass flag to limit roles to admin only
       />
     </>
   );
