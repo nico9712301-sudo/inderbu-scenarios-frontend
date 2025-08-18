@@ -37,9 +37,9 @@ export class ClientHttpClient implements IHttpClient {
   private readonly defaultHeaders: Record<string, string>;
 
   constructor(config: HttpClientConfig) {
-    this.baseURL = config.baseURL.replace(/\/$/, "");
+    this.baseURL = config.baseURL.replace(/\/$/, "") || "http://localhost:3001";
     this.timeout = config.timeout ?? 10000;
-    this.authContext = config.authContext;
+    this.authContext = config.authContext || undefined;
     this.defaultHeaders = {
       "Content-Type": "application/json",
       ...config.headers,

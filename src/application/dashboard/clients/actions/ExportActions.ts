@@ -10,7 +10,7 @@ import { getUsersAction } from '@/infrastructure/web/controllers/dashboard/user.
  * Fetches all users matching the filters and exports them as CSV.
  * Similar implementation to scenarios export functionality.
  */
-export async function exportUsersToCSV(filters: UserFilters): Promise<void> {
+export async function exportUsersToCSV(filters?: UserFilters): Promise<void> {
   try {
     // Remove pagination to get all results
     const exportFilters: UserFilters = {
@@ -44,7 +44,7 @@ export async function exportUsersToCSV(filters: UserFilters): Promise<void> {
     ];
 
     // Convert users to CSV rows
-    const csvRows = users.map(user => [
+    const csvRows = users.data.map(user => [
       user.id?.toString() || '',
       user.dni?.toString() || '',
       user.firstName || '',

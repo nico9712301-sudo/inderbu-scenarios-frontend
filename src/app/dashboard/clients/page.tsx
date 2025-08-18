@@ -6,7 +6,7 @@ import {
   IClientsDataClientResponse,
   serializeClientsData,
 } from "@/presentation/utils/serialization.utils";
-import { ClientsPage } from "@/presentation/features/dashboard/clients/components/ClientsPage";
+import { ClientsPage } from "@/presentation/features/dashboard/clients/components/pages/clients.page";
 import { ContainerFactory } from "@/infrastructure/config/di/container.factory";
 import { UserFilters } from "@/entities/user/infrastructure/IUserRepository";
 import { IContainer } from "@/infrastructure/config/di/simple-container";
@@ -20,7 +20,7 @@ interface ClientsRouteProps {
     search?: string;
     roleId?: string;
     neighborhoodId?: string;
-    isActive?: string;
+    active?: string;
   }>;
 }
 
@@ -32,6 +32,8 @@ interface ClientsRouteProps {
  */
 export default async function ClientsRoute(props: ClientsRouteProps) {
   const searchParams = await props.searchParams;
+  console.log("Search Params:", searchParams);
+  
 
   try {
     // Dependency Injection: Get container and resolve use case
@@ -52,27 +54,25 @@ export default async function ClientsRoute(props: ClientsRouteProps) {
       neighborhoodId: searchParams.neighborhoodId
         ? parseInt(searchParams.neighborhoodId)
         : undefined,
-      isActive:
-        searchParams.isActive !== undefined
-          ? searchParams.isActive === "true"
+      active:
+        searchParams.active !== undefined
+          ? searchParams.active === "true"
           : undefined,
     };
 
     // Execute Use Case through Application Layer - returns pure Domain Entities
     const clientsData: IClientsDataResponse =
       await getClientsDataService.execute(filters);
-    console.log("Clients Data:", clientsData);
 
     // Presentation Layer responsibility: Serialize domain entities for client components
     const serializedResult: IClientsDataClientResponse =
       serializeClientsData(clientsData);
-    console.log("Serialized Result:", serializedResult);
 
     return <ClientsPage initialData={serializedResult} />;
   } catch (error) {
     console.error("Error in ClientsRoute:", error);
 
-    // TODO: Render proper error page/component
+    //TODO: Render proper error page/component
     throw error;
   }
 }

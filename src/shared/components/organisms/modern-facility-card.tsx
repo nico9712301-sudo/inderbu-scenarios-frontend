@@ -9,6 +9,7 @@ import {
 import { ISubScenario } from "@/presentation/features/home/types/filters.types";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
+import { usePlaceholderImage } from "@/shared/hooks/use-placeholder-image";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -32,7 +33,8 @@ export function ModernFacilityCard({
     fieldSurfaceType,
   } = subScenario;
 
-  const subscenarioImageURL = subScenario.imageGallery?.featured?.url ?? "https://inderbu.gov.co/escenarios/content/fields/57/12770.jpg";
+  const placeholderImage = usePlaceholderImage();
+  const subscenarioImageURL = subScenario.imageGallery?.featured?.url ?? placeholderImage;
 
   return (
     <Link href={`/scenario/${id}`} className="block group">

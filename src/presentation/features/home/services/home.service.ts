@@ -39,6 +39,11 @@ interface NeighborhoodApiData {
   name: string;
 }
 
+interface RoleApiData {
+  id: number;
+  name: string;
+}
+
 // Sub-Scenarios API Service
 export async function getSubScenarios(params: {
   page: number;
@@ -200,9 +205,10 @@ export async function searchNeighborhoods(search: string = ""): Promise<Neighbor
       params.append('search', search.trim());
     }
     params.append('limit', '20');
+    console.log("params from search neighborhoods", params.toString());
+    
 
     const url = `${API_BASE_URL}/neighborhoods?${params.toString()}`;
-    console.log('Searching neighborhoods:', url);
 
     const response = await fetch(url, {
       cache: 'no-store',
@@ -222,6 +228,96 @@ export async function searchNeighborhoods(search: string = ""): Promise<Neighbor
   } catch (error) {
     console.error('Error searching neighborhoods:', error);
     return []; // Return empty array on error
+  }
+}
+
+export async function searchRoles(search: string = ""): Promise<RoleApiData[]> {
+  try {
+    const params = new URLSearchParams();
+    if (search.trim()) {
+      params.append('search', search.trim());
+    }
+    params.append('limit', '20');
+
+    const url = `${API_BASE_URL}/roles?${params.toString()}`;
+    console.log('Searching roles:', url);
+
+    const response = await fetch(url, {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to search roles: ${response.status} ${response.statusText}`);
+    }
+
+    const result: ApiResponse<RoleApiData[]> = await response.json();
+    console.log(`Found ${result.data.length} roles matching "${search}"`);
+    return result.data;
+
+  } catch (error) {
+    console.error('Error searching roles:', error);
+    return []; // Return empty array on error
+  }
+}
+
+export async function searchRoleById(id: string | number): Promise<RoleApiData | null> {
+  try {
+    const url = `${API_BASE_URL}/roles/${id}`;
+    console.log('Searching role by ID:', url);
+
+    const response = await fetch(url, {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error(`Failed to search role by ID: ${response.status} ${response.statusText}`);
+    }
+
+    const result: ApiResponse<RoleApiData> = await response.json();
+    console.log(`Found role by ID ${id}:`, result.data);
+    return result.data;
+
+  } catch (error) {
+    console.error('Error searching role by ID:', error);
+    return null;
+  }
+}
+
+export async function searchNeighborhoodById(id: string | number): Promise<NeighborhoodApiData | null> {
+  try {
+    const url = `${API_BASE_URL}/neighborhoods/${id}`;
+    console.log('Searching neighborhood by ID:', url);
+
+    const response = await fetch(url, {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error(`Failed to search neighborhood by ID: ${response.status} ${response.statusText}`);
+    }
+
+    const result: ApiResponse<NeighborhoodApiData> = await response.json();
+    console.log(`Found neighborhood by ID ${id}:`, result.data);
+    return result.data;
+
+  } catch (error) {
+    console.error('Error searching neighborhood by ID:', error);
+    return null;
   }
 }
 

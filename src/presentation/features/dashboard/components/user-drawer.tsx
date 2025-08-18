@@ -21,33 +21,8 @@ import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { UserPlainObject } from "@/entities/user/domain/UserEntity";
 import { EUserRole } from "@/shared/enums/user-role.enum";
-
-
-/* ---------- Tipos ---------- */
-// export interface User {
-//   id: number;
-//   dni: number;
-//   firstName?: string;
-//   lastName?: string;
-//   first_name?: string;
-//   last_name?: string;
-//   email: string;
-//   phone: string;
-//   address: string;
-//   isActive: boolean;
-//   role: {
-//     id: number;
-//     name: string;
-//     description?: string;
-//   };
-//   neighborhood: {
-//     id: number;
-//     name: string;
-//   };
-//   roleId?: number;
-//   neighborhoodId?: number;
-//   password?: string;
-// }
+import { SearchSelect } from "@/shared/components/molecules/search-select";
+import { searchNeighborhoods } from "@/presentation/features/home/services/home.service";
 
 type User = UserPlainObject;
 
@@ -68,41 +43,21 @@ interface UserDrawerProps {
   onSave: (data: Partial<User>) => Promise<void>;
 }
 
-// API URL base
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
 /* ---------- Componente ---------- */
-export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
+export function UserDrawer({
+  open,
+  user,
+  onClose,
+  onSave,
+}: UserDrawerProps) {
   const [form, setForm] = useState<Partial<User>>({});
-  const [roles, setRoles] = useState<IRoleOption[]>([]);
-  const [neighborhoods, setNeighborhoods] = useState<IINeighborhoodOptionDTO[]>([]);
+  const [roles, setRoles] = useState<IRoleOption[]>([
+    { id: 3, name: "Independiente" },
+    { id: 4, name: "Club Deportivo" },
+    { id: 5, name: "Entrenador" },
+  ]);
+  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  /* Cargar roles y barrios */
-  useEffect(() => {
-    const fetchOptions = async () => {
-      try {
-        // En un entorno real, estos datos vendrían de la API
-        // Por ahora usamos datos de ejemplo
-        setRoles([
-          { id: 1, name: "Administrador" },
-          { id: 2, name: "Cliente" },
-          { id: 3, name: "Gestor" },
-        ]);
-
-        setNeighborhoods([
-          { id: 1, name: "San Alonso" },
-          { id: 2, name: "Provenza" },
-          { id: 3, name: "Álvarez Las Americas" },
-        ]);
-      } catch (error) {
-        console.error("Error fetching options:", error);
-      }
-    };
-
-    fetchOptions();
-  }, []);
 
   /* Resetea el formulario cada vez que cambie el user */
   useEffect(() => {
@@ -114,9 +69,13 @@ export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
         email: user.email || "",
         phone: user.phone || "",
         address: user.address || "",
-        isActive: user.isActive !== undefined ? user.isActive : true,
+        active: user.active !== undefined ? user.active : true,
         role: user.role ?? undefined,
+        roleId: user.roleId,
+        neighborhood: user.neighborhood ?? undefined,
+        neighborhoodId: user.neighborhoodId ?? undefined,
       });
+      setIsEditing(true);
     } else {
       setForm({
         dni: 0,
@@ -125,9 +84,12 @@ export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
         email: "",
         phone: "",
         address: "",
-        isActive: true,
-        role: EUserRole.INDEPENDIENTE,
+        active: true,
+        roleId: EUserRole.INDEPENDIENTE,
+        neighborhood: undefined,
+        neighborhoodId: undefined,
       });
+      setIsEditing(false);
     }
   }, [user]);
 
@@ -151,7 +113,7 @@ export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-[650px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
+      <DialogContent className="w-[650px] max-h-[80vh] mx-auto bg-white overflow-y-auto" aria-describedby="user-drawer-description" aria-description="user-drawer-description">
         <DialogHeader className="pb-2">
           <DialogTitle className="text-xl text-teal-700">
             {user
@@ -161,7 +123,8 @@ export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
         </DialogHeader>
 
         {/* ---------- Cuerpo scrollable ---------- */}
-        <div className="space-y-4 overflow-y-auto max-h-[calc(80vh-180px)]">
+        <form name="user-form">
+          <div className="space-y-4 overflow-y-auto max-h-[calc(80vh-180px)]">
           {/* Información Básica */}
           <div className="bg-gray-50 p-3 rounded-md">
             <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
@@ -193,15 +156,11 @@ export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
 
               <Field id="user-role" label="Rol*">
                 <Select
-                  value={form.role?.id?.toString() || ""}
+                  value={form.roleId+"" || ""}
                   onValueChange={(value) => {
-                    const selectedRole = roles.find((role) => role.id === Number(value));
                     setForm({
                       ...form,
-                      role: {
-                        id: Number(value),
-                        name: selectedRole ? selectedRole.name : "",
-                      },
+                      roleId: +value,
                     });
                   }}
                 >
@@ -260,6 +219,12 @@ export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
                   type="email"
                   value={form.email || ""}
                   onChange={handle("email")}
+                  autoComplete="email"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck="false"
+                  name="user-email"
+                  data-form-type="user"
                 />
               </Field>
 
@@ -273,33 +238,28 @@ export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
               </Field>
 
               <Field id="user-neighborhood" label="Barrio*">
-                <Select
-                  value={form.neighborhood?.id?.toString() || ""}
+                <SearchSelect
+                  className="w-full bg-white h-9"
+                  placeholder="Seleccionar barrio"
+                  searchPlaceholder="Buscar barrio..."
+                  value={form.neighborhoodId?.toString() || ""}
                   onValueChange={(value) => {
-                    const selectedNeighborhood = neighborhoods.find((n) => n.id === Number(value));
                     setForm({
                       ...form,
-                      neighborhood: {
-                        id: Number(value),
-                        name: selectedNeighborhood ? selectedNeighborhood.name : "",
-                      },
+                      neighborhoodId: Number(value),
                     });
                   }}
-                >
-                  <SelectTrigger className="bg-white h-9">
-                    <SelectValue placeholder="Seleccionar barrio" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {neighborhoods.map((neighborhood) => (
-                      <SelectItem
-                        key={neighborhood.id}
-                        value={neighborhood.id.toString()}
-                      >
-                        {neighborhood.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onSearch={searchNeighborhoods}
+                  emptyMessage="No se encontraron barrios"
+                  initialOption={
+                    form.neighborhood
+                      ? {
+                          id: form.neighborhood.id,
+                          name: form.neighborhood.name,
+                        }
+                      : undefined
+                  }
+                />
               </Field>
 
               <Field id="user-address" label="Dirección*">
@@ -313,6 +273,7 @@ export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
           </div>
 
           {/* Configuración de Cuenta */}
+          {!isEditing && (
           <div className="bg-gray-50 p-3 rounded-md">
             <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
               <svg
@@ -353,17 +314,19 @@ export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
                 <div className="flex flex-col items-end">
                   <Switch
                     id="user-status"
-                    checked={form.isActive}
-                    onCheckedChange={(v) => setForm({ ...form, isActive: v })}
+                    checked={form.active}
+                    onCheckedChange={(v) => setForm({ ...form, active: v })}
                   />
                   <span className="text-xs text-gray-500 mt-1">
-                    {form.isActive ? "Usuario activo" : "Usuario inactivo"}
+                    {form.active ? "Usuario activo" : "Usuario inactivo"}
                   </span>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+          )}
+          </div>
+        </form>
 
         {/* ---------- Footer ---------- */}
         <DialogFooter className="flex justify-end gap-3 pt-3">

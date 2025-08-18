@@ -14,18 +14,20 @@ import { MainHeader } from "@/shared/components/organisms/main-header";
 import { Pagination } from "@/shared/components/organisms/pagination";
 import { useMemo } from "react";
 import { IActivityArea, INeighborhood, ISubScenario } from '../../types/filters.types';
+import { HomeSlide } from '@/shared/api/home-slides';
 
 
 // Template Props (Atomic Design Page Level)
 export interface HomePageProps {
   initialData: IHomeDataClientResponse;
+  slides?: HomeSlide[];
 }
 
 // Atomic Design: Home Page Template
-export function HomePage({ initialData }: HomePageProps) {
+export function HomePage({ initialData, slides }: HomePageProps) {
   const homeDataInput: IUseHomeDataParams = {
-    initialSubScenarios: initialData.subScenarios as ISubScenario[],     // Already serialized plain objects
-    initialMeta: initialData.meta,                     // Pagination metadata from main content
+    initialSubScenarios: initialData.subScenarios as ISubScenario[],
+    initialMeta: initialData.meta,
     initialFilters: {
       searchQuery: initialData.filters.search || "",
       activityAreaId: initialData.filters.activityAreaId,
@@ -44,7 +46,6 @@ export function HomePage({ initialData }: HomePageProps) {
     loading,
     error,
     hasError,
-    hasData,
     isEmpty,
     setPage,
     setFilters,
@@ -103,7 +104,7 @@ export function HomePage({ initialData }: HomePageProps) {
     <main className="min-h-screen flex flex-col w-full">
       {/* Atomic Design: Organisms */}
       <MainHeader />
-      <HeroSection />
+      <HeroSection slides={slides} />
 
       {/* Main Content Container */}
       <div className="container mx-auto px-4 py-12 flex-grow">

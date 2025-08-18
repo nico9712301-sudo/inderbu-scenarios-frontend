@@ -17,25 +17,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import { ResendConfirmationForm } from "@/presentation/features/confirm/components/organisms/resend-confirmation-form";
+import { ResendConfirmationForm } from "@/presentation/features/confirm-email/components/organisms/resend-confirmation-form";
 import { Button } from "@/shared/ui/button";
 import React, { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 interface ConfirmPageProps {
-  searchParams: {
+  searchParams: Promise<{
     token?: string;
-    view?: string;
+    view?: "resend" | "success";
     email?: string;
-  };
+  }>;
 }
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default function ConfirmPage({ searchParams }: ConfirmPageProps) {
-  const { token, view, email } = searchParams;
+export default async function ConfirmPage({ searchParams }: ConfirmPageProps) {
+  const { token, view, email } = await searchParams;
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-white from-slate-50 to-slate-100">
@@ -131,7 +131,7 @@ async function TokenVerifier({ token }: { token: string }) {
   try {
     const res = await fetch(
       `http://localhost:3001/users/confirm?token=${encodeURIComponent(token)}`,
-      { cache: "no-store" },
+      { cache: "no-store" }
     );
 
     if (res.ok) {

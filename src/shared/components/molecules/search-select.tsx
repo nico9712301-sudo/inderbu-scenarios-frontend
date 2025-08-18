@@ -2,7 +2,7 @@
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { Check, ChevronDown, Search, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, memo } from "react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 
@@ -19,6 +19,8 @@ interface SearchSelectProps {
   value?: string | number;
   onValueChange: (value: string | number | null) => void;
   onSearch: (query: string) => Promise<SearchSelectOption[]>;
+  onSearchById?: (id: string | number) => Promise<SearchSelectOption | null>;
+  initialOption?: SearchSelectOption;
   emptyMessage?: string;
   className?: string;
 }
@@ -30,6 +32,8 @@ export function SearchSelect({
   value,
   onValueChange,
   onSearch,
+  onSearchById,
+  initialOption,
   emptyMessage = "No se encontraron resultados",
   className = "",
 }: SearchSelectProps) {
@@ -44,10 +48,20 @@ export function SearchSelect({
   >(new Map());
   const searchTimeoutRef = useRef<NodeJS.Timeout>(null);
 
-  // Load initial options
+  // Load initial options and handle initialOption
   useEffect(() => {
     loadOptions("");
-  }, [onSearch]);
+    
+    // If there's an initialOption, set it
+    if (initialOption) {
+      setSelectedOption(initialOption);
+      setSelectedCache((prev) => {
+        const newCache = new Map(prev);
+        newCache.set(initialOption.id, initialOption);
+        return newCache;
+      });
+    }
+  }, [initialOption]); // Removed onSearch dependency
 
   // Debounced search
   useEffect(() => {
@@ -64,28 +78,66 @@ export function SearchSelect({
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [searchQuery, onSearch]);
+  }, [searchQuery]); // Removed onSearch dependency
 
-  // Update selected option when value changes or options load
+  // Update selected option when value changes (OPTIMIZED DEPENDENCIES)
   useEffect(() => {
-    if (value && value !== "all") {
-      // Primero buscar en opciones actuales
-      let option = options.find(
+   
+    // Early return if no value
+    if (!value || value === "all") {
+      setSelectedOption(null);
+      return;
+    }
+
+    // Buscar en opciones actuales
+    let option = options.find(
+      (opt) => opt.id.toString() === value.toString(),
+    );
+
+    // Si no está en opciones actuales, buscar en cache
+    if (!option) {
+      option = selectedCache.get(value) ?? undefined;
+    }
+
+    // Si encontramos la opción, establecerla
+    if (option) {
+      setSelectedOption(option);
+      return;
+    }
+
+    // Solo buscar por ID si no está en cache Y no hemos buscado antes
+    if (onSearchById && !selectedCache.has(value)) {
+      onSearchById(value).then((foundOption) => {
+        if (foundOption) {
+          setSelectedOption(foundOption);
+          setSelectedCache((prev) => {
+            const newCache = new Map(prev);
+            newCache.set(foundOption.id, foundOption);
+            return newCache;
+          });
+        }
+      }).catch((error) => {
+        console.error("Error searching by ID:", error);
+      });
+    }
+  }, [value, onSearchById]); // REMOVED: options, selectedCache para evitar re-renders innecesarios
+
+  // Separate effect to update cache when new options are loaded
+  useEffect(() => {
+    if (options.length > 0 && value && value !== "all") {
+      const matchingOption = options.find(
         (opt) => opt.id.toString() === value.toString(),
       );
-
-      // Si no está en opciones actuales, buscar en cache
-      if (!option) {
-        option = selectedCache.get(value) ?? undefined;
+      if (matchingOption && !selectedCache.has(value)) {
+        setSelectedCache((prev) => {
+          const newCache = new Map(prev);
+          newCache.set(matchingOption.id, matchingOption);
+          return newCache;
+        });
+        setSelectedOption(matchingOption);
       }
-
-      if (option) {
-        setSelectedOption(option);
-      }
-    } else {
-      setSelectedOption(null);
     }
-  }, [value, options, selectedCache]);
+  }, [options]); // Only depend on options, not value
 
   const loadOptions = async (query: string) => {
     setLoading(true);
@@ -176,6 +228,12 @@ export function SearchSelect({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck="false"
+              name={`search-select-${Math.random()}`}
+              data-form-type="search"
             />
           </div>
         </div>

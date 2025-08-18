@@ -3,6 +3,7 @@
 
 import { IUserRepository, CreateUserDto } from '@/entities/user/infrastructure/IUserRepository';
 import { UserEntity } from '@/entities/user/domain/UserEntity';
+import { UserBackend, UserTransformer } from '@/infrastructure/transformers/UserTransformer';
 
 /**
  * Create User Use Case
@@ -16,59 +17,7 @@ import { UserEntity } from '@/entities/user/domain/UserEntity';
 export class CreateUserUseCase {
   constructor(private readonly userRepository: IUserRepository) {}
 
-  async execute(userData: CreateUserDto): Promise<UserEntity> {
-    // Business validation - Required fields
-    if (!userData.dni) {
-      throw new Error('DNI is required');
-    }
-
-    if (!userData.firstName || userData.firstName.trim().length < 2) {
-      throw new Error('First name is required and must be at least 2 characters');
-    }
-
-    if (!userData.lastName || userData.lastName.trim().length < 2) {
-      throw new Error('Last name is required and must be at least 2 characters');
-    }
-
-    if (!userData.email || !userData.email.includes('@')) {
-      throw new Error('Valid email is required');
-    }
-
-    if (!userData.phone || userData.phone.trim().length < 8) {
-      throw new Error('Phone number is required and must be at least 8 characters');
-    }
-
-    if (!userData.address || userData.address.trim().length < 5) {
-      throw new Error('Address is required and must be at least 5 characters');
-    }
-
-    // Business validation - Numeric fields
-    if (userData.dni <= 0) {
-      throw new Error('DNI must be a positive number');
-    }
-
-    if (userData.roleId <= 0) {
-      throw new Error('Valid role is required');
-    }
-
-    if (userData.neighborhoodId <= 0) {
-      throw new Error('Valid neighborhood is required');
-    }
-
-    // Business rule: Check email uniqueness
-    try {
-      const emailExists = await this.userRepository.emailExists(userData.email);
-      if (emailExists) {
-        throw new Error('Email address is already registered');
-      }
-    } catch (error) {
-      if (error instanceof Error && error.message.includes('already registered')) {
-        throw error; // Re-throw email uniqueness error
-      }
-      // Log but don't fail for email check errors
-      console.warn('Could not verify email uniqueness:', error);
-    }
-
+  async execute(userData: CreateUserDto): Promise<Partial<UserBackend>> {
     // Data preparation
     const userToCreate: CreateUserDto = {
       ...userData,
@@ -81,10 +30,9 @@ export class CreateUserUseCase {
 
     try {
       // Execute creation through repository
-      const createdUser = await this.userRepository.create(userToCreate);
+      const createdUser: UserEntity = await this.userRepository.create(userToCreate);
       
-      console.log(`User created successfully with ID: ${createdUser.id}`);
-      return createdUser;
+      return UserTransformer.toBackend(createdUser);
     } catch (error) {
       // Handle repository errors
       if (error instanceof Error) {

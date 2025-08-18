@@ -1,4 +1,18 @@
-export function HeroSection() {
+import { HomeSlide } from "@/shared/api/home-slides";
+import { MainCarousel } from "@/shared/components/organisms/main-carousel";
+
+interface HeroSectionProps {
+  slides?: HomeSlide[];
+}
+
+export function HeroSection({ slides }: HeroSectionProps) {
+  console.log('HeroSection: Rendering with slides:', slides);
+  
+  if (slides && slides.length > 0) {
+    return <MainCarousel slides={slides} />;
+  }
+
+  // Fallback to static hero when no slides available
   return (
     <div className="bg-gradient-to-br from-blue-50 via-white to-gray-50 py-12">
       <div className="container mx-auto px-4 text-center">

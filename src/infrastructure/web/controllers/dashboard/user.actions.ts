@@ -59,17 +59,10 @@ export async function getUserByIdAction(id: number) {
 // =============================================================================
 
 import { UserFilters } from '@/entities/user/infrastructure/IUserRepository';
+import { UserBackend } from '@/infrastructure/transformers/UserTransformer';
 
-export interface GetUsersRequest {
-  page?: number;
-  limit?: number;
-  search?: string;
-  roleId?: number;
-  neighborhoodId?: number;
-  isActive?: boolean;
-}
 
-export async function getUsersAction(request: GetUsersRequest = {}) {
+export async function getUsersAction(request: UserFilters) {
   return await ErrorHandlerComposer.withErrorHandling(async () => {
     // Get dependencies from Simple DI container
     const container: IContainer = ContainerFactory.createContainer();
@@ -84,7 +77,7 @@ export async function getUsersAction(request: GetUsersRequest = {}) {
       search: request.search,
       roleId: request.roleId,
       neighborhoodId: request.neighborhoodId,
-      isActive: request.isActive,
+      active: request.active,
     });
 
     return {
@@ -116,7 +109,7 @@ export async function createUserAction(data: CreateUserDto) {
     );
 
     // Execute use case
-    const result: UserEntity = await createUserUseCase.execute(data);
+    const result: Partial<UserBackend> = await createUserUseCase.execute(data);
 
     // Invalidate Next.js cache
     revalidatePath('/dashboard/clients');
@@ -131,15 +124,6 @@ export async function createUserAction(data: CreateUserDto) {
 
 export async function updateUserAction(id: number, data: UpdateUserDto) {
   return await ErrorHandlerComposer.withErrorHandling(async () => {
-    // Input validation
-    if (!id || id <= 0) {
-      throw new Error('Valid user ID is required');
-    }
-
-    if (data.email && !data.email.includes('@')) {
-      throw new Error('Valid email is required');
-    }
-
     // Get dependencies from Simple DI container
     const container: IContainer = ContainerFactory.createContainer();
     const updateUserUseCase = container.get<UpdateUserUseCase>(
@@ -147,7 +131,10 @@ export async function updateUserAction(id: number, data: UpdateUserDto) {
     );
 
     // Execute use case
-    const result: UserEntity = await updateUserUseCase.execute(id, data);
+    const result: Partial<UserBackend> = await updateUserUseCase.execute(id, data);
+
+    console.log(`User ${id} updated successfully`, result);
+    
 
     // Invalidate Next.js cache
     revalidatePath('/dashboard/clients');

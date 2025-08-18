@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/shared/utils/utils";
 import * as React from "react";
 

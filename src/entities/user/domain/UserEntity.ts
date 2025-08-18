@@ -39,6 +39,9 @@ export interface UserPlainObject {
 
   createdAt?: string;
   updatedAt?: string;
+
+  // atributos privados
+  password?: string;
 }
 
 /**

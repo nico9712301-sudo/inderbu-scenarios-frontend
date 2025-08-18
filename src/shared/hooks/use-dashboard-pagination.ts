@@ -36,6 +36,9 @@ export interface PageMeta {
 export function useDashboardPagination(config: PaginationConfig) {
   const router: AppRouterInstance = useRouter();
   const searchParams = useSearchParams();
+
+  console.log("Initializing useDashboardPagination with config:", config);
+  
   
   const { baseUrl, defaultLimit = 10, defaultPage = 1 } = config;
 
@@ -50,9 +53,20 @@ export function useDashboardPagination(config: PaginationConfig) {
     // Extract any additional filters from URL
     for (const [key, value] of searchParams.entries()) {
       if (!['page', 'limit', 'search'].includes(key)) {
-        // Try to parse as number if possible, otherwise keep as string
-        const numValue = Number(value);
-        result[key] = isNaN(numValue) ? value : numValue;
+        // Handle arrays (multiple values for same key)
+        if (result[key]) {
+          // If key already exists, convert to array
+          if (!Array.isArray(result[key])) {
+            result[key] = [result[key]];
+          }
+          // Try to parse as number if possible, otherwise keep as string
+          const numValue = Number(value);
+          (result[key] as any[]).push(isNaN(numValue) ? value : numValue);
+        } else {
+          // First occurrence, try to parse as number if possible
+          const numValue = Number(value);
+          result[key] = isNaN(numValue) ? value : numValue;
+        }
       }
     }
 
@@ -81,7 +95,16 @@ export function useDashboardPagination(config: PaginationConfig) {
     // Add any additional filters
     Object.entries(newFilters).forEach(([key, value]) => {
       if (!['page', 'limit', 'search'].includes(key) && value !== undefined && value !== '') {
-        params.set(key, value.toString());
+        if (Array.isArray(value)) {
+          // Handle arrays - add multiple entries for same key
+          value.forEach(v => {
+            if (v !== undefined && v !== '') {
+              params.append(key, v.toString());
+            }
+          });
+        } else {
+          params.set(key, value.toString());
+        }
       }
     });
 
@@ -102,6 +125,7 @@ export function useDashboardPagination(config: PaginationConfig) {
   }, [filters, updateUrl]);
 
   const onSearch = useCallback((search: string) => {
+    console.log("Search triggered:", search);
     updateUrl({ ...filters, search, page: 1 }); // Reset to page 1 on search
   }, [filters, updateUrl]);
 

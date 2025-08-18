@@ -8,7 +8,7 @@ export interface UserFilters {
   search?: string;
   roleId?: number[];
   neighborhoodId?: number;
-  isActive?: boolean;
+  active?: boolean;
   adminOnly?: boolean; // Filter to only include admin and super-admin users
 }
 
@@ -19,10 +19,10 @@ export interface CreateUserDto {
   lastName: string;
   email: string;
   phone: string;
+  password?: string;
   roleId: number;
   address: string;
   neighborhoodId: number;
-  password?: string;
 }
 
 // DTO for updating users
@@ -35,7 +35,7 @@ export interface UpdateUserDto {
   roleId?: number;
   address?: string;
   neighborhoodId?: number;
-  isActive?: boolean;
+  active?: boolean;
 }
 
 // Paginated users response
@@ -52,13 +52,7 @@ export interface PaginatedUsers {
  */
 export interface IUserRepository {
   getAll(filters: UserFilters): Promise<PaginatedUsers>;
-  getByRole(roleId: number, filters: UserFilters): Promise<PaginatedUsers>;
   getById(id: number): Promise<UserEntity>;
   create(userData: CreateUserDto): Promise<UserEntity>;
   update(id: number, userData: UpdateUserDto): Promise<UserEntity>;
-  delete(id: number): Promise<boolean>;
-  getByEmail(email: string): Promise<UserEntity | null>;
-  emailExists(email: string): Promise<boolean>;
-  getTotalCount(): Promise<number>;
-  getCountByRole(roleId: number): Promise<number>;
 }

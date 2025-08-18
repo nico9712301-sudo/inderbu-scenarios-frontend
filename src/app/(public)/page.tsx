@@ -5,6 +5,7 @@ import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
 import { serializeHomeData } from '@/presentation/utils/serialization.utils';
 import { IContainer } from '@/infrastructure/config/di/simple-container';
 import { TOKENS } from '@/infrastructure/config/di/tokens';
+import { homeSlidesService } from '@/shared/api/home-slides';
 
 interface HomePageProps {
   searchParams: Promise<{
@@ -43,8 +44,11 @@ export default async function HomeRoute(props: HomePageProps) {
         : undefined,
     };
 
-    // Execute Use Case - returns pure Domain Entities
-    const domainResult: IHomeDataResponse = await getHomeDataUseCase.execute(filters);
+    // Execute Use Case and fetch slides in parallel
+    const [domainResult, homeSlides] = await Promise.all([
+      getHomeDataUseCase.execute(filters),
+      homeSlidesService.getHomeBanners(), // Server-side call
+    ]);
     
     // Presentation Layer responsibility: Serialize domain entities for client components
     const serializedResult = serializeHomeData(domainResult);
@@ -53,6 +57,7 @@ export default async function HomeRoute(props: HomePageProps) {
     return (
       <HomePage
         initialData={serializedResult}
+        slides={homeSlides}
       />
     );
 

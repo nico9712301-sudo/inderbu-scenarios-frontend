@@ -46,24 +46,11 @@ export class GetAdminUsersDataService {
 
   async execute(filters: UserFilters = {}): Promise<IAdminUsersDataResponse> {
     try {
-      // Business validation
-      if (filters.page !== undefined && filters.page <= 0) {
-        throw new Error("Page number must be greater than 0");
-      }
-
-      if (
-        filters.limit !== undefined &&
-        (filters.limit <= 0 || filters.limit > 100)
-      ) {
-        throw new Error("Limit must be between 1 and 100");
-      }
-
       // Default filters with business rules for admin users only
       const defaultFilters: UserFilters = {
         page: 1,
         limit: 10, // Business rule: consistent page size for admin users
         search: "",
-        adminOnly: true, // Business rule: only show admin users
         ...filters,
       };
 

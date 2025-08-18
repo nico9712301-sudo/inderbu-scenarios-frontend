@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { slidesPlaceerholderScenario } from '@/shared/mock-data/slides-scenario';
 import { IImageGallery } from '@/infrastructure/transformers/SubScenarioTransformer';
+import { usePlaceholderImage } from '@/shared/hooks/use-placeholder-image';
 
 interface CarouselSlide {
   id: number;
@@ -22,6 +22,8 @@ interface CarouselData {
  * - Las flechas de navegación solo se muestran si hay más de un slide
  */
 export function useCarouselSlides(imagesGallery: IImageGallery): CarouselData {
+  const placeholderImage = usePlaceholderImage();
+  
   const slides = useMemo(() => {
     const slidesScenario: CarouselSlide[] = [];
     
@@ -53,29 +55,20 @@ export function useCarouselSlides(imagesGallery: IImageGallery): CarouselData {
         });
       }
     } else {
-      // Caso: No hay imágenes reales - mostrar 3 placeholders
+      // Caso: No hay imágenes reales - mostrar placeholders dinámicos
       
-      // Agregar featured placeholder
-      if (slidesPlaceerholderScenario.featured) {
+      // Agregar 3 placeholders dinámicos
+      for (let i = 1; i <= 3; i++) {
         slidesScenario.push({
-          id: slidesPlaceerholderScenario.featured.id,
-          imageUrl: slidesPlaceerholderScenario.featured.url,
-          title: slidesPlaceerholderScenario.featured.url,
+          id: i,
+          imageUrl: placeholderImage,
+          title: `Imagen placeholder ${i}`,
         });
       }
-
-      // Agregar additional placeholders
-      slidesPlaceerholderScenario.additional.forEach((slide) => {
-        slidesScenario.push({
-          id: slide.id,
-          imageUrl: slide.url,
-          title: slide.url,
-        });
-      });
     }
 
     return slidesScenario;
-  }, [imagesGallery]);
+  }, [imagesGallery, placeholderImage]);
 
   const carouselData = useMemo(() => ({
     slides,

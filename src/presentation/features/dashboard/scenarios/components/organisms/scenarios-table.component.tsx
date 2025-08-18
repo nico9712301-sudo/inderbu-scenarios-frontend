@@ -39,6 +39,8 @@ export function ScenariosTable({
   onEdit,
   onToggleStatus,
 }: Props) {
+  console.log({meta});
+  
   const columns: Column[] = [
     {
       id: "neighborhood",
