@@ -41,6 +41,7 @@ interface UserDrawerProps {
   user: UserPlainObject | null;
   onClose: () => void;
   onSave: (data: Partial<User>) => Promise<void>;
+  isAdmin?: boolean; // Optional prop to indicate if the user is an admin
 }
 
 /* ---------- Componente ---------- */
@@ -49,6 +50,7 @@ export function UserDrawer({
   user,
   onClose,
   onSave,
+  isAdmin = false,
 }: UserDrawerProps) {
   const [form, setForm] = useState<Partial<User>>({});
   const [roles, setRoles] = useState<IRoleOption[]>([
@@ -154,7 +156,8 @@ export function UserDrawer({
                 />
               </Field>
 
-              <Field id="user-role" label="Rol*">
+              {!isAdmin && (
+                <Field id="user-role" label="Rol*">
                 <Select
                   value={form.roleId+"" || ""}
                   onValueChange={(value) => {
@@ -175,7 +178,7 @@ export function UserDrawer({
                     ))}
                   </SelectContent>
                 </Select>
-              </Field>
+              </Field>)}
 
               <Field id="user-firstName" label="Nombre*">
                 <Input

@@ -54,6 +54,8 @@ export default async function OptionsRoute(props: OptionsRouteProps) {
 
       // Execute Use Case through Application Layer - returns pure Domain Entities
       const adminData: IAdminUsersDataResponse = await getAdminUsersDataService.execute(filters);
+      console.log("Admin Data Fetched:", adminData);
+      
 
       // Presentation Layer responsibility: Serialize domain entities for client components
       adminUsersData = serializeAdminUsersData(adminData);

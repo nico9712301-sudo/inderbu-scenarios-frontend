@@ -30,6 +30,9 @@ export const TimeSelectionGrid = ({
 }: TimeSelectionGridProps) => {
   const selectedCount = selectedSlots.size;
 
+  console.log({timeSlots});
+  
+
   if (isLoading) {
     return (
       <div className="text-center py-4 animate-pulse">
@@ -63,12 +66,6 @@ export const TimeSelectionGrid = ({
           </Badge>
         </div>
       </div>
-
-      {/* <SmartShortcutsGrid
-        shortcuts={SMART_SHORTCUTS}
-        onApplyShortcut={onApplyShortcut}
-        isLoading={isLoading}
-      /> */}
 
       <div className="space-y-3 max-h-96 overflow-y-auto">
         {TIME_PERIODS.map((period) => (

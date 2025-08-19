@@ -10,6 +10,8 @@ import { ReservationRepository } from '@/infrastructure/repositories/reservation
 import { ScenarioRepository } from '@/infrastructure/repositories/scenario/scenario-repository.adapter';
 import { UserRepositoryAdapter } from '@/infrastructure/repositories/user/user-repository.adapter';
 import { RoleRepositoryAdapter } from '@/infrastructure/repositories/role/role-repository.adapter';
+import { CommuneRepository } from '@/infrastructure/repositories/commune/commune-repository.adapter';
+import { CityRepository } from '@/infrastructure/repositories/city/city-repository.adapter';
 
 // Domain imports
 import type { IFieldSurfaceTypeRepository } from '@/entities/field-surface-type/domain/IFieldSurfaceTypeRepository';
@@ -19,6 +21,8 @@ import { INeighborhoodRepository } from '@/entities/neighborhood/infrastructure/
 import { IScenarioRepository } from '@/entities/scenario/infrastructure/scenario-repository.port';
 import type { IRoleRepository } from '@/entities/role/infrastructure/IRoleRepository';
 import type { IUserRepository } from '@/entities/user/infrastructure/IUserRepository';
+import type { ICommuneRepository } from '@/entities/commune/infrastructure/commune-repository.port';
+import type { ICityRepository } from '@/entities/city/infrastructure/city-repository.port';
 
 // Use Case imports
 import { GetUserReservationsUseCase as AppGetUserReservationsUseCase } from '@/application/reservations/use-cases/GetUserReservationsUseCase';
@@ -46,6 +50,10 @@ import { GetRolesUseCase } from '@/application/dashboard/clients/use-cases/GetRo
 import { GetHomeDataUseCase } from '@/application/home/use-cases/GetHomeDataUseCase';
 import { GetHomeDataService } from '@/application/home/services/GetHomeDataService';
 import { GetAdminUsersDataService } from '@/application/dashboard/admin-users/services/GetAdminUsersDataService';
+import { GetCommunesUseCase } from '@/application/dashboard/locations/use-cases/GetCommunesUseCase';
+import { GetCitiesUseCase } from '@/application/dashboard/locations/use-cases/GetCitiesUseCase';
+import { GetLocationsDataUseCase } from '@/application/dashboard/locations/use-cases/GetLocationsDataUseCase';
+import { GetLocationsDataService } from '@/application/dashboard/locations/services/GetLocationsDataService';
 
 // HTTP Client imports  
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
@@ -224,6 +232,16 @@ export class ContainerFactory {
       .to(() => new RoleRepositoryAdapter(createHttpClient()))
       .singleton();
 
+    // Commune Repository (singleton)
+    container.bind<ICommuneRepository>(TOKENS.ICommuneRepository)
+      .to(() => new CommuneRepository(createHttpClient()))
+      .singleton();
+
+    // City Repository (singleton)
+    container.bind<ICityRepository>(TOKENS.ICityRepository)
+      .to(() => new CityRepository(createHttpClient()))
+      .singleton();
+
     // Event Bus (singleton)
     container.bind<EventBus>(TOKENS.EventBus)
       .to(() => createInMemoryEventBus())
@@ -380,6 +398,32 @@ export class ContainerFactory {
       .to(() => new GetAdminUsersDataService(
         container.get<GetUsersUseCase>(TOKENS.GetUsersUseCase),
         container.get<GetRolesUseCase>(TOKENS.GetRolesUseCase)
+      ));
+
+    // Get Communes Use Case
+    container.bind<GetCommunesUseCase>(TOKENS.GetCommunesUseCase)
+      .to(() => new GetCommunesUseCase(
+        container.get<ICommuneRepository>(TOKENS.ICommuneRepository)
+      ));
+
+    // Get Cities Use Case
+    container.bind<GetCitiesUseCase>(TOKENS.GetCitiesUseCase)
+      .to(() => new GetCitiesUseCase(
+        container.get<ICityRepository>(TOKENS.ICityRepository)
+      ));
+
+    // Get Locations Data Use Case
+    container.bind<GetLocationsDataUseCase>(TOKENS.GetLocationsDataUseCase)
+      .to(() => new GetLocationsDataUseCase(
+        container.get<GetCommunesUseCase>(TOKENS.GetCommunesUseCase),
+        container.get<GetNeighborhoodsUseCase>(TOKENS.GetNeighborhoodsUseCase),
+        container.get<GetCitiesUseCase>(TOKENS.GetCitiesUseCase)
+      ));
+
+    // Get Locations Data Service (application service)
+    container.bind<GetLocationsDataService>(TOKENS.GetLocationsDataService)
+      .to(() => new GetLocationsDataService(
+        container.get<GetLocationsDataUseCase>(TOKENS.GetLocationsDataUseCase)
       ));
 
     // Get Scenario Detail Use Case (transient for isolation)

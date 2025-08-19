@@ -9,7 +9,7 @@ import { useCallback } from "react";
 import { Settings, Users, Image } from "lucide-react";
 
 interface OptionsPageWithTabsProps {
-  currentTab: 'admins' | 'banners';
+  currentTab: "admins" | "banners";
   adminUsersData: IAdminUsersDataClientResponse | null;
 }
 
@@ -19,45 +19,52 @@ const OptionsNavValues = [
     value: "admins",
     label: "Administradores",
     icon: <Users className="h-4 w-4" />,
-    description: "Gestiona usuarios administradores del sistema"
+    description: "Gestiona usuarios administradores del sistema",
   },
   {
     value: "banners",
     label: "Banners",
     icon: <Image className="h-4 w-4" />,
-    description: "Administra banners y contenido visual de la aplicación"
+    description: "Administra banners y contenido visual de la aplicación",
   },
 ] as const;
 
-export function OptionsPageWithTabs({ 
-  currentTab, 
-  adminUsersData 
+export function OptionsPageWithTabs({
+  currentTab,
+  adminUsersData,
 }: OptionsPageWithTabsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  console.log({adminUsersData});
+  
+
   // Handle tab change following your established pattern
-  const handleTabChange = useCallback((value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    
-    // Update tab parameter
-    params.set('tab', value);
-    
-    // Reset pagination when changing tabs
-    params.delete('page');
-    params.delete('search');
-    
-    // Navigate to new URL
-    router.push(`/dashboard/options?${params.toString()}`);
-  }, [router, searchParams]);
+  const handleTabChange = useCallback(
+    (value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      // Update tab parameter
+      params.set("tab", value);
+
+      // Reset pagination when changing tabs
+      params.delete("page");
+      params.delete("search");
+
+      // Navigate to new URL
+      router.push(`/dashboard/options?${params.toString()}`);
+    },
+    [router, searchParams]
+  );
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center space-x-2">
-        <Settings className="h-6 w-6 text-primary" />
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Opciones del Sistema</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Opciones del Sistema
+          </h1>
           <p className="text-muted-foreground">
             Administra configuraciones globales y usuarios del sistema
           </p>
@@ -73,8 +80,8 @@ export function OptionsPageWithTabs({
         {/* Tabs Navigation */}
         <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
           {OptionsNavValues.map((tab) => (
-            <TabsTrigger 
-              key={tab.value} 
+            <TabsTrigger
+              key={tab.value}
               value={tab.value}
               className="flex items-center space-x-2"
             >
@@ -87,12 +94,13 @@ export function OptionsPageWithTabs({
         {/* Tab Content: Administradores */}
         <TabsContent value="admins" className="space-y-4">
           <div className="rounded-lg border bg-card p-4">
-            
             {adminUsersData ? (
               <AdminUsersPage initialData={adminUsersData} />
             ) : (
               <div className="flex items-center justify-center h-32">
-                <p className="text-muted-foreground">Cargando administradores...</p>
+                <p className="text-muted-foreground">
+                  Cargando administradores...
+                </p>
               </div>
             )}
           </div>
@@ -100,7 +108,7 @@ export function OptionsPageWithTabs({
 
         {/* Tab Content: Banners */}
         <TabsContent value="banners" className="space-y-4">
-          <div className="rounded-lg border bg-card p-4">           
+          <div className="rounded-lg border bg-card p-4">
             <BannersManagementPage />
           </div>
         </TabsContent>

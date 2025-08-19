@@ -17,7 +17,7 @@ export const generateTimeSlots = (
   availabilityChecker?: (hour: number) => 'available' | 'occupied' | 'unknown'
 ): TimeSlot[] => {
   const slots: TimeSlot[] = [];
-  for (let hour = 0; hour < 24; hour++) {
+  for (let hour = 1; hour < 25; hour++) {
     slots.push({
       hour,
       label: formatHourHuman(hour),

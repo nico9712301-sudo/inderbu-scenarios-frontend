@@ -7,6 +7,8 @@ import { ReservationEntity, ReservationPlainObject } from '@/entities/reservatio
 import { ScenarioEntity, ScenarioPlainObject } from '@/entities/scenario/domain/ScenarioEntity';
 import { UserEntity, UserPlainObject } from '@/entities/user/domain/UserEntity';
 import { RoleEntity, RolePlainObject } from '@/entities/role/domain/RoleEntity';
+import { CommuneEntity, CommunePlainObject } from '@/entities/commune/domain/CommuneEntity';
+import { CityEntity, CityPlainObject } from '@/entities/city/domain/CityEntity';
 
 // Application Layer
 import { ISubScenariosDataResponse } from '@/application/dashboard/sub-scenarios/services/GetSubScenariosDataService';
@@ -17,6 +19,7 @@ import { IAdminUsersDataResponse } from '@/application/dashboard/admin-users/ser
 import { SubScenarioBackend } from '@/infrastructure/transformers/SubScenarioTransformer';
 import { IHomeDataResponse } from '@/application/home/services/GetHomeDataService';
 import { AvailabilityResult } from '@/application/availability/use-cases/GetAvailabilityUseCase';
+import { ILocationsDataResponse } from '@/application/dashboard/locations/services/GetLocationsDataService';
 
 // Presentation Layer
 
@@ -74,6 +77,17 @@ export interface IAdminUsersDataClientResponse {
   filterOptions: any;  // Keep as-is (already plain object)
 }
 
+// Serialized version of ILocationsDataResponse for client components
+export interface ILocationsDataClientResponse {
+  communes: CommunePlainObject[]; // Serialized from domain entities
+  neighborhoods: NeighborhoodPlainObject[]; // Serialized from domain entities
+  cities: CityPlainObject[]; // Serialized from domain entities
+  communePageMeta: any; // Keep as-is (already plain object from API)
+  neighborhoodPageMeta: any; // Keep as-is (already plain object from API)
+  communeFilters: any; // Keep as-is (already plain object)
+  neighborhoodFilters: any; // Keep as-is (already plain object)
+}
+
 /**
  * Serializes ActivityAreaEntity[] to plain objects for client components
  */
@@ -127,6 +141,20 @@ export function serializeUsers(entities: UserEntity[]): UserPlainObject[] {
  * Serializes RoleEntity[] to plain objects for client components
  */
 export function serializeRoles(entities: RoleEntity[]): RolePlainObject[] {
+  return entities.map(entity => entity.toPlainObject());
+}
+
+/**
+ * Serializes CommuneEntity[] to plain objects for client components
+ */
+export function serializeCommunes(entities: CommuneEntity[]): CommunePlainObject[] {
+  return entities.map(entity => entity.toPlainObject());
+}
+
+/**
+ * Serializes CityEntity[] to plain objects for client components
+ */
+export function serializeCities(entities: CityEntity[]): CityPlainObject[] {
   return entities.map(entity => entity.toPlainObject());
 }
 
@@ -241,6 +269,24 @@ export function serializeAdminUsersData(
     meta: domainResponse.meta,
     filters: domainResponse.filters,
     filterOptions: domainResponse.filterOptions,
+  };
+}
+
+/**
+ * Serializes complete LocationsDataResponse for client components
+ * This is the presentation layer's responsibility - not the application service
+ */
+export function serializeLocationsData(
+  domainResponse: ILocationsDataResponse
+): ILocationsDataClientResponse {
+  return {
+    communes: serializeCommunes(domainResponse.communes), // Serialize domain entities
+    neighborhoods: serializeNeighborhoods(domainResponse.neighborhoods), // Serialize domain entities
+    cities: serializeCities(domainResponse.cities), // Serialize domain entities
+    communePageMeta: domainResponse.communePageMeta,
+    neighborhoodPageMeta: domainResponse.neighborhoodPageMeta,
+    communeFilters: domainResponse.communeFilters,
+    neighborhoodFilters: domainResponse.neighborhoodFilters,
   };
 }
 

@@ -7,12 +7,14 @@ interface ClientsMobileListProps {
   users: UserPlainObject[];
   loading: boolean;
   onEditUser: (user: UserPlainObject) => void;
+  onToggleStatus: (user: UserPlainObject) => void;
 }
 
 export function ClientsMobileList({
   users,
   loading,
   onEditUser,
+  onToggleStatus,
 }: ClientsMobileListProps) {
   return (
     <div className="md:hidden space-y-3 p-4">
@@ -23,6 +25,7 @@ export function ClientsMobileList({
             user={user}
             loading={loading}
             onEdit={onEditUser}
+            onToggleStatus={onToggleStatus}
           />
         ))
       ) : (

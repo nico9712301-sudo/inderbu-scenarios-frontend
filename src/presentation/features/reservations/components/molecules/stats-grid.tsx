@@ -7,20 +7,13 @@ export const StatsGrid = ({
 }: {
   stats: ReturnType<typeof useReservations>["stats"];
 }) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-2">
     <StatCard
       title="Total Reservas"
       value={stats.total.toString()}
       Icon={Calendar}
       trend="up"
-      changeLabel="+12% desde el mes pasado"
-    />
-    <StatCard
-      title="Reservas Hoy"
-      value={stats.today.toString()}
-      Icon={Calendar}
-      trend="up"
-      changeLabel="+5% desde ayer"
+      // changeLabel="+12% desde el mes pasado"
     />
     <StatCard
       title="Escenarios Activos"
@@ -33,7 +26,7 @@ export const StatsGrid = ({
       value="—"
       Icon={Users}
       trend="up"
-      changeLabel="+3% desde el mes pasado"
+      // changeLabel="+3% desde el mes pasado"
     />
   </div>
 );

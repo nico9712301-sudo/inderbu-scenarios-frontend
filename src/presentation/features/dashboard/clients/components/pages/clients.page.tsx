@@ -8,6 +8,9 @@ import { useClientModal } from "../../hooks/useClientModal";
 import { UserPlainObject } from "@/entities/user/domain/UserEntity";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { updateUserAction } from "@/infrastructure/web/controllers/dashboard/user.actions";
+import { ErrorHandlerResult } from "@/shared/api/error-handler";
+import { useRouter } from "next/navigation";
 
 // Components
 import { ClientsPageHeader } from "../organisms/clients-page-header";
@@ -24,6 +27,8 @@ interface ClientsPageProps {
 }
 
 export function ClientsPage({ initialData }: ClientsPageProps) {
+  const router = useRouter();
+
   // Data management (filters, users, pagination)
   const {
     filters,
@@ -65,6 +70,34 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
     }
   };
 
+  const handleToggleStatus = async (user: UserPlainObject) => {
+    if (!user) return;
+
+    try {
+      const newActiveState: boolean = !user.active;
+      
+      const result: ErrorHandlerResult<any> = await updateUserAction(user.id, {
+        active: newActiveState,
+      });
+
+      if (result.success) {
+        router.refresh();
+        toast.success("Estado del usuario actualizado", {
+          description: `${user.firstName} ${user.lastName} ha sido ${newActiveState ? "activado" : "desactivado"}.`,
+        });
+      } else {
+        toast.error("Error al actualizar el estado del usuario", {
+          description: result.error || "Ocurrió un error al cambiar el estado.",
+        });
+      }
+    } catch (error) {
+      console.error("CLIENT: Unexpected toggle error:", error);
+      toast.error("Error al actualizar el estado del usuario", {
+        description: "Ocurrió un error inesperado de conexión.",
+      });
+    }
+  };
+
   useEffect(() => {
     console.log("Filters changed from clients page:", filters);
   }, [filters]);
@@ -91,6 +124,7 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
             onExport={handleExport}
             onToggleFilters={() => setShowFilters(!showFilters)}
             onEditUser={handleOpenDrawer}
+            onToggleStatus={handleToggleStatus}
             onPageChange={onPageChange}
             onLimitChange={onLimitChange}
           />
@@ -101,6 +135,7 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
           users={users}
           loading={false}
           onEditUser={handleOpenDrawer}
+          onToggleStatus={handleToggleStatus}
         />
       </div>
 

@@ -221,8 +221,8 @@ export class ReservationEntity {
       this.user.firstName.toLowerCase().includes(searchTerm) ||
       this.user.lastName.toLowerCase().includes(searchTerm) ||
       this.user.email.toLowerCase().includes(searchTerm) ||
-      (this.subScenario.scenario?.name.toLowerCase().includes(searchTerm)) ||
-      (this.comments?.toLowerCase().includes(searchTerm))
+      (!!this.subScenario.scenario?.name && this.subScenario.scenario.name.toLowerCase().includes(searchTerm)) ||
+      (!!this.comments && this.comments.toLowerCase().includes(searchTerm))
     );
   }
 

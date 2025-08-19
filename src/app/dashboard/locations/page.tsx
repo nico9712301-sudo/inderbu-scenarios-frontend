@@ -1,8 +1,16 @@
-import { createLocationsContainer } from '@/presentation/features/dashboard/locations/di/LocationsContainer.server';
-import { LocationsPage } from '@/presentation/features/dashboard/locations/components/LocationsPage';
+import { GetLocationsDataService, ILocationsDataResponse } from '@/application/dashboard/locations/services/GetLocationsDataService';
+import { CommuneFilters } from '@/entities/commune/infrastructure/commune-repository.port';
+import { NeighborhoodFilters } from '@/entities/neighborhood/infrastructure/INeighborhoodRepository';
 
-interface LocationsPageProps {
-  searchParams: {
+import { LocationsPage } from '@/presentation/features/dashboard/locations/pages/locations.page';
+import { serializeLocationsData } from '@/presentation/utils/serialization.utils';
+
+import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
+import { IContainer } from '@/infrastructure/config/di/simple-container';
+import { TOKENS } from '@/infrastructure/config/di/tokens';
+
+interface LocationsRouteProps {
+  searchParams: Promise<{
     tab?: string;
     communePage?: string;
     communeLimit?: string;
@@ -10,41 +18,55 @@ interface LocationsPageProps {
     neighborhoodPage?: string;
     neighborhoodLimit?: string;
     neighborhoodSearch?: string;
-  };
+  }>;
 }
 
-export default async function LocationsRoute(props: LocationsPageProps) {
+/**
+ * Locations Page Route (Server Component)
+ * 
+ * Next.js App Router page that handles locations listing.
+ * Uses dependency injection to get data and render the presentation layer.
+ */
+export default async function LocationsRoute(props: LocationsRouteProps) {
   const searchParams = await props.searchParams;
-  
-  // DDD: Dependency injection - build complete container
-  const { locationsService } = createLocationsContainer();
 
   try {
-    // Parse search params with defaults for both entities
-    const communeFilters = {
+    // Dependency Injection: Get container and resolve service
+    const container: IContainer = ContainerFactory.createContainer();
+    const getLocationsDataService = container.get<GetLocationsDataService>(TOKENS.GetLocationsDataService);
+    
+    // Parse and validate search params
+    const communeFilters: CommuneFilters = {
       page: searchParams.communePage ? parseInt(searchParams.communePage) : 1,
       limit: searchParams.communeLimit ? parseInt(searchParams.communeLimit) : 10,
       search: searchParams.communeSearch || "",
     };
 
-    const neighborhoodFilters = {
+    const neighborhoodFilters: NeighborhoodFilters = {
       page: searchParams.neighborhoodPage ? parseInt(searchParams.neighborhoodPage) : 1,
       limit: searchParams.neighborhoodLimit ? parseInt(searchParams.neighborhoodLimit) : 10,
       search: searchParams.neighborhoodSearch || "",
     };
 
-    // DDD: Execute use case through service layer
-    // All business logic, validation, and data fetching happens in domain/application layers
-    const result = await locationsService.getLocationsData(communeFilters, neighborhoodFilters);
+    // Execute Use Case through Application Layer - returns pure Domain Entities
+    const domainResult: ILocationsDataResponse = await getLocationsDataService.execute(communeFilters, neighborhoodFilters);
 
-    // Atomic Design: Render page template with clean separation
-    return <LocationsPage initialData={result} />;
+    console.log('LocationsRoute - Domain Result:', domainResult.communes);
+    
+    // Presentation Layer responsibility: Serialize domain entities for client components
+    const serializedResult = serializeLocationsData(domainResult);
+
+    // Render Presentation Layer with serialized data (plain objects)
+    return (
+      <LocationsPage
+        initialData={serializedResult}
+      />
+    );
 
   } catch (error) {
-    console.error('SSR Error in LocationsRoute:', error);
-
-    // For unexpected errors, let Next.js error boundary handle it
-    console.error('Unexpected error in LocationsRoute:', error);
+    console.error('Error in LocationsRoute:', error);
+    
+    // TODO: Render proper error page/component
     throw error;
   }
 }

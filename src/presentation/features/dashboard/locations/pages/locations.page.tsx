@@ -1,21 +1,12 @@
 "use client";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import { Commune, Neighborhood } from "@/shared/api/domain-types";
-import { CreateCommuneDto, CreateNeighborhoodDto, UpdateCommuneDto, UpdateNeighborhoodDto } from "@/shared/api/dto-types";
+// Dropdown menu removed for communes/neighborhoods per request
 import {
   Building2,
   Download,
   FileEdit,
   Loader2,
   MapPin,
-  MoreHorizontal,
   Plus,
   Search,
 } from "lucide-react";
@@ -29,17 +20,16 @@ import {
 import { createNeighborhoodAction, updateNeighborhoodAction } from "@/infrastructure/web/controllers/dashboard/neighborhood.actions";
 import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
 import { createCommuneAction, updateCommuneAction } from "@/infrastructure/web/controllers/dashboard/commune.actions";
-import { LocationsDataResponse } from "../application/GetLocationsDataUseCase";
+import { ILocationsDataClientResponse } from '@/presentation/utils/serialization.utils';
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { useRouter, useSearchParams } from "next/navigation";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useState, useEffect, useRef } from "react";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { toast } from "sonner";
-
 
 // COMPONENTES VALIDADOS REUTILIZABLES
 interface ValidatedInputProps {
@@ -152,7 +142,7 @@ interface NeighborhoodFormErrors {
 }
 
 interface LocationsPageProps {
-  initialData: LocationsDataResponse;
+  initialData: ILocationsDataClientResponse;
 }
 
 export function LocationsPage({ initialData }: LocationsPageProps) {
@@ -191,19 +181,20 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
     hasNext: serverNeighborhoodPageMeta.page < serverNeighborhoodPageMeta.totalPages,
     hasPrev: serverNeighborhoodPageMeta.page > 1,
   } : null;
-  
-  // Multi-entity pagination hook for URL state management
-  // const {
-  //   updateEntityPage,
-  // } = useMultiEntityPagination('/dashboard/locations', ['commune', 'neighborhood']);
 
   // Pagination handlers with smooth navigation like sub-scenarios
   const handleCommunePageChange = (newPage: number) => {
-    // updateEntityPage('commune', newPage);
+    const params = new URLSearchParams(window.location.search);
+    params.set('communePage', newPage.toString());
+    const queryString = params.toString();
+    router.push(`/dashboard/locations?${queryString}`);
   };
 
   const handleNeighborhoodPageChange = (newPage: number) => {
-    // updateEntityPage('neighborhood', newPage);
+    const params = new URLSearchParams(window.location.search);
+    params.set('neighborhoodPage', newPage.toString());
+    const queryString = params.toString();
+    router.push(`/dashboard/locations?${queryString}`);
   };
 
   const handleCommuneLimitChange = (newLimit: number) => {
@@ -224,9 +215,16 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
     router.push(`/dashboard/locations?${queryString}`);
   };
 
-
   // Loading state
   const [loading, setLoading] = useState(false);
+
+  // Search states (local for debouncing)
+  const [localCommuneSearch, setLocalCommuneSearch] = useState(communeFilters.search || "");
+  const [localNeighborhoodSearch, setLocalNeighborhoodSearch] = useState(neighborhoodFilters.search || "");
+  
+  // Debounce refs
+  const communeSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const neighborhoodSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // UI state
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || "communes");
@@ -235,8 +233,8 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
   const [isNeighborhoodModalOpen, setIsNeighborhoodModalOpen] = useState(false);
   const [isNeighborhoodEditOpen, setIsNeighborhoodEditOpen] = useState(false);
 
-  const [selectedCommune, setSelectedCommune] = useState<Commune | null>(null);
-  const [selectedNeighborhood, setSelectedNeighborhood] = useState<Neighborhood | null>(null);
+  const [selectedCommune, setSelectedCommune] = useState<any | null>(null);
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState<any | null>(null);
 
   // Form states
   const [createCommuneData, setCreateCommuneData] = useState<CommuneFormData>({
@@ -262,19 +260,6 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
   const [communeFormErrors, setCommuneFormErrors] = useState<CommuneFormErrors>({});
   const [neighborhoodFormErrors, setNeighborhoodFormErrors] = useState<NeighborhoodFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Extract filters from URL
-  // const communeFilters = {
-  //   page: searchParams.get('communePage') ? Number(searchParams.get('communePage')) : 1,
-  //   limit: searchParams.get('communeLimit') ? Number(searchParams.get('communeLimit')) : 10,
-  //   search: searchParams.get('communeSearch') || "",
-  // };
-
-  // const neighborhoodFilters = {
-  //   page: searchParams.get('neighborhoodPage') ? Number(searchParams.get('neighborhoodPage')) : 1,
-  //   limit: searchParams.get('neighborhoodLimit') ? Number(searchParams.get('neighborhoodLimit')) : 10,
-  //   search: searchParams.get('neighborhoodSearch') || "",
-  // };
 
   // Validation functions
   const validateCommuneForm = (data: CommuneFormData): CommuneFormErrors => {
@@ -325,7 +310,7 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
         return;
       }
 
-      const createData: CreateCommuneDto = {
+      const createData = {
         name: createCommuneData.name.trim(),
         cityId: Number(createCommuneData.cityId),
       };
@@ -367,7 +352,7 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
         return;
       }
 
-      const updateData: UpdateCommuneDto = {};
+      const updateData: any = {};
 
       if (updateCommuneData.name.trim() !== selectedCommune.name) {
         updateData.name = updateCommuneData.name.trim();
@@ -415,7 +400,7 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
         return;
       }
 
-      const createData: CreateNeighborhoodDto = {
+      const createData = {
         name: createNeighborhoodData.name.trim(),
         communeId: Number(createNeighborhoodData.communeId),
       };
@@ -453,7 +438,7 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
         return;
       }
 
-      const updateData: UpdateNeighborhoodDto = {};
+      const updateData: any = {};
 
       if (updateNeighborhoodData.name.trim() !== selectedNeighborhood.name) {
         updateData.name = updateNeighborhoodData.name.trim();
@@ -550,8 +535,7 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
     []
   );
 
-
-  const handleOpenCommuneEdit = (commune: Commune) => {
+  const handleOpenCommuneEdit = (commune: any) => {
     setSelectedCommune(commune);
     setUpdateCommuneData({
       name: commune.name,
@@ -561,7 +545,7 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
     setIsCommuneEditOpen(true);
   };
 
-  const handleOpenNeighborhoodEdit = (neighborhood: Neighborhood) => {
+  const handleOpenNeighborhoodEdit = (neighborhood: any) => {
     setSelectedNeighborhood(neighborhood);
     setUpdateNeighborhoodData({
       name: neighborhood.name,
@@ -571,22 +555,74 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
     setIsNeighborhoodEditOpen(true);
   };
 
+  // Optimized search handlers with debouncing
+  const handleCommuneSearchChange = useCallback((value: string) => {
+    // Update local state immediately for responsive UI
+    setLocalCommuneSearch(value);
+    
+    // Clear previous timeout
+    if (communeSearchTimeoutRef.current) {
+      clearTimeout(communeSearchTimeoutRef.current);
+    }
+    
+    // Set new timeout for actual search
+    communeSearchTimeoutRef.current = setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      if (value.trim()) {
+        params.set('communeSearch', value.trim());
+      } else {
+        params.delete('communeSearch');
+      }
+      params.set('communePage', '1'); // Reset to first page on new search
+      const queryString = params.toString();
+      router.push(`/dashboard/locations?${queryString}`);
+    }, 500); // 500ms debounce
+  }, [router]);
 
-  function handleCommuneSearch(value: string): void {
-    const params = new URLSearchParams(window.location.search);
-    params.set('communeSearch', value);
-    params.set('communePage', '1'); // Reset to first page on new search
-    const queryString = params.toString();
-    router.push(`/dashboard/locations?${queryString}`);
-  }
-  
-  function handleNeighborhoodSearch(value: string): void {
-    const params = new URLSearchParams(window.location.search);
-    params.set('neighborhoodSearch', value);
-    params.set('neighborhoodPage', '1'); // Reset to first page on new search
-    const queryString = params.toString();
-    router.push(`/dashboard/locations?${queryString}`);
-  }
+  const handleNeighborhoodSearchChange = useCallback((value: string) => {
+    // Update local state immediately for responsive UI
+    setLocalNeighborhoodSearch(value);
+    
+    // Clear previous timeout
+    if (neighborhoodSearchTimeoutRef.current) {
+      clearTimeout(neighborhoodSearchTimeoutRef.current);
+    }
+    
+    // Set new timeout for actual search
+    neighborhoodSearchTimeoutRef.current = setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      if (value.trim()) {
+        params.set('neighborhoodSearch', value.trim());
+      } else {
+        params.delete('neighborhoodSearch');
+      }
+      params.set('neighborhoodPage', '1'); // Reset to first page on new search
+      const queryString = params.toString();
+      router.push(`/dashboard/locations?${queryString}`);
+    }, 500); // 500ms debounce
+  }, [router]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (communeSearchTimeoutRef.current) {
+        clearTimeout(communeSearchTimeoutRef.current);
+      }
+      if (neighborhoodSearchTimeoutRef.current) {
+        clearTimeout(neighborhoodSearchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Sync local search states when server data changes
+  useEffect(() => {
+    setLocalCommuneSearch(communeFilters.search || "");
+  }, [communeFilters.search]);
+
+  useEffect(() => {
+    setLocalNeighborhoodSearch(neighborhoodFilters.search || "");
+  }, [neighborhoodFilters.search]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -641,8 +677,8 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
                   <Input
                     placeholder="Buscar comuna..."
                     className="pl-8"
-                    value={communeFilters.search}
-                    onChange={(e) => handleCommuneSearch(e.target.value)}
+                    value={localCommuneSearch}
+                    onChange={(e) => handleCommuneSearchChange(e.target.value)}
                   />
                 </div>
               </div>
@@ -703,27 +739,7 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
                                 <FileEdit className="h-4 w-4 mr-1" />
                                 Editar
                               </Button>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                  >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>
-                                    Ver detalles
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>Exportar</DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem className="text-red-600">
-                                    Eliminar
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              {/* three-dots menu removed per request */}
                             </div>
                           </td>
                         </tr>
@@ -773,8 +789,8 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
                   <Input
                     placeholder="Buscar barrio..."
                     className="pl-8"
-                    value={neighborhoodFilters.search}
-                    onChange={(e) => handleNeighborhoodSearch(e.target.value)}
+                    value={localNeighborhoodSearch}
+                    onChange={(e) => handleNeighborhoodSearchChange(e.target.value)}
                   />
                 </div>
               </div>
@@ -821,7 +837,7 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
                             {neighborhood.id}
                           </td>
                           <td className="px-4 py-3 text-sm">
-                            {neighborhood.commune?.name || "No asignada"}
+                            {neighborhood.communeName || "No asignada"}
                           </td>
                           <td className="px-4 py-3 text-sm font-medium">
                             {neighborhood.name}
@@ -839,27 +855,7 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
                                 <FileEdit className="h-4 w-4 mr-1" />
                                 Editar
                               </Button>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                  >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>
-                                    Ver detalles
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>Exportar</DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem className="text-red-600">
-                                    Eliminar
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              {/* three-dots menu removed per request */}
                             </div>
                           </td>
                         </tr>

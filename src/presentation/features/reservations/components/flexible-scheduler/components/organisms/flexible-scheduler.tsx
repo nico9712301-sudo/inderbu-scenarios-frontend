@@ -19,10 +19,8 @@ import { useURLPersistence } from "../../hooks/use-url-persistence";
 import { DateRangePicker } from "../molecules/date-range-picker";
 import { AdvancedOptions } from "../molecules/advanced-options";
 import { generateTimeSlots } from "../../utils/time-formatters";
-import { Button } from "@/shared/ui/button";
 import { useMemo, useEffect } from "react";
 import { FiLoader } from "react-icons/fi";
-import { Tooltip } from "@/shared/ui/tooltip";
 
 export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerProps) {
   // Hooks de estado

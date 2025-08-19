@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/shared/ui/button";
-import { StatusBadge } from "@/shared/ui/status-badge";
+import { StatusToggleDropdown } from "@/shared/ui/status-toggle-dropdown";
 import { UserPlainObject } from "@/entities/user/domain/UserEntity";
 import { FileEdit } from "lucide-react";
 
@@ -9,16 +9,21 @@ interface ClientsMobileCardProps {
   user: UserPlainObject;
   loading: boolean;
   onEdit: (user: UserPlainObject) => void;
+  onToggleStatus: (user: UserPlainObject) => void;
 }
 
-export function ClientsMobileCard({ user, loading, onEdit }: ClientsMobileCardProps) {
+export function ClientsMobileCard({ user, loading, onEdit, onToggleStatus }: ClientsMobileCardProps) {
   const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
 
   return (
     <div className="border rounded-lg p-4 space-y-2 bg-white hover:bg-gray-50">
       <div className="flex items-center justify-between">
         <div className="font-medium">{fullName}</div>
-        <StatusBadge status={user.active ? "active" : "inactive"} />
+        <StatusToggleDropdown
+          isActive={user.active}
+          onToggle={() => onToggleStatus(user)}
+          disabled={loading}
+        />
       </div>
       <div className="text-sm text-gray-600">
         <div>DNI: {user.dni}</div>

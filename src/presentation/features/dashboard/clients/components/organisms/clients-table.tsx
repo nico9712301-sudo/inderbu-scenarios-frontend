@@ -23,6 +23,7 @@ interface ClientsTableProps {
   onExport: () => Promise<void>;
   onToggleFilters: () => void;
   onEditUser: (user: UserPlainObject) => void;
+  onToggleStatus: (user: UserPlainObject) => void;
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;
 }
@@ -51,6 +52,7 @@ export function ClientsTable({
   onExport,
   onToggleFilters,
   onEditUser,
+  onToggleStatus,
   onPageChange,
   onLimitChange,
 }: ClientsTableProps) {
@@ -111,6 +113,7 @@ export function ClientsTable({
                     user={user}
                     loading={loading}
                     onEdit={onEditUser}
+                    onToggleStatus={onToggleStatus}
                   />
                 ))
               ) : (

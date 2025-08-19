@@ -9,13 +9,15 @@ import { useDashboardPagination } from "@/shared/hooks/use-dashboard-pagination"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { UserPlainObject } from "@/entities/user/domain/UserEntity";
 import { Download, FileEdit, Plus, Search } from "lucide-react";
-import { StatusBadge } from "@/shared/ui/status-badge";
+import { StatusToggleDropdown } from "@/shared/ui/status-toggle-dropdown";
 import { Button } from "@/shared/ui/button";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { useState } from "react";
 import { toast } from "sonner";
+import { EUserRole } from "@/shared/enums/user-role.enum";
+import { ErrorHandlerResult } from "@/shared/api/error-handler";
 
 // Type alias for cleaner code in this component
 type User = UserPlainObject;
@@ -39,11 +41,6 @@ export function AdminUsersPage({ initialData }: AdminUsersPageProps) {
     baseUrl: '/dashboard/options',
     defaultLimit: 10,
   });
-
-  // Local state from initial data
-  const [users] = useState(initialData.users);
-  const [roles] = useState(initialData.roles);
-  const [filterOptions] = useState(initialData.filterOptions);
 
   // Build page meta from initial data
   const pageMeta = buildPageMeta(initialData.meta.totalItems);
@@ -120,10 +117,12 @@ export function AdminUsersPage({ initialData }: AdminUsersPageProps) {
           address: data.address,
           roleId: data.roleId,
           neighborhoodId: data.neighborhoodId,
-          isActive: data.isActive,
+          active: data.active,
         };
 
         const result = await updateUserAction(selectedUser!.id, updateData);
+        console.log("Update result:", result);
+        
         
         if (result.success) {
           toast.success("Administrador actualizado exitosamente");
@@ -142,10 +141,14 @@ export function AdminUsersPage({ initialData }: AdminUsersPageProps) {
           email: data.email!,
           phone: data.phone!,
           address: data.address!,
-          roleId: data.roleId! <= 2 ? data.roleId! : 2, // Default to admin if not super-admin
+          roleId: EUserRole.ADMIN, // Default to admin
           neighborhoodId: data.neighborhoodId!,
-          isActive: data.isActive ?? true,
+          active: data.active ?? true,
+          password: data.password, // Password is required for new users
         };
+
+        console.log("Creating new admin user with data:", createData);
+        
 
         const result = await createUserAction(createData);
         
@@ -161,6 +164,34 @@ export function AdminUsersPage({ initialData }: AdminUsersPageProps) {
     } catch (error: any) {
       console.error("Error saving admin user:", error);
       toast.error("Error al guardar administrador");
+    }
+  };
+
+  const handleToggleStatus = async (user: User) => {
+    if (!user) return;
+
+    try {
+      const newActiveState: boolean = !user.active;
+      
+      const result: ErrorHandlerResult<any> = await updateUserAction(user.id, {
+        active: newActiveState,
+      });
+
+      if (result.success) {
+        router.refresh();
+        toast.success("Estado del administrador actualizado", {
+          description: `${user.firstName} ${user.lastName} ha sido ${newActiveState ? "activado" : "desactivado"}.`,
+        });
+      } else {
+        toast.error("Error al actualizar el estado del administrador", {
+          description: result.error || "Ocurrió un error al cambiar el estado.",
+        });
+      }
+    } catch (error) {
+      console.error("CLIENT: Unexpected toggle error:", error);
+      toast.error("Error al actualizar el estado del administrador", {
+        description: "Ocurrió un error inesperado de conexión.",
+      });
     }
   };
 
@@ -198,7 +229,11 @@ export function AdminUsersPage({ initialData }: AdminUsersPageProps) {
       id: "status",
       header: "Estado",
       cell: (row: User) => (
-        <StatusBadge status={row.isActive ? "active" : "inactive"} />
+        <StatusToggleDropdown
+          isActive={row.active}
+          onToggle={() => handleToggleStatus(row)}
+          disabled={loading}
+        />
       ),
     },
     {
@@ -224,25 +259,9 @@ export function AdminUsersPage({ initialData }: AdminUsersPageProps) {
       <CardHeader className="pb-4">
         {/* Header row with title and actions button */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <CardTitle>Administradores</CardTitle>
-            <Badge variant="outline">{data.length}</Badge>
-          </div>
           
           {/* Action buttons */}
           <div className="flex items-center gap-2">
-            {/* Export button - visible on desktop */}
-            <div className="hidden sm:flex">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleExport}
-                disabled={loading}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Exportar
-              </Button>
-            </div>
             
             {/* Mobile: Show/Hide filters button */}
             <div className="sm:hidden">
@@ -269,51 +288,6 @@ export function AdminUsersPage({ initialData }: AdminUsersPageProps) {
               value={filters.search || ''}
               onChange={(e) => onSearch(e.target.value)}
             />
-          </div>
-
-          {/* Filter selects - responsive grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Select value={filters.roleId?.toString() || 'all'} onValueChange={handleRoleChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por rol" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los roles</SelectItem>
-                {filterOptions.roles.map((role:any) => (
-                  <SelectItem key={role.value} value={role.value}>
-                    {role.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <Select value={filters.isActive?.toString() || 'all'} onValueChange={handleStatusChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {filterOptions.status.map((status: any) => (
-                  <SelectItem key={status.value} value={status.value}>
-                    {status.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Mobile export button */}
-          <div className="sm:hidden">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleExport}
-              disabled={loading}
-              className="w-full"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Exportar Administradores
-            </Button>
           </div>
         </div>
       </CardHeader>
@@ -365,7 +339,11 @@ export function AdminUsersPage({ initialData }: AdminUsersPageProps) {
                     <Badge variant={user.roleId === 1 ? "default" : "secondary"} className="text-xs">
                       {user.roleId === 1 ? "Super Admin" : "Admin"}
                     </Badge>
-                    <StatusBadge status={user.isActive ? "active" : "inactive"} />
+                    <StatusToggleDropdown
+                      isActive={user.active}
+                      onToggle={() => handleToggleStatus(user)}
+                      disabled={loading}
+                    />
                   </div>
                 </div>
                 <div className="text-sm text-gray-600">
@@ -424,11 +402,20 @@ export function AdminUsersPage({ initialData }: AdminUsersPageProps) {
               <Plus className="h-4 w-4 mr-2" />
               Nuevo Administrador
             </Button>
+            <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleExport}
+                disabled={loading}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Exportar
+              </Button>
           </div>
         </div>
 
         {/* Single table view - no tabs */}
-        {renderTable(users, true)}
+        {renderTable(initialData.users, true)}
       </div>
 
       {/* User Drawer - only allow admin roles */}
@@ -437,7 +424,7 @@ export function AdminUsersPage({ initialData }: AdminUsersPageProps) {
         user={selectedUser}
         onClose={() => setIsDrawerOpen(false)}
         onSave={handleSaveDrawer}
-        adminOnly={true} // Pass flag to limit roles to admin only
+        isAdmin={true}
       />
     </>
   );

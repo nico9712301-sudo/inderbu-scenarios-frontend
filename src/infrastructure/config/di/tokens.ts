@@ -17,6 +17,8 @@ export const TOKENS = {
   IUserRepository: 'IUserRepository',
   IRoleRepository: 'IRoleRepository',
   IReservationRepository: 'IReservationRepository',
+  ICommuneRepository: 'ICommuneRepository',
+  ICityRepository: 'ICityRepository',
 
   // =============================================================================
   // USE CASES - SCENARIO (Application Layer)
@@ -44,6 +46,13 @@ export const TOKENS = {
   // USE CASES - FIELD SURFACE TYPE (Application Layer)
   // =============================================================================
   GetFieldSurfaceTypesUseCase: 'GetFieldSurfaceTypesUseCase',
+
+  // =============================================================================
+  // USE CASES - LOCATIONS (Application Layer)
+  // =============================================================================
+  GetCommunesUseCase: 'GetCommunesUseCase',
+  GetCitiesUseCase: 'GetCitiesUseCase',
+  GetLocationsDataUseCase: 'GetLocationsDataUseCase',
 
   // =============================================================================
   // USE CASES - SUB SCENARIO (Application Layer)
@@ -91,6 +100,7 @@ export const TOKENS = {
   GetUserReservationsDataService: 'GetUserReservationsDataService',
   GetClientsDataService: 'GetClientsDataService',
   GetAdminUsersDataService: 'GetAdminUsersDataService',
+  GetLocationsDataService: 'GetLocationsDataService',
 
   // =============================================================================
   // INFRASTRUCTURE SERVICES
