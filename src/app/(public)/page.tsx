@@ -4,8 +4,8 @@ import { IHomeDataResponse } from '@/application/home/services/GetHomeDataServic
 import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
 import { serializeHomeData } from '@/presentation/utils/serialization.utils';
 import { IContainer } from '@/infrastructure/config/di/simple-container';
-import { TOKENS } from '@/infrastructure/config/di/tokens';
 import { homeSlidesService } from '@/shared/api/home-slides';
+import { TOKENS } from '@/infrastructure/config/di/tokens';
 
 interface HomePageProps {
   searchParams: Promise<{
@@ -49,9 +49,38 @@ export default async function HomeRoute(props: HomePageProps) {
       getHomeDataUseCase.execute(filters),
       homeSlidesService.getHomeBanners(), // Server-side call
     ]);
-    
+
+    // DEBUG LOGS - Home page data diagnosis
+    console.log('🏠 HomePage DEBUG - Domain Result:', {
+      subScenariosCount: domainResult.subScenarios.length,
+      firstSubScenarioImageData: domainResult.subScenarios[0] ? {
+        id: domainResult.subScenarios[0].id,
+        name: domainResult.subScenarios[0].name,
+        imageGallery: domainResult.subScenarios[0].imageGallery,
+        featuredImageUrl: domainResult.subScenarios[0].imageGallery?.featured?.url
+      } : null,
+      allSubScenarioImages: domainResult.subScenarios.map(sub => ({
+        id: sub.id,
+        name: sub.name,
+        hasImageGallery: !!sub.imageGallery,
+        hasFeatured: !!sub.imageGallery?.featured,
+        featuredUrl: sub.imageGallery?.featured?.url
+      }))
+    });
+
     // Presentation Layer responsibility: Serialize domain entities for client components
     const serializedResult = serializeHomeData(domainResult);
+
+    // DEBUG LOGS - Serialized result diagnosis
+    console.log('🔄 HomePage DEBUG - Serialized Result:', {
+      subScenariosCount: serializedResult.subScenarios.length,
+      firstSerializedImageData: serializedResult.subScenarios[0] ? {
+        id: serializedResult.subScenarios[0].id,
+        name: serializedResult.subScenarios[0].name,
+        imageGallery: serializedResult.subScenarios[0].imageGallery,
+        featuredImageUrl: serializedResult.subScenarios[0].imageGallery?.featured?.url
+      } : null
+    });
     
     // Render Presentation Layer with serialized data (plain objects)
     return (

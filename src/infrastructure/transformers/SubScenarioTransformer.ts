@@ -64,6 +64,15 @@ function toDomain(
   backendData: SubScenarioBackend | Partial<SubScenarioBackend>,
   options?: { forUpdate?: boolean }
 ): SubScenarioEntity {
+  // DEBUG LOGS - Backend data diagnosis
+  console.log('🔄 SubScenarioTransformer.toDomain DEBUG:', {
+    backendDataKeys: Object.keys(backendData || {}),
+    imageGallery: backendData?.imageGallery,
+    featuredImage: backendData?.imageGallery?.featured,
+    featuredImageUrl: backendData?.imageGallery?.featured?.url,
+    options
+  });
+
   // Basic validation - just ensure it's an object
   if (!backendData || typeof backendData !== "object") {
     throw new Error(`Invalid backend data for SubScenario: not an object`);

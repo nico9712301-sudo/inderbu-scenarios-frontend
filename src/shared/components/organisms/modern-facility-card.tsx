@@ -36,6 +36,17 @@ export function ModernFacilityCard({
   const placeholderImage = usePlaceholderImage();
   const subscenarioImageURL = subScenario.imageGallery?.featured?.url ?? placeholderImage;
 
+  // DEBUG LOGS - Image loading diagnosis
+  console.log('🖼️ ModernFacilityCard DEBUG:', {
+    subScenarioId: id,
+    name,
+    imageGallery: subScenario.imageGallery,
+    featuredImageUrl: subScenario.imageGallery?.featured?.url,
+    finalImageUrl: subscenarioImageURL,
+    isUsingPlaceholder: subscenarioImageURL === placeholderImage,
+    placeholderUrl: placeholderImage
+  });
+
   return (
     <Link href={`/scenario/${id}`} className="block group">
       <Card
