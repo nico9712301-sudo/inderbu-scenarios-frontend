@@ -24,7 +24,8 @@
       "WebFetch(domain:blog.cleancoder.com)",
       "Bash(pnpm start:dev:*)",
       "Bash(mv:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(pnpm build:*)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
