@@ -9,6 +9,7 @@ export class LoginStrategy implements IAuthStrategy<TLoginData> {
 
   async execute(data: TLoginData): Promise<void> {
     await this.authService.login(data);
+    // Solo llamar onSuccess si no se lanzó ningún error
     this.onSuccess();
   }
 

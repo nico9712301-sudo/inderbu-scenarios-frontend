@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 export const useReservationStates = () => {
   const [states, setStates] = useState<ReservationStateDto[]>([]);
-  const [loading, setLoading] = useState(true); // 🔥 CAMBIO: Empezar con loading = true
+  const [loading, setLoading] = useState(true); // CAMBIO: Empezar con loading = true
   const [error, setError] = useState<Error | null>(null);
 
   const fetchStates = async () => {

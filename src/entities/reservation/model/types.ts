@@ -297,12 +297,12 @@ export const getReservationStatusIcon = (state: string) => {
     case "CONFIRMADA":
       return "";
     case "PENDIENTE":
-      return "⏳";
+      return "...";
     case "CANCELADA":
-      return "❌";
+      return "X";
     case "RECHAZADA":
-      return "❌";
+      return "X";
     default:
-      return "📅";
+      return "*";
   }
 };

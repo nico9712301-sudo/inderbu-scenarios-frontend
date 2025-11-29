@@ -65,7 +65,7 @@ function toDomain(
   options?: { forUpdate?: boolean }
 ): SubScenarioEntity {
   // DEBUG LOGS - Backend data diagnosis
-  console.log('🔄 SubScenarioTransformer.toDomain DEBUG:', {
+  console.log('SubScenarioTransformer.toDomain DEBUG:', {
     backendDataKeys: Object.keys(backendData || {}),
     imageGallery: backendData?.imageGallery,
     featuredImage: backendData?.imageGallery?.featured,

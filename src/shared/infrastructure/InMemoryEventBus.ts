@@ -13,7 +13,7 @@ export class InMemoryEventBus implements EventBus {
     const eventName = event.constructor.name;
     const eventHandlers = this.handlers.get(eventName) || [];
     
-    console.log(`📨 Publishing event: ${eventName}`, {
+    console.log(`Publishing event: ${eventName}`, {
       eventId: event.eventId,
       occurredOn: event.occurredOn,
       data: event
@@ -39,7 +39,7 @@ export class InMemoryEventBus implements EventBus {
 
     this.handlers.get(eventName)!.push(handler as (event: DomainEvent) => Promise<void>);
     
-    console.log(`📝 Subscribed to event: ${eventName}`);
+    console.log(`Subscribed to event: ${eventName}`);
   }
 
   private async executeHandler(
@@ -49,9 +49,9 @@ export class InMemoryEventBus implements EventBus {
   ): Promise<void> {
     try {
       await handler(event);
-      console.log(`✅ Event handler executed successfully for: ${eventName}`);
+      console.log(`Event handler executed successfully for: ${eventName}`);
     } catch (error) {
-      console.error(`❌ Event handler failed for: ${eventName}`, error);
+      console.error(`Event handler failed for: ${eventName}`, error);
       // Don't throw - event publishing should not fail if handlers fail
     }
   }
@@ -64,7 +64,7 @@ export class InMemoryEventBus implements EventBus {
 
   clear(): void {
     this.handlers.clear();
-    console.log('🧹 Event bus cleared');
+    console.log('Event bus cleared');
   }
 }
 

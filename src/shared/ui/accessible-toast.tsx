@@ -63,7 +63,7 @@ export function AccessibleToastProvider({ children }: AccessibleToastProviderPro
           <div key={toast.id}>
             {toast.type === 'error' && ''} 
             {toast.type === 'success' && ''}
-            {toast.type === 'info' && 'ℹ️ '}
+            {toast.type === 'info' && 'Info: '}
             {toast.message}
           </div>
         ))}

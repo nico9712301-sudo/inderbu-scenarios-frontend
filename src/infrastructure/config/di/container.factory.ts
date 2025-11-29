@@ -156,7 +156,7 @@ export class ContainerFactory {
    * Create the appropriate container based on environment
    */
   private static createEnvironmentContainer(environment: Environment): IContainer {
-    console.log(` Creating ${environment} container...`);
+    console.log(`Creating ${environment} container...`);
 
     const container = new SimpleContainer();
     
@@ -444,7 +444,7 @@ export class ContainerFactory {
    */
   private static configureDevelopment(container: SimpleContainer): void {
     // Development-specific logging, monitoring, etc.
-    // console.log('🔧 Development environment configured');
+    // console.log('Development environment configured');
   }
 
   /**
@@ -452,7 +452,7 @@ export class ContainerFactory {
    */
   private static configureProduction(container: SimpleContainer): void {
     // Production optimizations
-    console.log('🚀 Production environment configured');
+    console.log('Production environment configured');
   }
 
   /**
@@ -460,7 +460,7 @@ export class ContainerFactory {
    */
   private static configureTesting(container: SimpleContainer): void {
     // Override with mocks for testing
-    console.log('🧪 Testing environment configured with mocks');
+    console.log('Testing environment configured with mocks');
   }
 }
 

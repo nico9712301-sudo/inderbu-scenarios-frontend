@@ -25,7 +25,12 @@
       "Bash(pnpm start:dev:*)",
       "Bash(mv:*)",
       "Bash(curl:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Read(//var/folders/tf/p3dwmh9929x0tkstp0c4nvq00000gp/T/TemporaryItems/NSIRD_screencaptureui_xYW5U5/**)",
+      "Bash(git push:*)",
+      "Read(//Users/npicon/Documents/projects/personal/inderbu/inderbu-scenarios-backend/src/**)",
+      "Read(//Users/npicon/Documents/**)",
+      "Bash(pnpm dev:*)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [

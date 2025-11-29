@@ -32,7 +32,7 @@ export class ApiUserRepository implements UserRepository {
 
   async register(data: TRegisterData): Promise<void> {
     return executeWithDomainError(async () => {
-      const { confirmPassword, ...payload } = data; // ⬅️ remove it here
+      const { confirmPassword, ...payload } = data; // remove confirmPassword here
       await this.httpClient.post<SimpleApiResponse<void>>("/users", payload);
     }, 'Failed to register user');
   }

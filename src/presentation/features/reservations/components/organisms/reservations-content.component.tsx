@@ -42,7 +42,7 @@ export function ReservationsContent({
                 {index === 0 && activeReservations.length === 1 && (
                   <div className="absolute -top-2 -right-2 z-10">
                     <div className="bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full font-medium shadow-lg animate-pulse">
-                      👆 ¡Gestiona aquí!
+                      ¡Gestiona aquí!
                     </div>
                   </div>
                 )}

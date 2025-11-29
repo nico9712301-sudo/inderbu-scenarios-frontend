@@ -45,7 +45,7 @@ export const TimeSelectionGrid = ({
   if (!isLoading && availableSlotIds.length === 0) {
     return (
       <div className="text-center py-6 animate-in fade-in duration-500">
-        <div className="text-6xl mb-4">😔</div>
+        <div className="text-6xl mb-4"></div>
         <p className="text-sm text-red-600 font-medium">
           No hay horarios disponibles para esta fecha
         </p>

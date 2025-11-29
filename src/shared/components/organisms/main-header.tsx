@@ -27,6 +27,14 @@ export function MainHeader() {
     setModalOpen(false); // Solo cerrar modal - el login ya se manejó internamente
   };
 
+  const handleOpenModal = () => {
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
   // Mostrar loading mientras se inicializa la autenticación
   if (!authReady) {
     return (
@@ -184,7 +192,7 @@ export function MainHeader() {
                 variant="outline"
                 className="bg-white text-blue-600 hover:bg-blue-50 border-blue-200 
                          hover:border-blue-300 transition-all duration-200 shadow-sm"
-                onClick={() => setModalOpen(true)}
+                onClick={handleOpenModal}
               >
                 <User className="w-4 h-4 mr-2" />
                 <span>Iniciar Sesión</span>
@@ -280,7 +288,7 @@ export function MainHeader() {
       {/* Modal para Login / Register / Reset */}
       <AuthModal
         isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={handleCloseModal}
         onLoginSuccess={handleLoginSuccess}
       />
     </header>

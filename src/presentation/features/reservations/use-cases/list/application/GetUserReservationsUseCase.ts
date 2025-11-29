@@ -37,7 +37,7 @@ export class GetUserReservationsUseCase {
   async execute(request: GetUserReservationsRequest): Promise<GetUserReservationsResponse> {
     const { targetUserId, requestingUser, pagination = { page: 1, limit: 6 } } = request;
 
-    // 👤 Get current user context if not provided
+    // Get current user context if not provided
     let currentUser = requestingUser;
     if (!currentUser) {
       try {

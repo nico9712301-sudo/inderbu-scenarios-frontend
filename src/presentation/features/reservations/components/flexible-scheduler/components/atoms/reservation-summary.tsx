@@ -23,7 +23,7 @@ export const ReservationSummary = ({
       const weekdayNames = selectedWeekdays.map((w) => 
         WEEKDAYS.find((wd) => wd.value === w)?.label
       ).join(", ");
-      return `${formatDateSafe(dateRange.from)}${dateRange.to ? ` - ${formatDateSafe(dateRange.to)}` : ""} • 📆 ${weekdayNames} • ${selectedSlots.size} horario${selectedSlots.size > 1 ? 's' : ''}`;
+      return `${formatDateSafe(dateRange.from)}${dateRange.to ? ` - ${formatDateSafe(dateRange.to)}` : ""} • ${weekdayNames} • ${selectedSlots.size} horario${selectedSlots.size > 1 ? 's' : ''}`;
     }
     
     return `${formatDateSafe(dateRange.from)}${dateRange.to ? ` - ${formatDateSafe(dateRange.to)}` : ""} • ${selectedSlots.size} horario${selectedSlots.size > 1 ? 's' : ''}`;

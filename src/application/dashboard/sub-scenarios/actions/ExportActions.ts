@@ -71,7 +71,7 @@ export async function checkSubScenarioExportStatusAction(
       estimatedTime: response.estimatedTime || response.data?.estimatedTime,
     };
 
-    console.log('🎯 Constructed sub-scenario job:', JSON.stringify(job, null, 2));
+    console.log('Constructed sub-scenario job:', JSON.stringify(job, null, 2));
 
     return { success: true, job };
   } catch (error: any) {

@@ -91,7 +91,7 @@ const TimeSlotDisplay = ({ reservation }: { reservation: ReservationDto }) => {
 };
 
 /* ------------------------------------------------------------------
-   🪟  ReservationDetailsModal
+   ReservationDetailsModal
 -------------------------------------------------------------------*/
 
 interface ReservationDetailsModalProps {

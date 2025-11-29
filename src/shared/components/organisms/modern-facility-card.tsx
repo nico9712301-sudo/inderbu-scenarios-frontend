@@ -37,7 +37,7 @@ export function ModernFacilityCard({
   const subscenarioImageURL = subScenario.imageGallery?.featured?.url ?? placeholderImage;
 
   // DEBUG LOGS - Image loading diagnosis
-  console.log('🖼️ ModernFacilityCard DEBUG:', {
+  console.log('ModernFacilityCard DEBUG:', {
     subScenarioId: id,
     name,
     imageGallery: subScenario.imageGallery,

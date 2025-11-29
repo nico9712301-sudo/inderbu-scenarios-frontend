@@ -15,7 +15,7 @@ export function WelcomeBanner() {
               </h3>
               <p className="text-gray-700 mb-4 leading-relaxed">
                 Desde aquí puedes <strong>gestionar todas tus reservas</strong> de manera
-                fácil y rápida. 📱 Solo haz clic en el botón azul{" "}
+                fácil y rápida. Solo haz clic en el botón azul{" "}
                 <strong>"Gestionar reserva"</strong> en cualquier tarjeta.
               </p>
 

@@ -51,7 +51,7 @@ export default async function HomeRoute(props: HomePageProps) {
     ]);
 
     // DEBUG LOGS - Home page data diagnosis
-    console.log('🏠 HomePage DEBUG - Domain Result:', {
+    console.log('HomePage DEBUG - Domain Result:', {
       subScenariosCount: domainResult.subScenarios.length,
       firstSubScenarioImageData: domainResult.subScenarios[0] ? {
         id: domainResult.subScenarios[0].id,
@@ -72,7 +72,7 @@ export default async function HomeRoute(props: HomePageProps) {
     const serializedResult = serializeHomeData(domainResult);
 
     // DEBUG LOGS - Serialized result diagnosis
-    console.log('🔄 HomePage DEBUG - Serialized Result:', {
+    console.log('HomePage DEBUG - Serialized Result:', {
       subScenariosCount: serializedResult.subScenarios.length,
       firstSerializedImageData: serializedResult.subScenarios[0] ? {
         id: serializedResult.subScenarios[0].id,
