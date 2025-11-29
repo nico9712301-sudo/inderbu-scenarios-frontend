@@ -8,12 +8,13 @@ import {
   useState,
   useCallback,
 } from "react";
+import { login, register, resetPassword, logout } from "@/infrastructure/web/controllers/auth.actions";
+import { TLoginData, TRegisterData, TResetData } from "../schemas/auth-schemas";
+import { AuthState } from "@/entities/user/model/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { AuthState } from "@/entities/user/model/types";
-import { TLoginData, TRegisterData, TResetData } from "../schemas/auth-schemas";
-import { login, register, resetPassword, logout } from "@/infrastructure/web/controllers/auth.actions";
+
 
 interface AuthContextType extends AuthState {
   // Actions
@@ -142,9 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const result = await register(data);
 
         if (result.success) {
-          toast.success(
-            "Registrado correctamente. Revisa tu correo para confirmar tu cuenta."
-          );
+          // NO mostrar toast aquí - se maneja en AuthModalController
         } else {
           throw new Error(result.error || "Error de registro");
         }
@@ -153,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           error instanceof Error ? error.message : "Error de registro";
         // FIX: Versión funcional
         setAuthState((prev) => ({ ...prev, error: errorMessage }));
-        toast.error(errorMessage);
+        // NO mostrar toast aquí - se maneja en AuthModalController
         throw error;
       }
     },
@@ -170,9 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const result = await resetPassword(data);
 
         if (result.success) {
-          toast.success(
-            "Correo enviado. Revisa tu bandeja para restablecer tu contraseña."
-          );
+          // NO mostrar toast aquí - se maneja en AuthModalController
         } else {
           throw new Error(result.error || "Error al enviar correo");
         }
@@ -181,7 +178,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           error instanceof Error ? error.message : "Error al enviar correo";
         // FIX: Versión funcional
         setAuthState((prev) => ({ ...prev, error: errorMessage }));
-        toast.error(errorMessage);
+        // NO mostrar toast aquí - se maneja en AuthModalController
         throw error;
       }
     },
