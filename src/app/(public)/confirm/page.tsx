@@ -18,6 +18,8 @@ import {
   CardTitle,
 } from "@/shared/ui/card";
 import { ResendConfirmationForm } from "@/presentation/features/confirm-email/components/organisms/resend-confirmation-form";
+import { ServerHttpClientFactory } from "@/shared/api/http-client-server";
+import { ApiError, SimpleApiResponse } from "@/shared/api/types";
 import { Button } from "@/shared/ui/button";
 import React, { Suspense } from "react";
 import Image from "next/image";
@@ -129,24 +131,32 @@ async function TokenVerifier({ token }: { token: string }) {
   let message: string;
 
   try {
-    const res = await fetch(
-      `http://localhost:3001/users/confirm?token=${encodeURIComponent(token)}`,
-      { cache: "no-store" }
+    const httpClient = ServerHttpClientFactory.createServer();
+    const response = await httpClient.get<SimpleApiResponse<{ message?: string }>>(
+      `/users/confirm?token=${encodeURIComponent(token)}`,
+      {
+        next: {
+          revalidate: 0,
+        },
+      }
     );
 
-    if (res.ok) {
-      status = "success";
-      const body = await res.json();
-      message = body.data?.message ?? "¡Cuenta activada con éxito!";
+    status = "success";
+    message = response.data?.message ?? "¡Cuenta activada con éxito!";
+  } catch (error) {
+    if (error && typeof error === "object" && "statusCode" in error) {
+      const apiError = error as ApiError;
+      const errorMessage = Array.isArray(apiError.message)
+        ? apiError.message[0]
+        : apiError.message;
+
+      status = errorMessage === "El token ha expirado" ? "expired" : "invalid";
+      message = errorMessage;
     } else {
-      const err = await res.json();
-      status = err.message === "El token ha expirado" ? "expired" : "invalid";
-      message = err.message;
+      status = "invalid";
+      message =
+        "Error al conectar con el servidor. Por favor, inténtalo de nuevo más tarde.";
     }
-  } catch {
-    status = "invalid";
-    message =
-      "Error al conectar con el servidor. Por favor, inténtalo de nuevo más tarde.";
   }
 
   if (status === "success") {
