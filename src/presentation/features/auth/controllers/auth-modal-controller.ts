@@ -45,9 +45,17 @@ export class AuthModalController {
 
     try {
       await strategy.execute(data);
+      // Solo mostrar toast de éxito si llegamos hasta aquí sin errores
       toast.success(strategy.getSuccessMessage());
-    } catch (error) {
-      toast.error(strategy.getErrorMessage(error));
+    } catch (error: any) {
+      // Si el error tiene fieldErrors, no mostrar toast - el formulario los manejará
+      // Solo mostrar toast para errores generales que no tienen fieldErrors
+      const hasFieldErrors = error && typeof error === 'object' && 'fieldErrors' in error;
+
+      if (!hasFieldErrors) {
+        toast.error(strategy.getErrorMessage(error));
+      }
+
       throw error;
     }
   }

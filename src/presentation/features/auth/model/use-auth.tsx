@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // OPTIMIZADO: Login con useCallback y función directa
   const handleLogin = useCallback(
     async (credentials: TLoginData): Promise<void> => {
-      setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
+      //setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       try {
         // CORRECTO: Usar función directa (sin FormData)
@@ -103,23 +103,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             isLoading: false,
             error: null,
           }));
-
-          toast.success("¡Bienvenido! Inicio de sesión correcto");
-
-          // NO MÁS router.refresh() - revalidatePath lo maneja automáticamente
         } else {
+          // Si hay fieldErrors, crear un error especial que el formulario puede manejar
+          if (result.fieldErrors && Object.keys(result.fieldErrors).length > 0) {
+            const fieldError = new Error(result.error || "Error de autenticación");
+            (fieldError as any).fieldErrors = result.fieldErrors;
+            throw fieldError;
+          }
           throw new Error(result.error || "Error de autenticación");
         }
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "Error de autenticación";
-        // FIX: Versión funcional
+
+          console.log('error', error);
+
+        // FIX: Only update error, don't change isLoading since we're not managing it here
         setAuthState((prev) => ({
           ...prev,
           error: errorMessage,
-          isLoading: false,
         }));
-        toast.error(errorMessage);
+
+        // NO mostrar toast aquí - se maneja en AuthModalController
+
         throw error;
       }
     },

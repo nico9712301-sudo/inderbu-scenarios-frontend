@@ -1,6 +1,7 @@
 'use server';
 
 import { createUserRepository } from '@/infrastructure/repositories/auth/auth-user-repository.adapter';
+import { AuthUserDomainError } from '@/infrastructure/repositories/auth/execute-with-domain-error.wrapper';
 import { extractUserFromToken } from '@/entities/user/model/types';
 import {
   loginSchema,
@@ -97,8 +98,7 @@ export async function loginAction(
 
     console.log(`User logged in successfully: ${user.email}`);
 
-    // REVALIDATE: Auto-actualizar UI
-    revalidatePath('/');
+    // REVALIDATE: Only dashboard needs server-side refresh, not root path
     revalidatePath('/dashboard');
 
     return {
@@ -241,8 +241,7 @@ export async function logoutAction(): Promise<AuthResult> {
 
     console.log('User logged out successfully');
 
-    // REVALIDATE
-    revalidatePath('/');
+    // REVALIDATE: Only auth pages need refresh, not root path
     revalidatePath('/auth');
 
     return {
@@ -262,6 +261,7 @@ export async function logoutAction(): Promise<AuthResult> {
 // FUNCIÓN DIRECTA: Sin FormData, para uso programático
 export async function login(credentials: TLoginData): Promise<AuthResult> {
   try {
+    
     const validatedCredentials = loginSchema.parse(credentials);
 
     const httpClient = ClientHttpClientFactory.createClient();
@@ -294,8 +294,7 @@ export async function login(credentials: TLoginData): Promise<AuthResult> {
       });
     }
 
-    // REVALIDATE
-    revalidatePath('/');
+    // REVALIDATE: Only dashboard needs server-side refresh, not root path
     revalidatePath('/dashboard');
 
     return {
@@ -310,6 +309,28 @@ export async function login(credentials: TLoginData): Promise<AuthResult> {
         success: false,
         error: 'Datos de entrada inválidos',
         fieldErrors: getFieldErrors(error),
+      };
+    }
+
+    // Detectar errores de autenticación del backend y mostrarlos en el campo password
+    if (error instanceof AuthUserDomainError) {
+      const backendMessage = error.originalMessage || error.message;
+      
+      // Errores de autenticación (401, 403) se muestran en el campo password
+      if (error.code === '401' || error.code === '403') {
+        return {
+          success: false,
+          error: backendMessage,
+          fieldErrors: {
+            password: [backendMessage]
+          }
+        };
+      }
+      
+      // Otros errores del dominio
+      return {
+        success: false,
+        error: backendMessage,
       };
     }
 

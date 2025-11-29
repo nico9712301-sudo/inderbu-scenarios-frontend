@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -25,9 +25,9 @@ interface AuthModalProps {
 export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
   const [currentMode, setCurrentMode] = useState<AuthMode>("login");
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [hasError, setHasError] = useState(false);
   const authService = useAuth();
-  
+
   // FIX: Memorizar modalController con deps estables
   const modalController: IModalController = useMemo(
     () => ({
@@ -57,14 +57,26 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
   const createFormHandler = useCallback(
     <TData,>(mode: AuthMode): IFormHandler<TData> => ({
       async onSubmit(data: TData) {
+
         setIsLoading(true);
+        setHasError(false);
         try {
           await controller.executeStrategy(mode, data);
-          
+
+          // Resetear error en caso de éxito
+          setHasError(false);
+
           // Post-procesamiento específico por modo
           if (mode === "register" || mode === "reset") {
             setCurrentMode("login");
           }
+        } catch (error: any) {
+          // CRÍTICO: Usar setState funcional para asegurar que el estado persista
+          setHasError(prev => true);
+
+          // IMPORTANTE: Re-lanzar el error para que login-form.tsx pueda capturarlo
+          // login-form.tsx necesita recibir el error con fieldErrors para mostrarlo en el campo
+          throw error;
         } finally {
           setIsLoading(false);
         }
@@ -74,17 +86,31 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
     [controller, isLoading] // deps reales
   );
 
+  // SIMPLICADO: Lógica directa sin race conditions
+  const shouldStayOpen = isLoading || hasError;
+
+  const handleDialogOpenChange = useCallback((open: boolean) => {
+    if (!open && !shouldStayOpen) {
+      // Solo cerrar si no hay operaciones ni errores
+      setHasError(false);
+      onClose();
+    } else if (open) {
+      setHasError(false);
+    }
+    // Si hay operaciones o errores, simplemente ignorar el intento de cierre
+  }, [onClose, shouldStayOpen]);
+
   const formConfig = AuthFormFactory.createForm(currentMode);
   const FormComponent = formConfig.component;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="sm:max-w-md bg-white">
         <DialogHeader>
           <DialogTitle>{formConfig.title}</DialogTitle>
           <DialogDescription>{formConfig.description}</DialogDescription>
         </DialogHeader>
-        
+
         <FormComponent
           {...createFormHandler(currentMode)}
           navigation={navigation}

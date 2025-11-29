@@ -29,11 +29,34 @@ export function LoginForm({ onSubmit, isLoading, navigation }: LoginFormProps) {
   const { isSubmitting } = form.formState;
   const loading = isLoading || isSubmitting;
 
+  // Wrapper para manejar fieldErrors del servidor
+  const handleSubmit = async (data: TLoginData) => {
+    try {
+      await onSubmit(data);
+    } catch (error: any) {
+      // Si el error tiene fieldErrors, mostrarlos en los campos correspondientes
+      if (error?.fieldErrors && typeof error.fieldErrors === 'object') {
+        Object.entries(error.fieldErrors).forEach(([field, messages]) => {
+          const fieldName = field as keyof TLoginData;
+          const errorMessages = Array.isArray(messages) ? messages : [String(messages)];
+          form.setError(fieldName, {
+            type: 'server',
+            message: errorMessages[0] || 'Error de validación'
+          });
+        });
+        return;
+      }
+
+      // Solo re-lanzar errores que no tienen fieldErrors (errores generales)
+      throw error;
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <AuthFormField 
-          label="Correo electrónico" 
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <AuthFormField
+          label="Correo electrónico"
           error={form.formState.errors.email?.message}
           required
         >
@@ -45,8 +68,8 @@ export function LoginForm({ onSubmit, isLoading, navigation }: LoginFormProps) {
           />
         </AuthFormField>
 
-        <AuthFormField 
-          label="Contraseña" 
+        <AuthFormField
+          label="Contraseña"
           error={form.formState.errors.password?.message}
           required
         >
@@ -57,9 +80,9 @@ export function LoginForm({ onSubmit, isLoading, navigation }: LoginFormProps) {
           />
         </AuthFormField>
 
-        <FormNavigation 
-          mode={navigation.currentMode} 
-          onModeChange={navigation.onModeChange} 
+        <FormNavigation
+          mode={navigation.currentMode}
+          onModeChange={navigation.onModeChange}
         />
 
         <SubmitButton isLoading={loading}>
