@@ -103,6 +103,12 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
   const formConfig = AuthFormFactory.createForm(currentMode);
   const FormComponent = formConfig.component;
 
+  // Memorizar el handler para evitar problemas de serialización
+  const formHandler = useMemo(
+    () => createFormHandler(currentMode),
+    [createFormHandler, currentMode]
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="sm:max-w-md bg-white">
@@ -112,7 +118,7 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
         </DialogHeader>
 
         <FormComponent
-          {...createFormHandler(currentMode)}
+          {...formHandler}
           navigation={navigation}
         />
       </DialogContent>

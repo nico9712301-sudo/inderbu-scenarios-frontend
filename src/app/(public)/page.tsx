@@ -7,6 +7,9 @@ import { IContainer } from '@/infrastructure/config/di/simple-container';
 import { homeSlidesService } from '@/shared/api/home-slides';
 import { TOKENS } from '@/infrastructure/config/di/tokens';
 
+// Evitar prerenderización estática debido a componentes cliente con funciones
+export const revalidate = 0;
+
 interface HomePageProps {
   searchParams: Promise<{
     page?: string;

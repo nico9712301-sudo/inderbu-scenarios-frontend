@@ -1,7 +1,10 @@
+"use client";
+
 import { SiFacebook, SiInstagram, SiYoutube } from "react-icons/si";
 import { Mail, MapPin, Phone, Twitter, Clock, Hash, Building } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { IconContainer } from "../molecules/icon-container";
 
 export default function Footer() {
   const socialLinks = [
@@ -68,24 +71,24 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-gradient-to-br from-gray-50 to-white border-t border-gray-100 mt-16">
+    <footer className="bg-gradient-to-br from-muted to-background border-t border-border mt-16">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-8">
           {/* Logo and description */}
           <div className="space-y-4">
             <div className="w-52">
               <Image
-                src="https://inderbu.gov.co/wp-content/uploads/2024/07/LOGO-3.png"
+                src="/LOGO-3.png"
                 alt="INDERBU"
                 width={240}
                 height={80}
                 className="object-contain"
               />
             </div>
-            <p className="text-gray-600 text-sm leading-relaxed">
+            <p className="text-muted-foreground text-sm leading-relaxed">
               Instituto de la Juventud, el Deporte y la Recreación de Bucaramanga.
             </p>
-            <p className="text-gray-600 text-sm leading-relaxed">
+            <p className="text-muted-foreground text-sm leading-relaxed">
               Nuestra misión es liderar, facilitar y ejecutar, el derecho a la
               práctica del deporte, la recreación, la educación física y el
               aprovechamiento del tiempo libre, además genera procesos de
@@ -95,16 +98,14 @@ export default function Footer() {
 
           {/* Contact info */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-800 text-lg">Información de Contacto</h3>
+            <h3 className="font-semibold text-foreground text-lg">Información de Contacto</h3>
             <div className="space-y-3">
               {contactInfo.map(({ icon: Icon, text, label }) => (
                 <div key={label} className="flex items-start gap-3">
-                  <div className="bg-blue-50 p-2 rounded-lg flex-shrink-0">
-                    <Icon className="w-4 h-4 text-blue-600" />
-                  </div>
+                  <IconContainer Icon={Icon} variant="primary" size="md" />
                   <div>
-                    <p className="text-xs text-gray-500 font-medium">{label}</p>
-                    <p className="text-sm text-gray-700">{text}</p>
+                    <p className="text-xs text-muted-foreground font-medium">{label}</p>
+                    <p className="text-sm text-foreground">{text}</p>
                   </div>
                 </div>
               ))}
@@ -113,16 +114,14 @@ export default function Footer() {
 
           {/* Email contacts */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-800 text-lg">Correos Electrónicos</h3>
+            <h3 className="font-semibold text-foreground text-lg">Correos Electrónicos</h3>
             <div className="space-y-3">
               {emailContacts.map(({ icon: Icon, text, label }) => (
                 <div key={label} className="flex items-start gap-3">
-                  <div className="bg-blue-50 p-2 rounded-lg flex-shrink-0">
-                    <Icon className="w-4 h-4 text-blue-600" />
-                  </div>
+                  <IconContainer Icon={Icon} variant="primary" size="md" />
                   <div>
-                    <p className="text-xs text-gray-500 font-medium">{label}</p>
-                    <p className="text-sm text-gray-700 break-all">{text}</p>
+                    <p className="text-xs text-muted-foreground font-medium">{label}</p>
+                    <p className="text-sm text-foreground break-all">{text}</p>
                   </div>
                 </div>
               ))}
@@ -131,7 +130,7 @@ export default function Footer() {
 
           {/* Social media and quick links */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-800 text-lg">Síguenos</h3>
+            <h3 className="font-semibold text-foreground text-lg">Síguenos</h3>
             <div className="space-y-3">
               {socialLinks.map(({ name, Icon, href, handle }) => (
                 <Link
@@ -140,59 +139,35 @@ export default function Footer() {
                   aria-label={name}
                   className="flex items-center gap-3 group"
                 >
-                  <div className="flex items-center justify-center w-10 h-10 rounded-xl
-                               bg-white border border-gray-200 text-gray-600 
-                               group-hover:bg-blue-50 group-hover:text-blue-600 
-                               group-hover:border-blue-200 group-hover:shadow-sm
-                               transition-all duration-200 flex-shrink-0">
-                    <Icon size={18} />
-                  </div>
+                  <IconContainer Icon={Icon} variant="social" size="md" />
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                    <span className="text-sm font-medium text-foreground group-hover:text-primary-600 transition-colors">
                       {name}
                     </span>
                     {handle && (
-                      <span className="text-xs text-gray-500">{handle}</span>
+                      <span className="text-xs text-muted-foreground">{handle}</span>
                     )}
                   </div>
                 </Link>
               ))}
             </div>
-
-            {/* Quick links */}
-            <div className="space-y-2 pt-4">
-              <h4 className="font-medium text-gray-800 text-sm">
-                Enlaces rápidos
-              </h4>
-              <div className="flex flex-col gap-1">
-                {quickLinks.map(({ href, text }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
-                  >
-                    {text}
-                  </Link>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
 
         {/* Legal links section */}
-        <div className="py-6 border-t border-gray-100">
-          <h4 className="font-medium text-gray-800 text-sm mb-3">Políticas y Documentos Legales</h4>
+        <div className="py-6 border-t border-border">
+          <h4 className="font-medium text-foreground text-sm mb-3">Políticas y Documentos Legales</h4>
           <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
             {legalLinks.map(({ href, text }, index) => (
               <div key={href} className="flex items-center">
                 <Link
                   href={href}
-                  className="text-gray-600 hover:text-blue-600 transition-colors"
+                  className="text-muted-foreground hover:text-primary-600 transition-colors"
                 >
                   {text}
                 </Link>
                 {index < legalLinks.length - 1 && (
-                  <div className="w-px h-4 bg-gray-300 ml-4"></div>
+                  <div className="w-px h-4 bg-border ml-4"></div>
                 )}
               </div>
             ))}
@@ -200,8 +175,8 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="pt-6 border-t border-gray-100">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+        <div className="pt-6 border-t border-border">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
             <div className="text-center md:text-left">
               <p>Todos los derechos reservados Gobierno de Colombia</p>
               <p>© Copyright {new Date().getFullYear()} INDERBU</p>
@@ -209,7 +184,7 @@ export default function Footer() {
             <div className="flex items-center gap-4">
               <Link
                 href="/cookies"
-                className="hover:text-gray-700 transition-colors"
+                className="hover:text-foreground transition-colors"
               >
                 Cookies
               </Link>
