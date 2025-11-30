@@ -37,20 +37,14 @@ export function ScenarioDetailPage({ initialData, availabilityData, searchParams
         <div className="mb-6 p-4 bg-white rounded-lg border">
           <h3 className="text-lg font-semibold mb-2">Disponibilidad</h3>
           <p className="text-sm text-gray-600 mb-2">
-            Consultando para: {availabilityData.requestedConfiguration.initialDate}
+            Consultando disponibilidad para: {availabilityData.requestedConfiguration.initialDate}
             {availabilityData.requestedConfiguration.finalDate && 
               ` al ${availabilityData.requestedConfiguration.finalDate}`}
           </p>
           <p className="text-sm">
-            Slots disponibles: {availabilityData.stats.availableSlots} de {availabilityData.stats.totalSlots} 
+            Franjas horarias disponibles: {availabilityData.stats.availableSlots} de {availabilityData.stats.totalSlots} {" "}
             ({availabilityData.stats.globalAvailabilityPercentage}% disponible)
           </p>
-          <div className="mt-2">
-            <p className="text-xs text-gray-500">
-              Slots encontrados: {availabilityData.timeSlots.length} | 
-              Disponibles en todas las fechas: {availabilityData.timeSlots.filter(slot => slot.isAvailableInAllDates).length}
-            </p>
-          </div>
         </div>
 
         {/* Main Content - Existing ScenarioDetail Component */}

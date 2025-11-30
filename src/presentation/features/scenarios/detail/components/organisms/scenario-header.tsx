@@ -29,7 +29,7 @@ export function ScenarioHeader({
         <ScenarioBreadcrumb backUrl={backUrl} backText={backText} />
 
         {/* Scenario Title */}
-        <h1 className="text-3xl md:text-4xl font-bold text-teal-600">
+        <h1 className="text-3xl md:text-4xl font-bold text-primary-600">
           {scenarioName}
         </h1>
 

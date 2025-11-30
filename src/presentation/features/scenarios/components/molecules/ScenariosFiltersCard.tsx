@@ -146,7 +146,7 @@ export const ScenariosFiltersCard = ({
                     placeholder="Ej: Polideportivo, Cancha Central..."
                     value={localSearchValue}
                     onChange={(e) => handleSearchChange(e.target.value)}
-                    className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 bg-gray-50/50 hover:bg-white"
+                    className="pl-10 border-gray-300 focus:border-primary-500 focus:ring-primary-500/20 transition-all duration-200 bg-gray-50/50 hover:bg-white"
                   />
                 </div>
               </div>
@@ -181,11 +181,11 @@ export const ScenariosFiltersCard = ({
                     <Badge
                       key={chip}
                       variant="secondary"
-                      className="bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer transition-all duration-200 group px-3 py-1"
+                      className="bg-primary-50 text-primary-700 hover:bg-primary-100 cursor-pointer transition-all duration-200 group px-3 py-1"
                       onClick={() => removeChip(chip)}
                     >
                       {display}
-                      <X className="w-3 h-3 ml-1 group-hover:text-blue-900" />
+                      <X className="w-3 h-3 ml-1 group-hover:text-primary-900" />
                     </Badge>
                   );
                 })}

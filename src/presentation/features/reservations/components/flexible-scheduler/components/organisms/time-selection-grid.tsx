@@ -36,8 +36,8 @@ export const TimeSelectionGrid = ({
   if (isLoading) {
     return (
       <div className="text-center py-4 animate-pulse">
-        <FiLoader className="h-6 w-6 animate-spin mx-auto text-blue-500 mb-2" />
-        <p className="text-sm text-blue-600">Consultando disponibilidad...</p>
+        <FiLoader className="h-6 w-6 animate-spin mx-auto text-primary-500 mb-2" />
+        <p className="text-sm text-primary-600">Consultando disponibilidad...</p>
       </div>
     );
   }

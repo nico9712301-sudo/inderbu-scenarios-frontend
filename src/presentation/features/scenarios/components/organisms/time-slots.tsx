@@ -60,7 +60,7 @@ export function TimeSlots({
     return (
       <div className="h-32 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
         <div className="flex flex-col items-center gap-2">
-          <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+          <Loader2 className="h-6 w-6 animate-spin text-primary-600" />
           <p className="text-sm text-gray-600">Cargando horarios...</p>
         </div>
       </div>
@@ -94,7 +94,7 @@ export function TimeSlots({
       <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
             <span className="text-gray-600">
               {availableSlots.length} disponibles
             </span>
@@ -133,13 +133,13 @@ export function TimeSlots({
                   transform hover:scale-[1.02] active:scale-[0.98]
                   ${
                     isSelected
-                      ? "bg-blue-600 text-white shadow-md hover:bg-blue-700"
+                      ? "bg-primary-600 text-white shadow-md hover:bg-primary-700"
                       : ""
                   }
                   ${
                     isBooked
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60 hover:scale-100"
-                      : "hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 hover:shadow-sm"
+                      : "hover:bg-primary-50 hover:text-primary-700 hover:border-primary-300 hover:shadow-sm"
                   }
                 `}
                 onClick={() => onSelectTimeSlot(isSelected ? null : slot.id)}
@@ -174,7 +174,7 @@ export function TimeSlots({
         {timeSlots.length > 6 && (
           <div className="absolute -right-1 top-2 bottom-2 w-1 bg-gray-100 rounded-full overflow-hidden">
             <div
-              className="w-full bg-blue-400 rounded-full transition-all duration-300"
+              className="w-full bg-primary-400 rounded-full transition-all duration-300"
               style={{
                 height: `${Math.min(100, (6 / timeSlots.length) * 100)}%`,
               }}

@@ -148,7 +148,7 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
             <CalendarIcon className="h-5 w-5" />
             Reserva tu horario
             {isLoadingAvailability && (
-              <FiLoader className="h-4 w-4 animate-spin text-blue-500" />
+              <FiLoader className="h-4 w-4 animate-spin text-primary-500" />
             )}
             
           </CardTitle>

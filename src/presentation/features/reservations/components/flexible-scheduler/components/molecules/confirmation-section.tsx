@@ -27,16 +27,13 @@ export const ConfirmationSection = ({
 
       <div className="relative">
         {selectedCount > 0 && !isSubmitting && (
-          <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 rounded-lg blur-xl opacity-20 -z-10 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-primary-500 rounded-lg blur-xl opacity-20 -z-10 pointer-events-none" />
         )}
 
         <Button
-          className={`relative w-full font-semibold py-4 text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl z-10 ${
-            selectedCount > 0
-              ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg"
-              : "bg-gray-300 text-gray-600"
-          }`}
+          variant="default"
           size="lg"
+          className="relative w-full font-semibold py-4 text-lg transition-all duration-300 hover:shadow-xl z-10"
           onClick={onSubmit}
           disabled={selectedCount === 0 || isSubmitting || isLoading}
         >

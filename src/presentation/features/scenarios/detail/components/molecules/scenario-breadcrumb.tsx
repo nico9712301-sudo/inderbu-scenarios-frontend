@@ -19,7 +19,7 @@ export function ScenarioBreadcrumb({
   return (
     <Link
       href={backUrl}
-      className="inline-flex items-center text-teal-600 hover:text-teal-700 text-sm mb-2"
+      className="inline-flex items-center text-primary-600 hover:text-primary-700 text-sm mb-2"
     >
       <FiChevronLeft className="h-4 w-4 mr-1" />
       {backText}

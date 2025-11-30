@@ -30,16 +30,16 @@ export const ReservationSummary = ({
   };
 
   return (
-    <div className="p-6 border-2 border-green-200 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 animate-in slide-in-from-bottom duration-500">
+    <div className="p-6 border-2 border-primary-200 rounded-lg bg-gradient-to-br from-primary-50 to-primary-100 animate-in slide-in-from-bottom duration-500">
       <div className="flex items-center gap-2 mb-4">
-        <Star className="h-6 w-6 text-green-600" />
-        <Label className="font-bold text-green-800 text-lg">
+        <Star className="h-6 w-6 text-primary-600" />
+        <Label className="font-bold text-primary-800 text-lg">
           ¡Tu reserva está casi lista!
         </Label>
       </div>
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <p className="text-sm text-green-700 mb-2">
+          <p className="text-sm text-primary-700 mb-2">
             <strong>Resumen:</strong> {getReservationText()}
           </p>
         </div>
@@ -48,7 +48,7 @@ export const ReservationSummary = ({
             <Badge
               key={hour}
               variant="secondary"
-              className="text-xs bg-green-100 text-green-700 border-green-300 animate-in zoom-in duration-300"
+              className="text-xs bg-primary-100 text-primary-700 border-primary-300 animate-in zoom-in duration-300"
             >
               {formatHourHuman(hour)}
             </Badge>

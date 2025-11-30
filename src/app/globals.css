@@ -8,10 +8,27 @@
   --card-foreground: 222.2 84% 4.9%;
   --popover: 0 0% 100%;
   --popover-foreground: 222.2 84% 4.9%;
-  --primary: 103, 100%, 36%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
+  /* INDERBU Brand Colors */
+  --primary: 103, 100%, 36%; /* Verde INDERBU #00B84A */
+  --primary-foreground: 0 0% 100%; /* Blanco para texto sobre verde */
+  --primary-50: 103, 100%, 96%; /* Verde muy claro para fondos */
+  --primary-100: 103, 100%, 90%; /* Verde claro para hover suave */
+  --primary-200: 103, 100%, 80%; /* Verde claro para bordes */
+  --primary-300: 103, 100%, 70%; /* Verde medio claro */
+  --primary-400: 103, 100%, 50%; /* Verde medio */
+  --primary-500: 103, 100%, 40%; /* Verde */
+  --primary-600: 103, 100%, 36%; /* Verde INDERBU principal */
+  --primary-700: 103, 100%, 30%; /* Verde oscuro para hover */
+  --primary-800: 103, 100%, 25%; /* Verde muy oscuro */
+  --primary-900: 103, 100%, 20%; /* Verde extremadamente oscuro */
+  /* Azul Institucional Gobierno */
+  --secondary: 217, 91%, 60%; /* Azul institucional #2563EB */
+  --secondary-foreground: 0 0% 100%; /* Blanco para texto sobre azul */
+  --secondary-50: 217, 91%, 96%; /* Azul muy claro */
+  --secondary-100: 217, 91%, 90%; /* Azul claro */
+  --secondary-200: 217, 91%, 80%; /* Azul medio claro */
+  --secondary-600: 217, 91%, 60%; /* Azul institucional */
+  --secondary-700: 217, 91%, 50%; /* Azul oscuro */
   --complementary: 291 91% 83%;
   --muted: 210 40% 96.1%;
   --muted-foreground: 215.4 16.3% 46.9%;

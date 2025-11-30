@@ -18,7 +18,7 @@ export const DateRangePicker = ({
             ¿Cuándo quieres reservar?
           </Label>
           {dateRange.from && (
-            <Badge variant="secondary" className="bg-green-100 text-green-700">
+            <Badge variant="secondary" className="bg-primary-100 text-primary-700">
               {formatDateSafe(dateRange.from)}
             </Badge>
           )}
@@ -39,7 +39,7 @@ export const DateRangePicker = ({
             Fecha de inicio
           </Label>
           {dateRange.from && (
-            <Badge variant="secondary" className="bg-green-100 text-green-700">
+            <Badge variant="secondary" className="bg-primary-100 text-primary-700">
               {formatDateSafe(dateRange.from)}
             </Badge>
           )}
@@ -55,12 +55,12 @@ export const DateRangePicker = ({
             Fecha de finalización
           </Label>
           {!dateRange.from && (
-            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+            <Badge variant="outline" className="bg-muted text-muted-foreground border-muted">
               Selecciona fecha de inicio primero
             </Badge>
           )}
           {dateRange.from && dateRange.to && (
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+            <Badge variant="secondary" className="bg-secondary-100 text-secondary-700">
               {formatDateSafe(dateRange.to)}
             </Badge>
           )}

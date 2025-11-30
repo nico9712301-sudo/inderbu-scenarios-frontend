@@ -8,7 +8,7 @@ interface Props {
 }
 
 export const ScenarioImageCarousel = ({ imagesGallery }: Props) => (
-  <div className="relative bg-teal-500 rounded-lg overflow-hidden h-[300px]">
+  <div className="relative bg-primary-600 rounded-lg overflow-hidden h-[300px]">
     <SimpleCarousel imagesGallery={imagesGallery} />
   </div>
 );

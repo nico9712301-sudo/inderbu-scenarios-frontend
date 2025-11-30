@@ -101,14 +101,14 @@ export function ReservationPanel({ subScenarioId }: IReservationPanelProps) {
 
           <section>
             <h3 className="text-lg font-medium flex items-center gap-2">
-              <FiCalendar className="text-teal-600" /> Selecciona una fecha
+              <FiCalendar className="text-primary-600" /> Selecciona una fecha
             </h3>
             <SimpleCalendar selectedDate={date} onDateChange={setDate} />
           </section>
 
           <section className="mt-4">
             <h3 className="text-lg font-medium flex items-center gap-2 pb-2">
-              <FiClock className="text-teal-600" /> Horarios disponibles
+              <FiClock className="text-primary-600" /> Horarios disponibles
             </h3>
             <TimeSlots
               subScenarioId={subScenarioId}
@@ -120,7 +120,7 @@ export function ReservationPanel({ subScenarioId }: IReservationPanelProps) {
           </section>
 
           <Button
-            className="w-full mt-6 bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center gap-2"
+            className="w-full mt-6 bg-primary-600 hover:bg-primary-700 text-white flex items-center justify-center gap-2"
             onClick={onSubmit}
             disabled={!selectedTimeSlotId || isSubmitting}
           >

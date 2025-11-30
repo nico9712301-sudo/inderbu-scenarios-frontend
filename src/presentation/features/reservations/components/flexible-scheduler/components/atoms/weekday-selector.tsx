@@ -16,7 +16,7 @@ export const WeekdaySelector = ({ selectedWeekdays, onWeekdayToggle }: WeekdaySe
             size="sm"
             className={`h-12 flex flex-col transition-all duration-200 hover:scale-105 ${
               selectedWeekdays.includes(weekday.value)
-                ? "bg-blue-100 text-blue-700 border-blue-300"
+                ? "bg-primary-100 text-primary-700 border-primary-300"
                 : "hover:bg-muted"
             }`}
             onClick={() => onWeekdayToggle(weekday.value)}
@@ -32,7 +32,7 @@ export const WeekdaySelector = ({ selectedWeekdays, onWeekdayToggle }: WeekdaySe
           <Label>Días seleccionados:</Label>
           <div className="flex flex-wrap gap-2 mt-2">
             {selectedWeekdays.map((weekday) => (
-              <Badge key={weekday} variant="secondary" className="bg-blue-100 text-blue-700 animate-in zoom-in duration-300">
+              <Badge key={weekday} variant="secondary" className="bg-primary-100 text-primary-700 animate-in zoom-in duration-300">
                 {WEEKDAYS.find((w) => w.value === weekday)?.label}
               </Badge>
             ))}
