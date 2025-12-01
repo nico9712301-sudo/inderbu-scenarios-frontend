@@ -30,7 +30,13 @@
       "Bash(git push:*)",
       "Read(//Users/npicon/Documents/projects/personal/inderbu/inderbu-scenarios-backend/src/**)",
       "Read(//Users/npicon/Documents/**)",
-      "Bash(pnpm dev:*)"
+      "Bash(pnpm dev:*)",
+      "Bash(npm run storybook:*)",
+      "WebFetch(domain:stackoverflow.com)",
+      "Bash(pnpm update:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm view:*)",
+      "Bash(pnpm install:*)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [

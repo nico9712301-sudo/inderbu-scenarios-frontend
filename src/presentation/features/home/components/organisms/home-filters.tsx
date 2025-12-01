@@ -129,10 +129,10 @@ export default function HomeFilters({
         </h2>
       </div>
 
-      {/* Fila principal */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+      {/* PRUEBA: Layout Vertical para Sidebar */}
+      <div className="space-y-6">
         {/* Search */}
-        <div className="md:col-span-4">
+        <div>
           <label className="text-sm font-medium text-foreground mb-2 block">
             Buscar por nombre
           </label>
@@ -148,7 +148,7 @@ export default function HomeFilters({
         </div>
 
         {/* Área deportiva */}
-        <div className="md:col-span-3">
+        <div>
           <label className="text-sm font-medium text-foreground mb-2 block">
             Área deportiva
           </label>
@@ -165,7 +165,7 @@ export default function HomeFilters({
         </div>
 
         {/* Barrio */}
-        <div className="md:col-span-2">
+        <div>
           <label className="text-sm font-medium text-foreground mb-2 block">
             Barrio
           </label>
@@ -182,7 +182,7 @@ export default function HomeFilters({
         </div>
 
         {/* Costo */}
-        <div className="md:col-span-2">
+        <div>
           <label className="text-sm font-medium text-foreground mb-2 block">
             Costo
           </label>
@@ -211,17 +211,15 @@ export default function HomeFilters({
         </div>
 
         {/* Botón limpiar */}
-        <div className="md:col-span-1">
-          {activeFilters.length > 0 && (
-            <Button
-              variant="outline"
-              onClick={clearFilters}
-              className="w-full border-border text-foreground hover:bg-muted transition-all duration-200"
-            >
-              Limpiar
-            </Button>
-          )}
-        </div>
+        {activeFilters.length > 0 && (
+          <Button
+            variant="outline"
+            onClick={clearFilters}
+            className="w-full border-border text-foreground hover:bg-muted transition-all duration-200"
+          >
+            Limpiar filtros
+          </Button>
+        )}
       </div>
 
       {/* Chips */}

@@ -72,20 +72,18 @@ export function HomePage({ initialData, slides }: HomePageProps) {
     }
 
     return (
-      <>
-        <div className="mt-12">
-          <FacilityGrid
-            subScenarios={subScenarios}
-            onClearFilters={clearFilters}
-          />
-        </div>
+      <div className="space-y-8">
+        <FacilityGrid
+          subScenarios={subScenarios}
+          onClearFilters={clearFilters}
+        />
 
         <Pagination
           currentPage={page}
           totalPages={meta.totalPages}
           onPageChange={setPage}
         />
-      </>
+      </div>
     );
   }, [
     loading,
@@ -106,22 +104,31 @@ export function HomePage({ initialData, slides }: HomePageProps) {
       <MainHeader />
       <HeroSection slides={slides} />
 
-      {/* Main Content Container */}
-      <div className="container mx-auto px-4 py-12 flex-grow">
-        
-        {/* Filters Organism */}
-        <HomeFilters
-          activityAreas={initialData.activityAreas as IActivityArea[]}
-          neighborhoods={initialData.neighborhoods as INeighborhood[]}
-          filters={filters}
-          setFilters={setFilters}
-          activeFilters={activeFilters}
-          setActiveFilters={setActiveFilters}
-          clearFilters={clearFilters}
-        />
+      {/* Main Content Container - PRUEBA: Layout sin container, de borde a borde */}
+      <div className="py-12 flex-grow">
+        <div className="flex flex-col lg:flex-row ">
 
-        {/* Dynamic Content Section */}
-        {contentSection}
+          {/* Sidebar Izquierdo - Filtros en Vertical */}
+          <aside className="lg:w-1/4 lg:min-w-[300px] px-4">
+            <div className="lg:sticky lg:top-24">
+              <HomeFilters
+                activityAreas={initialData.activityAreas as IActivityArea[]}
+                neighborhoods={initialData.neighborhoods as INeighborhood[]}
+                filters={filters}
+                setFilters={setFilters}
+                activeFilters={activeFilters}
+                setActiveFilters={setActiveFilters}
+                clearFilters={clearFilters}
+              />
+            </div>
+          </aside>
+
+          {/* Contenido Principal - Escenarios a la Derecha */}
+          <main className="lg:flex-1 px-4">
+            {contentSection}
+          </main>
+
+        </div>
       </div>
 
     </main>

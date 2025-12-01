@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/shared/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 
 interface PaginationProps {
@@ -73,7 +74,8 @@ export function Pagination({
                    transition-all duration-200 rounded-lg"
           onClick={() => onPageChange(currentPage - 1)}
         >
-          ← Anterior
+          <ChevronLeft className="h-4 w-4" />
+          Anterior
         </Button>
 
         <div className="flex items-center gap-1">
@@ -83,10 +85,10 @@ export function Pagination({
                 key={index}
                 variant={currentPage === page ? "default" : "ghost"}
                 size="sm"
-                className={`w-10 h-10 p-0 rounded-lg transition-all duration-200 ${
+                className={`w-10 h-10 p-0 rounded-lg transition-all duration-200 cursor-pointer ${
                   currentPage === page
                     ? "bg-primary hover:bg-primary-700 text-primary-foreground shadow-sm"
-                    : "text-foreground hover:bg-muted"
+                    : "text-foreground hover:bg-muted "
                 }`}
                 onClick={() => onPageChange(page)}
               >
@@ -106,10 +108,10 @@ export function Pagination({
           disabled={currentPage === totalPages}
           className="px-4 py-2 border-border text-foreground hover:bg-muted 
                    disabled:opacity-50 disabled:cursor-not-allowed 
-                   transition-all duration-200 rounded-lg"
+                   transition-all duration-200 rounded-lg cursor-pointer"
           onClick={() => onPageChange(currentPage + 1)}
         >
-          Siguiente →
+          Siguiente <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
     </div>
