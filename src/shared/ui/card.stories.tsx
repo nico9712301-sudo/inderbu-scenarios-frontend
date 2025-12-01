@@ -10,7 +10,7 @@ import {
 import { Button } from './button';
 
 const meta: Meta<typeof Card> = {
-  title: 'UI/Card',
+  title: 'DESIGN SYSTEM/Card',
   component: Card,
   parameters: {
     layout: 'centered',

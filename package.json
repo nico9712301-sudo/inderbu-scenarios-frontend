@@ -81,12 +81,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@storybook/addon-essentials": "8.6.14",
-    "@storybook/addon-interactions": "8.6.14",
-    "@storybook/addon-links": "8.6.14",
     "@storybook/nextjs": "9.1.16",
-    "@storybook/react": "8.6.14",
-    "@storybook/test": "8.6.14",
     "@tailwindcss/postcss": "^4.1.4",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/lodash": "^4.17.16",

@@ -3,9 +3,10 @@ import type { StorybookConfig } from '@storybook/nextjs';
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   addons: [
-    '@storybook/addon-essentials',
-    '@storybook/addon-interactions',
-    '@storybook/addon-links',
+    // Temporarily disabled until compatible 9.x addons are available
+    // '@storybook/addon-essentials',
+    // '@storybook/addon-interactions',
+    // '@storybook/addon-links',
   ],
   framework: {
     name: '@storybook/nextjs',

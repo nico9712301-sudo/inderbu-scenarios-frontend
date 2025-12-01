@@ -11,7 +11,7 @@ import {
 import { Button } from './button';
 
 const meta: Meta<typeof Dialog> = {
-  title: 'UI/Dialog',
+  title: 'DESIGN SYSTEM/Dialog',
   component: Dialog,
   parameters: {
     layout: 'centered',

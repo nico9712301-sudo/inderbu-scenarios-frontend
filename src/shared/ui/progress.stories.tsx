@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Button } from './button';
 
 const meta: Meta<typeof Progress> = {
-  title: 'UI/Progress',
+  title: 'DESIGN SYSTEM/Progress',
   component: Progress,
   parameters: {
     layout: 'centered',

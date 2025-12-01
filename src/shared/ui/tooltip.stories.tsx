@@ -9,7 +9,7 @@ import { Button } from './button';
 import { Info } from 'lucide-react';
 
 const meta: Meta<typeof Tooltip> = {
-  title: 'UI/Tooltip',
+  title: 'DESIGN SYSTEM/Tooltip',
   component: Tooltip,
   parameters: {
     layout: 'centered',

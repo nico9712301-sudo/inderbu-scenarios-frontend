@@ -19,7 +19,7 @@ import { Button } from './button';
 import { Mail, MessageSquare, Plus, Settings, User } from 'lucide-react';
 
 const meta: Meta<typeof DropdownMenu> = {
-  title: 'UI/DropdownMenu',
+  title: 'DESIGN SYSTEM/DropdownMenu',
   component: DropdownMenu,
   parameters: {
     layout: 'centered',

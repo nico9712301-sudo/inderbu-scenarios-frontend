@@ -36,7 +36,10 @@
       "Bash(pnpm update:*)",
       "Bash(pnpm add:*)",
       "Bash(pnpm view:*)",
-      "Bash(pnpm install:*)"
+      "Bash(pnpm install:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(npx storybook:*)",
+      "Bash(pnpm dedupe:*)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [

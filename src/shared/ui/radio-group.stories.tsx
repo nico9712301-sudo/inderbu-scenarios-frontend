@@ -3,7 +3,7 @@ import { RadioGroup, RadioGroupItem } from './radio-group';
 import { Label } from './label';
 
 const meta: Meta<typeof RadioGroup> = {
-  title: 'UI/RadioGroup',
+  title: 'DESIGN SYSTEM/RadioGroup',
   component: RadioGroup,
   parameters: {
     layout: 'centered',

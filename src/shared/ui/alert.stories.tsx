@@ -3,7 +3,7 @@ import { Alert, AlertDescription, AlertTitle } from './alert';
 import { AlertCircle, CheckCircle2, Info, XCircle } from 'lucide-react';
 
 const meta: Meta<typeof Alert> = {
-  title: 'UI/Alert',
+  title: 'DESIGN SYSTEM/Alert',
   component: Alert,
   parameters: {
     layout: 'centered',

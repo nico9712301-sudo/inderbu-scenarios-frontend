@@ -29,12 +29,14 @@ const preview: Preview = {
     },
   },
   decorators: [
-    (Story) => (
-      <Providers>
-        <div className="p-4">
-          <Story />
-        </div>
-      </Providers>
+    (Story) => React.createElement(
+      Providers,
+      null,
+      React.createElement(
+        'div',
+        { className: 'p-4' },
+        React.createElement(Story)
+      )
     ),
   ],
 };

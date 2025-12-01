@@ -8,7 +8,7 @@ import {
 } from './select';
 
 const meta: Meta<typeof Select> = {
-  title: 'UI/Select',
+  title: 'DESIGN SYSTEM/Select',
   component: Select,
   parameters: {
     layout: 'centered',
