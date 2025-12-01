@@ -71,7 +71,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-gradient-to-br from-muted to-background border-t border-border mt-16">
+    <footer className="bg-gradient-to-br from-muted to-background border-t border-border mt-12">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-8">
           {/* Logo and description */}

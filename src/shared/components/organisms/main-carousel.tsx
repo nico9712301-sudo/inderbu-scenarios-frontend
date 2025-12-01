@@ -107,8 +107,8 @@ export function MainCarousel({ slides }: MainCarouselProps) {
           })}
         </CarouselContent>
         <div className="absolute inset-0 flex justify-between items-center px-4 z-20">
-          <CarouselPrevious className="!left-0 !translate-x-0" />
-          <CarouselNext className="!right-0 !translate-x-0" />
+          <CarouselPrevious className="!left-4 !translate-x-0" />
+          <CarouselNext className="!right-4 !translate-x-0" />
         </div>
       </Carousel>
     </div>

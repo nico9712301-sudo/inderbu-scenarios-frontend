@@ -56,7 +56,7 @@ export function Pagination({
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 py-8">
+    <div className="flex flex-col items-center gap-4 pt-8 pb-0">
 
       {/* Navigation */}
       <div className="flex items-center justify-center gap-2">

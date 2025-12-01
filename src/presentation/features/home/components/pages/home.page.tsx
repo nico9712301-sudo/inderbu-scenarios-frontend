@@ -72,7 +72,7 @@ export function HomePage({ initialData, slides }: HomePageProps) {
     }
 
     return (
-      <div className="space-y-8">
+      <div className="space-y-8 pb-0">
         <FacilityGrid
           subScenarios={subScenarios}
           onClearFilters={clearFilters}
@@ -105,7 +105,7 @@ export function HomePage({ initialData, slides }: HomePageProps) {
       <HeroSection slides={slides} />
 
       {/* Main Content Container - PRUEBA: Layout sin container, de borde a borde */}
-      <div className="py-12 flex-grow">
+      <div className="pt-12 pb-0 flex-grow">
         <div className="flex flex-col lg:flex-row ">
 
           {/* Sidebar Izquierdo - Filtros en Vertical */}
