@@ -7,11 +7,12 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/shared/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
+import { normalizeImageUrl } from "@/shared/utils/image-url.utils";
 import { HomeSlide } from "@/shared/api/home-slides";
+import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
-import Link from "next/link";
 import * as React from "react";
+
 
 interface MainCarouselProps {
   slides: HomeSlide[];
@@ -33,7 +34,7 @@ export function MainCarousel({ slides }: MainCarouselProps) {
             <CarouselItem key={slide.id} className="p-0">
               <div className="relative w-full h-96">
                 <Image
-                  src={slide.imageUrl.includes("http") ? slide.imageUrl : `http://localhost:3001${slide.imageUrl}`}
+                  src={normalizeImageUrl(slide.imageUrl)}
                   alt={slide.title}
                   fill
                   sizes="100vw"

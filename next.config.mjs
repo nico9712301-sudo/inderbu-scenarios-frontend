@@ -13,6 +13,26 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'inderbu.gov.co',
+        pathname: '/wp-content/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'inderbu-scenarios-backend.vercel.app',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3001',
+        pathname: '/**',
+      },
+    ],
+  },
   experimental: {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
