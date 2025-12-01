@@ -39,16 +39,16 @@ export function MainHeader() {
   if (!authReady) {
     return (
       <header className="sticky top-0 z-50 shadow-sm">
-        <div className="bg-blue-600 text-white">
+        <div className="bg-secondary-600 text-secondary-foreground">
           <div className="container mx-auto px-4 flex items-center justify-between py-2">
-            <div className="h-5 w-24 bg-blue-500 rounded animate-pulse"></div>
-            <div className="h-5 w-32 bg-blue-500 rounded animate-pulse"></div>
+            <div className="h-5 w-24 bg-secondary-500 rounded animate-pulse"></div>
+            <div className="h-5 w-32 bg-secondary-500 rounded animate-pulse"></div>
           </div>
         </div>
-        <div className="bg-white border-b border-gray-100">
+        <div className="bg-background border-b border-border">
           <div className="container mx-auto px-4 flex items-center justify-between py-4">
-            <div className="h-16 w-64 bg-gray-200 rounded animate-pulse"></div>
-            <div className="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-16 w-64 bg-muted rounded animate-pulse"></div>
+            <div className="h-10 w-32 bg-muted rounded animate-pulse"></div>
           </div>
         </div>
       </header>
@@ -58,7 +58,7 @@ export function MainHeader() {
   return (
     <header className="sticky top-0 z-50 shadow-sm">
       {/* Top bar with gov.co - fondo azul */}
-      <div className="bg-blue-600 text-white">
+      <div className="bg-primary text-secondary-foreground">
         <div className="container mx-auto px-4 flex items-center justify-between py-2">
           <Link
             href="https://www.gov.co"
@@ -78,7 +78,7 @@ export function MainHeader() {
           <PermissionGuard requiredPermission="canViewAdminPanel">
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 text-white hover:text-blue-200 text-sm transition-colors"
+              className="flex items-center gap-2 text-secondary-foreground hover:text-secondary-200 text-sm transition-colors"
             >
               <Settings className="w-4 h-4" />
               Panel de Control
@@ -88,11 +88,11 @@ export function MainHeader() {
       </div>
 
       {/* Main navigation*/}
-      <div className="bg-white border-b border-gray-100">
+      <div className="bg-background border-b border-border">
         <div className="container mx-auto px-4 flex items-center justify-between py-4">
           <Link href="/" className="flex items-center">
             <Image
-              src="https://inderbu.gov.co/wp-content/uploads/2024/07/LOGO-3.png"
+              src="/LOGO-3.png"
               alt="INDERBU"
               width={280}
               height={65}
@@ -109,14 +109,14 @@ export function MainHeader() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="hidden md:flex items-center gap-2 border-blue-200 text-blue-700 
-                             hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
+                    className="hidden md:flex items-center gap-2 border-secondary-200 text-secondary-700 
+                             hover:bg-secondary-50 hover:border-secondary-300 transition-all duration-200"
                     asChild
                   >
                     <Link href={`/reservations/${user?.id}`}>
                       <BookIcon className="w-4 h-4" />
                       <span>Mis Reservas</span>
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full ml-1"></div>
+                      <div className="w-1.5 h-1.5 bg-secondary-600 rounded-full ml-1"></div>
                     </Link>
                   </Button>
                 </PermissionGuard>
@@ -127,12 +127,12 @@ export function MainHeader() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="flex items-center gap-2 text-gray-700 hover:text-blue-600 
-                               hover:bg-blue-50 transition-all duration-200 rounded-lg px-3"
+                      className="flex items-center gap-2 text-foreground hover:text-secondary-600 
+                               hover:bg-secondary-50 transition-all duration-200 rounded-lg px-3"
                     >
                       <div
-                        className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 
-                                  rounded-full flex items-center justify-center text-white text-sm font-medium"
+                        className="w-8 h-8 bg-gradient-to-br from-secondary-500 to-secondary-600 
+                                  rounded-full flex items-center justify-center text-secondary-foreground text-sm font-medium"
                       >
                         {user?.email?.[0]?.toUpperCase()}
                       </div>
@@ -143,14 +143,14 @@ export function MainHeader() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="bg-white text-black shadow-lg border border-gray-200 rounded-lg"
+                    className="bg-popover text-popover-foreground shadow-lg border border-border rounded-lg"
                   >
                     {/* User Info */}
-                    <div className="px-3 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900">
+                    <div className="px-3 py-2 border-b border-border">
+                      <p className="text-sm font-medium text-popover-foreground">
                         {user?.email}
                       </p>
-                      <p className="text-xs text-gray-500">Cuenta activa</p>
+                      <p className="text-xs text-muted-foreground">Cuenta activa</p>
                     </div>
 
                     {/* Reservations - Mobile only */}
@@ -159,7 +159,7 @@ export function MainHeader() {
                         href={`/reservations/${user?.id}`}
                         className="md:hidden"
                       >
-                        <DropdownMenuItem className="cursor-pointer hover:bg-blue-50 text-blue-600">
+                        <DropdownMenuItem className="cursor-pointer hover:bg-secondary-50 text-secondary-600">
                           <BookIcon className="mr-2 h-4 w-4" />
                           Mis Reservas
                         </DropdownMenuItem>
@@ -169,7 +169,7 @@ export function MainHeader() {
                     {/* Dashboard Access */}
                     <PermissionGuard requiredPermission="canViewAdminPanel">
                       <Link href="/dashboard">
-                        <DropdownMenuItem className="cursor-pointer hover:bg-purple-50 text-purple-600">
+                        <DropdownMenuItem className="cursor-pointer hover:bg-accent text-accent-foreground">
                           <Settings className="mr-2 h-4 w-4" />
                           Panel de Control
                         </DropdownMenuItem>
@@ -179,7 +179,7 @@ export function MainHeader() {
                     {/* Logout */}
                     <DropdownMenuItem
                       onClick={logout}
-                      className="cursor-pointer text-red-600 hover:bg-red-50"
+                      className="cursor-pointer text-destructive hover:bg-destructive/10"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       Cerrar Sesión
@@ -190,8 +190,8 @@ export function MainHeader() {
             ) : (
               <Button
                 variant="outline"
-                className="bg-white text-blue-600 hover:bg-blue-50 border-blue-200 
-                         hover:border-blue-300 transition-all duration-200 shadow-sm"
+                className="bg-background text-secondary-600 hover:bg-secondary-50 border-secondary-200 
+                         hover:border-secondary-300 transition-all duration-200 shadow-sm"
                 onClick={handleOpenModal}
               >
                 <User className="w-4 h-4 mr-2" />
@@ -217,11 +217,11 @@ export function MainHeader() {
 
         {/* Mobile menu */}
         {isMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-100">
+          <div className="md:hidden bg-background border-t border-border">
             <div className="container mx-auto px-4 py-4 space-y-3">
               {!isAuthenticated ? (
                 <Button
-                  className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                  className="w-full bg-secondary-600 text-secondary-foreground hover:bg-secondary-700"
                   onClick={() => {
                     /* TODO: Implement login modal */
                     setIsMenuOpen(false);
@@ -236,7 +236,7 @@ export function MainHeader() {
                   <PermissionGuard requiredPermission="canViewReservations">
                     <Button
                       variant="outline"
-                      className="w-full border-blue-200 text-blue-700 hover:bg-blue-50"
+                      className="w-full border-secondary-200 text-secondary-700 hover:bg-secondary-50"
                       asChild
                     >
                       <Link
@@ -253,7 +253,7 @@ export function MainHeader() {
                   <PermissionGuard requiredPermission="canViewAdminPanel">
                     <Button
                       variant="outline"
-                      className="w-full border-purple-200 text-purple-700 hover:bg-purple-50"
+                      className="w-full border-accent text-accent-foreground hover:bg-accent"
                       asChild
                     >
                       <Link
@@ -269,7 +269,7 @@ export function MainHeader() {
                   {/* Logout */}
                   <Button
                     variant="outline"
-                    className="w-full border-red-200 text-red-600 hover:bg-red-50"
+                    className="w-full border-destructive/20 text-destructive hover:bg-destructive/10"
                     onClick={() => {
                       logout();
                       setIsMenuOpen(false);

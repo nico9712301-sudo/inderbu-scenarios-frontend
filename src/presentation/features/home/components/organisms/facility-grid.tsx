@@ -35,7 +35,7 @@ export const FacilityGrid: FC<FacilityGridProps> = ({
         {[...Array(6)].map((_, i) => (
           <div
             key={`skeleton-${i}`}
-            className="bg-gradient-to-br from-gray-100 to-gray-50 rounded-xl h-80 animate-pulse shadow-sm border border-gray-100"
+            className="bg-gradient-to-br from-muted to-muted/50 rounded-xl h-80 animate-pulse shadow-sm border border-border"
             style={{ animationDelay: `${i * 100}ms` }}
           />
         ))}
@@ -47,9 +47,9 @@ export const FacilityGrid: FC<FacilityGridProps> = ({
   if (subScenarios.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4">
-        <div className="bg-gradient-to-br from-gray-100 to-gray-50 rounded-full p-6 mb-6">
+        <div className="bg-gradient-to-br from-muted to-muted/50 rounded-full p-6 mb-6">
           <svg
-            className="w-12 h-12 text-gray-400"
+            className="w-12 h-12 text-muted-foreground"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             fill="none"
@@ -61,15 +61,15 @@ export const FacilityGrid: FC<FacilityGridProps> = ({
           </svg>
         </div>
 
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+        <h3 className="text-xl font-semibold text-foreground mb-2">
           No encontramos escenarios
         </h3>
-        <p className="text-center text-gray-600 mb-6 max-w-md leading-relaxed">
+        <p className="text-center text-muted-foreground mb-6 max-w-md leading-relaxed">
           {emptyMessage}
         </p>
         {onClearFilters && (
           <button
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+            className="px-6 py-3 bg-primary-600 text-primary-foreground rounded-lg hover:bg-primary-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
             onClick={onClearFilters}
           >
             Reiniciar filtros

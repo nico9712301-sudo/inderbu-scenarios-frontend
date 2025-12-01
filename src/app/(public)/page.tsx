@@ -73,17 +73,6 @@ export default async function HomeRoute(props: HomePageProps) {
 
     // Presentation Layer responsibility: Serialize domain entities for client components
     const serializedResult = serializeHomeData(domainResult);
-
-    // DEBUG LOGS - Serialized result diagnosis
-    console.log('HomePage DEBUG - Serialized Result:', {
-      subScenariosCount: serializedResult.subScenarios.length,
-      firstSerializedImageData: serializedResult.subScenarios[0] ? {
-        id: serializedResult.subScenarios[0].id,
-        name: serializedResult.subScenarios[0].name,
-        imageGallery: serializedResult.subScenarios[0].imageGallery,
-        featuredImageUrl: serializedResult.subScenarios[0].imageGallery?.featured?.url
-      } : null
-    });
     
     // Render Presentation Layer with serialized data (plain objects)
     return (

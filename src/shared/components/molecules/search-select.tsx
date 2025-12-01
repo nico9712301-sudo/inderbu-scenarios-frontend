@@ -192,13 +192,13 @@ export function SearchSelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={`justify-between border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 
-                     bg-gray-50/50 hover:bg-white transition-all duration-200 ${className}`}
+          className={`justify-between border-border focus:border-primary focus:ring-primary/20 
+                     bg-muted/50 hover:bg-background transition-all duration-200 ${className}`}
         >
           <div className="flex items-center">
-            {Icon && <Icon className="w-4 h-4 mr-2 text-gray-400" />}
+            {Icon && <Icon className="w-4 h-4 mr-2 text-muted-foreground" />}
             <span
-              className={selectedOption ? "text-gray-900" : "text-gray-500"}
+              className={selectedOption ? "text-foreground" : "text-muted-foreground"}
             >
               {selectedOption ? selectedOption.name : placeholder}
             </span>
@@ -207,9 +207,9 @@ export function SearchSelect({
             {selectedOption && (
               <div
                 onClick={handleClear}
-                className="hover:bg-gray-100 rounded p-1 transition-colors"
+                className="hover:bg-muted rounded p-1 transition-colors"
               >
-                <X className="h-3 w-3 text-gray-400 hover:text-gray-600" />
+                <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
               </div>
             )}
             <ChevronDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
@@ -222,12 +222,12 @@ export function SearchSelect({
       >
         <div className="p-2">
           <div className="relative">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder={searchPlaceholder || placeholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+              className="pl-8 border-border focus:border-primary focus:ring-primary/20"
               autoComplete="off"
               autoCorrect="off"
               autoCapitalize="off"
@@ -241,11 +241,11 @@ export function SearchSelect({
         <div className="max-h-64 overflow-auto">
           {loading ? (
             <div className="flex items-center justify-center py-6">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-              <span className="ml-2 text-sm text-gray-600">Buscando...</span>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
+              <span className="ml-2 text-sm text-muted-foreground">Buscando...</span>
             </div>
           ) : options.length === 0 ? (
-            <div className="py-6 text-center text-sm text-gray-500">
+            <div className="py-6 text-center text-sm text-muted-foreground">
               {emptyMessage}
             </div>
           ) : (
@@ -254,8 +254,8 @@ export function SearchSelect({
                 <div
                   key={option.id}
                   className={`flex items-center justify-between px-3 py-2 text-sm cursor-pointer 
-                             hover:bg-blue-50 hover:text-blue-700 transition-colors
-                             ${selectedOption?.id === option.id ? "bg-blue-50 text-blue-700" : ""}`}
+                             hover:bg-secondary-50 hover:text-secondary-700 transition-colors
+                             ${selectedOption?.id === option.id ? "bg-secondary-50 text-secondary-700" : ""}`}
                   onClick={() => handleSelect(option)}
                 >
                   <span>{option.name}</span>

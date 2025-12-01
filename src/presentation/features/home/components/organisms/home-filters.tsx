@@ -120,11 +120,11 @@ export default function HomeFilters({
 
   /* ─────────── Render ─────────── */
   return (
-    <div className="bg-white rounded-xl border border-gray-200/60 p-6 shadow-sm backdrop-blur-sm">
+    <div className="bg-card rounded-xl border border-border p-6 shadow-sm backdrop-blur-sm">
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
-        <Filter className="w-5 h-5 text-gray-600" />
-        <h2 className="text-lg font-semibold text-gray-800">
+        <Filter className="w-5 h-5 text-muted-foreground" />
+        <h2 className="text-lg font-semibold text-card-foreground">
           Filtrar escenarios
         </h2>
       </div>
@@ -133,23 +133,23 @@ export default function HomeFilters({
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
         {/* Search */}
         <div className="md:col-span-4">
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
+          <label className="text-sm font-medium text-foreground mb-2 block">
             Buscar por nombre
           </label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder="Ej: Polideportivo, Cancha..."
               value={filters.searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 bg-gray-50/50 hover:bg-white"
+              className="pl-10 border-border focus:border-primary focus:ring-primary/20 transition-all duration-200 bg-muted/50 hover:bg-background"
             />
           </div>
         </div>
 
         {/* Área deportiva */}
         <div className="md:col-span-3">
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
+          <label className="text-sm font-medium text-foreground mb-2 block">
             Área deportiva
           </label>
           <SearchSelect
@@ -166,7 +166,7 @@ export default function HomeFilters({
 
         {/* Barrio */}
         <div className="md:col-span-2">
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
+          <label className="text-sm font-medium text-foreground mb-2 block">
             Barrio
           </label>
           <SearchSelect
@@ -183,7 +183,7 @@ export default function HomeFilters({
 
         {/* Costo */}
         <div className="md:col-span-2">
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
+          <label className="text-sm font-medium text-foreground mb-2 block">
             Costo
           </label>
           <Select
@@ -196,9 +196,9 @@ export default function HomeFilters({
             }
             onValueChange={handleCostChange}
           >
-            <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-gray-50/50 hover:bg-white transition-all duration-200">
+            <SelectTrigger className="border-border focus:border-primary focus:ring-primary/20 bg-muted/50 hover:bg-background transition-all duration-200">
               <div className="flex items-center">
-                <DollarSign className="w-4 h-4 mr-2 text-gray-400" />
+                <DollarSign className="w-4 h-4 mr-2 text-muted-foreground" />
                 <SelectValue placeholder="Todos" />
               </div>
             </SelectTrigger>
@@ -216,7 +216,7 @@ export default function HomeFilters({
             <Button
               variant="outline"
               onClick={clearFilters}
-              className="w-full border-gray-300 text-gray-600 hover:bg-gray-50 transition-all duration-200"
+              className="w-full border-border text-foreground hover:bg-muted transition-all duration-200"
             >
               Limpiar
             </Button>
@@ -226,19 +226,19 @@ export default function HomeFilters({
 
       {/* Chips */}
       {activeFilters.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mt-6 pt-4 border-t border-gray-100">
-          <span className="text-sm text-gray-500 mr-2">Filtros activos:</span>
+        <div className="flex flex-wrap items-center gap-2 mt-6 pt-4 border-t border-border">
+          <span className="text-sm text-muted-foreground mr-2">Filtros activos:</span>
           {activeFilters.map((chip) => {
             const [, , display] = chip.split(":");
             return (
               <Badge
                 key={chip}
                 variant="secondary"
-                className="bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer transition-all duration-200 group px-3 py-1"
+                className="bg-secondary-50 text-secondary-700 hover:bg-secondary-100 cursor-pointer transition-all duration-200 group px-3 py-1"
                 onClick={() => removeChip(chip)}
               >
                 {display}
-                <X className="w-3 h-3 ml-1 group-hover:text-blue-900" />
+                <X className="w-3 h-3 ml-1 group-hover:text-secondary-900" />
               </Badge>
             );
           })}

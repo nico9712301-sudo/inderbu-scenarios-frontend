@@ -154,26 +154,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Legal links section */}
-        <div className="py-6 border-t border-border">
-          <h4 className="font-medium text-foreground text-sm mb-3">Políticas y Documentos Legales</h4>
-          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
-            {legalLinks.map(({ href, text }, index) => (
-              <div key={href} className="flex items-center">
-                <Link
-                  href={href}
-                  className="text-muted-foreground hover:text-primary-600 transition-colors"
-                >
-                  {text}
-                </Link>
-                {index < legalLinks.length - 1 && (
-                  <div className="w-px h-4 bg-border ml-4"></div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Bottom bar */}
         <div className="pt-6 border-t border-border">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">

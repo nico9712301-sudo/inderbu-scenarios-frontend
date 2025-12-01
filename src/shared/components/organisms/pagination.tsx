@@ -57,7 +57,7 @@ export function Pagination({
   return (
     <div className="flex flex-col items-center gap-4 py-8">
       {/* Page info */}
-      <div className="text-sm text-gray-600">
+      <div className="text-sm text-muted-foreground">
         Página <span className="font-medium">{currentPage}</span> de{" "}
         <span className="font-medium">{totalPages}</span>
       </div>
@@ -68,7 +68,7 @@ export function Pagination({
           variant="outline"
           size="sm"
           disabled={currentPage === 1}
-          className="px-4 py-2 border-gray-200 text-gray-600 hover:bg-gray-50 
+          className="px-4 py-2 border-border text-foreground hover:bg-muted 
                    disabled:opacity-50 disabled:cursor-not-allowed 
                    transition-all duration-200 rounded-lg"
           onClick={() => onPageChange(currentPage - 1)}
@@ -85,15 +85,15 @@ export function Pagination({
                 size="sm"
                 className={`w-10 h-10 p-0 rounded-lg transition-all duration-200 ${
                   currentPage === page
-                    ? "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-                    : "text-gray-600 hover:bg-gray-100"
+                    ? "bg-primary hover:bg-primary-700 text-primary-foreground shadow-sm"
+                    : "text-foreground hover:bg-muted"
                 }`}
                 onClick={() => onPageChange(page)}
               >
                 {page}
               </Button>
             ) : (
-              <span key={index} className="px-2 text-gray-400 text-sm">
+              <span key={index} className="px-2 text-muted-foreground text-sm">
                 ⋯
               </span>
             ),
@@ -104,7 +104,7 @@ export function Pagination({
           variant="outline"
           size="sm"
           disabled={currentPage === totalPages}
-          className="px-4 py-2 border-gray-200 text-gray-600 hover:bg-gray-50 
+          className="px-4 py-2 border-border text-foreground hover:bg-muted 
                    disabled:opacity-50 disabled:cursor-not-allowed 
                    transition-all duration-200 rounded-lg"
           onClick={() => onPageChange(currentPage + 1)}

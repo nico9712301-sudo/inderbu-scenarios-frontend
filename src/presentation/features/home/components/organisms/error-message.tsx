@@ -6,11 +6,11 @@ export function ErrorMessage({
   onRetry: () => void;
 }) {
   return (
-    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-6">
       <div className="flex items-center">
         <div className="flex-shrink-0">
           <svg
-            className="h-5 w-5 text-red-400"
+            className="h-5 w-5 text-destructive"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -22,12 +22,12 @@ export function ErrorMessage({
           </svg>
         </div>
         <div className="ml-3">
-          <p className="text-sm text-red-800">{error}</p>
+          <p className="text-sm text-destructive-foreground">{error}</p>
         </div>
         <div className="ml-auto pl-3">
           <button
             onClick={onRetry}
-            className="text-sm text-red-600 hover:text-red-500 font-medium transition-colors"
+            className="text-sm text-destructive hover:text-destructive/80 font-medium transition-colors"
           >
             Reintentar
           </button>

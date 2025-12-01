@@ -51,7 +51,7 @@ export function ModernFacilityCard({
     <Link href={`/scenario/${id}`} className="block group">
       <Card
         className="h-full overflow-hidden border-0 shadow-sm hover:shadow-xl 
-                     transition-all duration-300 group-hover:-translate-y-2 bg-white 
+                     transition-all duration-300 group-hover:-translate-y-2 bg-card 
                      rounded-xl backdrop-blur-sm"
       >
         {/* Image */}
@@ -90,7 +90,7 @@ export function ModernFacilityCard({
           <div className="absolute top-3 left-3 z-20">
             <Badge
               variant="outline"
-              className="bg-white/90 text-gray-700 border-white/50 
+              className="bg-background/90 text-foreground border-border/50 
                                               backdrop-blur-sm shadow-sm"
             >
               {activityArea.name}
@@ -104,7 +104,7 @@ export function ModernFacilityCard({
           >
             <h3
               className="font-semibold text-lg mb-1 line-clamp-2 text-white 
-                         group-hover:text-blue-200 transition-colors"
+                         group-hover:text-secondary-200 transition-colors"
             >
               {name}
             </h3>
@@ -121,31 +121,31 @@ export function ModernFacilityCard({
           <div className="flex items-center justify-between mb-3">
             <Badge
               variant="outline"
-              className="text-xs bg-gray-50 text-gray-600 border-gray-200"
+              className="text-xs bg-muted text-muted-foreground border-border"
             >
               {fieldSurfaceType.name}
             </Badge>
             <div className="flex items-center text-yellow-500">
               <Star className="w-4 h-4 fill-current" />
-              <span className="text-sm ml-1 text-gray-600 font-medium">
+              <span className="text-sm ml-1 text-muted-foreground font-medium">
                 4.5
               </span>
             </div>
           </div>
 
           {/* Address */}
-          <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-4 line-clamp-2 leading-relaxed">
             {scenario.address}
           </p>
 
           {/* Stats */}
-          <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-            <div className="flex items-center bg-gray-50 px-2 py-1 rounded-md">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
+            <div className="flex items-center bg-muted px-2 py-1 rounded-md">
               <Users className="w-3 h-3 mr-1" />
               <span>{numberOfPlayers} jugadores</span>
             </div>
             {numberOfSpectators > 0 && (
-              <div className="flex items-center bg-gray-50 px-2 py-1 rounded-md">
+              <div className="flex items-center bg-muted px-2 py-1 rounded-md">
                 <Eye className="w-3 h-3 mr-1" />
                 <span>{numberOfSpectators} espectadores</span>
               </div>
@@ -153,12 +153,12 @@ export function ModernFacilityCard({
           </div>
 
           {/* Action */}
-          <div className="flex items-center justify-between text-sm pt-3 border-t border-gray-100">
-            <span className="text-gray-500 font-medium">
+          <div className="flex items-center justify-between text-sm pt-3 border-t border-border">
+            <span className="text-muted-foreground font-medium">
               Ver disponibilidad
             </span>
             <div
-              className="flex items-center text-blue-600 group-hover:text-blue-700 
+              className="flex items-center text-secondary-600 group-hover:text-secondary-700 
                            transition-colors font-medium"
             >
               <span>Reservar</span>
