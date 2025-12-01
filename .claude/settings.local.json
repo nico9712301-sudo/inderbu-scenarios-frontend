@@ -39,7 +39,8 @@
       "Bash(pnpm install:*)",
       "Bash(pnpm remove:*)",
       "Bash(npx storybook:*)",
-      "Bash(pnpm dedupe:*)"
+      "Bash(pnpm dedupe:*)",
+      "Read(//var/folders/tf/p3dwmh9929x0tkstp0c4nvq00000gp/T/TemporaryItems/NSIRD_screencaptureui_01rFW7/**)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
