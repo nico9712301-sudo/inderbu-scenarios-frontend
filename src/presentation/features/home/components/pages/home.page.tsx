@@ -110,7 +110,7 @@ export function HomePage({ initialData, slides }: HomePageProps) {
 
           {/* Sidebar Izquierdo - Filtros en Vertical */}
           <aside className="lg:w-1/4 lg:min-w-[300px] px-4">
-            <div className="lg:sticky lg:top-24">
+            <div className="lg:sticky lg:top-[150px] lg:z-40">
               <HomeFilters
                 activityAreas={initialData.activityAreas as IActivityArea[]}
                 neighborhoods={initialData.neighborhoods as INeighborhood[]}

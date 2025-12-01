@@ -57,11 +57,6 @@ export function Pagination({
 
   return (
     <div className="flex flex-col items-center gap-4 py-8">
-      {/* Page info */}
-      <div className="text-sm text-muted-foreground">
-        Página <span className="font-medium">{currentPage}</span> de{" "}
-        <span className="font-medium">{totalPages}</span>
-      </div>
 
       {/* Navigation */}
       <div className="flex items-center justify-center gap-2">
@@ -113,6 +108,11 @@ export function Pagination({
         >
           Siguiente <ChevronRight className="h-4 w-4" />
         </Button>
+      </div>
+            {/* Page info */}
+            <div className="text-sm text-muted-foreground">
+        Página <span className="font-medium">{currentPage}</span> de{" "}
+        <span className="font-medium">{totalPages}</span>
       </div>
     </div>
   );

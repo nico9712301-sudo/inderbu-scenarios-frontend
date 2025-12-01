@@ -56,7 +56,7 @@ export function MainHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-50 shadow-sm">
+    <header className="sticky top-0 z-50 shadow-sm bg-background">
       {/* Top bar with gov.co - fondo azul */}
       <div className="bg-primary text-secondary-foreground">
         <div className="container mx-auto px-4 flex items-center justify-between py-2">

@@ -24,6 +24,7 @@ import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 
 
+
 interface HomeFiltersProps {
   activityAreas: IActivityArea[];
   neighborhoods: INeighborhood[];
@@ -120,7 +121,7 @@ export default function HomeFilters({
 
   /* ─────────── Render ─────────── */
   return (
-    <div className="bg-card rounded-xl border border-border p-6 shadow-sm backdrop-blur-sm">
+    <div className="bg-card rounded-xl border border-border p-6 shadow-sm backdrop-blur-sm relative z-40">
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <Filter className="w-5 h-5 text-muted-foreground" />

@@ -34,14 +34,52 @@ export function ModernFacilityCard({
   } = subScenario;
 
   const placeholderImage = usePlaceholderImage();
-  const subscenarioImageURL = subScenario.imageGallery?.featured?.url ?? placeholderImage;
+  
+  // Normalize image URL - ensure it's a complete URL
+  const normalizeImageUrl = (url: string | undefined): string => {
+    if (!url) return placeholderImage;
+    
+    // If URL already includes protocol, return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // Get API base URL - always use the API URL, not the frontend origin
+    // This ensures images are loaded from the correct backend server
+    const getApiBaseUrl = (): string => {
+      // Check for environment variable first (for production)
+      if (typeof window !== 'undefined' && (window as any).__NEXT_DATA__?.env?.NEXT_PUBLIC_API_URL) {
+        return (window as any).__NEXT_DATA__.env.NEXT_PUBLIC_API_URL;
+      }
+      // Fallback to process.env (works in both client and server)
+      if (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL) {
+        return process.env.NEXT_PUBLIC_API_URL;
+      }
+      // Default to localhost:3001 for development (backend API port)
+      return 'http://localhost:3001';
+    };
+    
+    const baseUrl = getApiBaseUrl();
+    
+    // If URL starts with /, it's a relative path - construct full URL
+    if (url.startsWith('/')) {
+      return `${baseUrl}${url}`;
+    }
+    
+    // Otherwise, assume it's a relative path and prepend base URL
+    return `${baseUrl}/${url}`;
+  };
+  
+  const rawImageUrl = subScenario.imageGallery?.featured?.url;
+  const subscenarioImageURL = rawImageUrl ? normalizeImageUrl(rawImageUrl) : placeholderImage;
 
   // DEBUG LOGS - Image loading diagnosis
   console.log('ModernFacilityCard DEBUG:', {
     subScenarioId: id,
     name,
     imageGallery: subScenario.imageGallery,
-    featuredImageUrl: subScenario.imageGallery?.featured?.url,
+    featuredImageUrl: rawImageUrl,
+    normalizedUrl: subscenarioImageURL,
     finalImageUrl: subscenarioImageURL,
     isUsingPlaceholder: subscenarioImageURL === placeholderImage,
     placeholderUrl: placeholderImage
@@ -62,8 +100,27 @@ export function ModernFacilityCard({
             alt={name}
             fill
             priority={priority}
+            loading={priority ? "eager" : "lazy"}
+            quality={85}
             className="object-cover transition-transform duration-500 group-hover:scale-110"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            onError={(e) => {
+              console.error('ModernFacilityCard Image Error:', {
+                subScenarioId: id,
+                name,
+                rawImageUrl: rawImageUrl,
+                normalizedImageUrl: subscenarioImageURL,
+                error: e
+              });
+            }}
+            onLoad={() => {
+              if (priority) {
+                console.log('ModernFacilityCard Image Loaded (Priority):', {
+                  subScenarioId: id,
+                  url: subscenarioImageURL
+                });
+              }
+            }}
           />
 
           {/* Price badge */}
