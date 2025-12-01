@@ -145,13 +145,6 @@ export class ServerHttpClientFactory {
   private static readonly SERVER_BASE_URL = process.env.API_URL || 'http://localhost:3001';
 
   static createServer(authContext?: ServerAuthContext): ServerHttpClient {
-    // DEBUG LOGS - Server HTTP Client configuration
-    console.log('ServerHttpClientFactory DEBUG:', {
-      SERVER_BASE_URL: this.SERVER_BASE_URL,
-      API_URL_env: process.env.API_URL,
-      NODE_ENV: process.env.NODE_ENV,
-      hasAuthContext: !!authContext
-    });
 
     return new ServerHttpClient({
       baseURL: this.SERVER_BASE_URL,
