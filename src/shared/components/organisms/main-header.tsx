@@ -1,19 +1,20 @@
 "use client";
 
-import { Button } from "@/shared/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import { BookIcon, LogOut, Menu, Settings, User, X } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
+import { AuthModal } from "@/presentation/features/auth/components/organisms/auth-modal";
+import { BookIcon, ChevronDown, LogOut, Menu, Settings, User, X } from "lucide-react";
 import { PermissionGuard } from "../molecules/permission-guard";
 import { useAuth } from "@/presentation/features/auth";
-import { AuthModal } from "@/presentation/features/auth/components/organisms/auth-modal";
+import { Button } from "@/shared/ui/button";
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+
 // import { AuthModal } from "@/presentation/features/auth/components";
 // import { AuthModal } from "@/presentation/features/auth"; // AuthModal not implemented yet
 
@@ -131,7 +132,7 @@ export function MainHeader() {
                                hover:bg-secondary-50 transition-all duration-200 rounded-lg px-3"
                     >
                       <div
-                        className="w-8 h-8 bg-gradient-to-br from-secondary-500 to-secondary-600 
+                        className="w-8 h-8 bg-primary 
                                   rounded-full flex items-center justify-center text-secondary-foreground text-sm font-medium"
                       >
                         {user?.email?.[0]?.toUpperCase()}
@@ -139,6 +140,7 @@ export function MainHeader() {
                       <span className="hidden md:block text-sm font-medium max-w-32 truncate">
                         {user?.email}
                       </span>
+                      <ChevronDown className="w-4 h-4 text-primary" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
