@@ -1,12 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
-import { Switch } from "@/shared/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -16,28 +9,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/shared/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/ui/table";
-import { Badge } from "@/shared/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
 import {
   Plus,
   Edit,
@@ -49,7 +20,6 @@ import {
   Image as ImageIcon,
   ExternalLink,
 } from "lucide-react";
-import { toast } from "sonner";
 import {
   homeSlidesService,
   HomeSlide,
@@ -57,8 +27,40 @@ import {
   CreateHomeSlideRequest,
   UpdateHomeSlideRequest,
 } from "@/shared/api/home-slides";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/shared/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { modulesService, Module, EntityType } from "@/shared/api/modules";
+import { normalizeImageUrl } from "@/shared/utils/image-url.utils";
+import { Textarea } from "@/shared/ui/textarea";
+import { useState, useEffect } from "react";
+import { Button } from "@/shared/ui/button";
+import { Switch } from "@/shared/ui/switch";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import { Badge } from "@/shared/ui/badge";
+import { toast } from "sonner";
 import Image from "next/image";
+
 
 interface SlideFormData {
   title: string;
@@ -417,7 +419,7 @@ export function BannersManagementPage() {
                   <TableCell>
                     <div className="relative w-16 h-10 border rounded overflow-hidden">
                       <Image
-                        src={slide.imageUrl.includes("http") ? slide.imageUrl : `http://localhost:3001${slide.imageUrl}`}
+                        src={normalizeImageUrl(slide.imageUrl)}
                         alt={slide.title}
                         fill
                         style={{ objectFit: "cover" }}

@@ -12,6 +12,7 @@ import {
 
 import { IImageGallery } from "@/infrastructure/transformers/SubScenarioTransformer";
 import { useCarouselSlides } from "@/shared/hooks/use-carousel-slides";
+import { normalizeImageUrl } from "@/shared/utils/image-url.utils";
 
 import Autoplay from "embla-carousel-autoplay";
 
@@ -30,8 +31,8 @@ export function SimpleCarousel({ imagesGallery }: Props) {
             <CarouselItem key={slide.id} className="p-0">
               <div className="relative w-full h-96">
                 <Image
-                  src={slide.imageUrl!}
-                  alt={slide.title!}
+                  src={normalizeImageUrl(slide.imageUrl)}
+                  alt={slide.title || 'Imagen del escenario'}
                   fill
                   sizes="100vw"
                   priority
