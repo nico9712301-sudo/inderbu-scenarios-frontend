@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Pagination } from './pagination';
 import { useState } from 'react';
-import { action } from '@storybook/addon-actions';
+
+// Simple action handler for Storybook (replaces @storybook/addon-actions)
+const action = (name: string) => (...args: any[]) => {
+  console.log(`[${name}]`, ...args);
+};
 
 const meta: Meta<typeof Pagination> = {
   title: 'DESIGN SYSTEM/Organisms/Pagination',
