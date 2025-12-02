@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@/shared/ui/card";
 import { FlexibleSchedulerProps, ScheduleConfig, IFromTo } from "../../types/scheduler.types";
+import { generateTimeSlots, convertBackendTimeSlotsToUI } from "../../utils/time-formatters";
 import { AuthModal } from "@/presentation/features/auth/components/organisms/auth-modal";
 import { useReservationProcess } from "../../hooks/use-reservation-process";
 import { useTimeSlotSelection } from "../../hooks/use-time-slot-selection";
@@ -18,7 +19,6 @@ import { useSchedulerState } from "../../hooks/use-scheduler-state";
 import { useURLPersistence } from "../../hooks/use-url-persistence";
 import { DateRangePicker } from "../molecules/date-range-picker";
 import { AdvancedOptions } from "../molecules/advanced-options";
-import { generateTimeSlots, convertBackendTimeSlotsToUI } from "../../utils/time-formatters";
 import { useMemo, useEffect } from "react";
 import { FiLoader } from "react-icons/fi";
 
@@ -182,7 +182,7 @@ export default function FlexibleScheduler({
   };
 
   return (
-    <div className="w-full px-2 sm:px-4 lg:px-8 space-y-4 sm:space-y-6">
+    <div className="w-full space-y-4 sm:space-y-6">
       <Card className="border-2 shadow-lg transition-all duration-300 hover:shadow-xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
