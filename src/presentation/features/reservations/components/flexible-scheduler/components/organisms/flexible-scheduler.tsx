@@ -18,11 +18,14 @@ import { useSchedulerState } from "../../hooks/use-scheduler-state";
 import { useURLPersistence } from "../../hooks/use-url-persistence";
 import { DateRangePicker } from "../molecules/date-range-picker";
 import { AdvancedOptions } from "../molecules/advanced-options";
-import { generateTimeSlots } from "../../utils/time-formatters";
+import { generateTimeSlots, convertBackendTimeSlotsToUI } from "../../utils/time-formatters";
 import { useMemo, useEffect } from "react";
 import { FiLoader } from "react-icons/fi";
 
-export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerProps) {
+export default function FlexibleScheduler({
+  subScenarioId,
+  initialAvailabilityData
+}: FlexibleSchedulerProps) {
   // Hooks de estado
   const schedulerState = useSchedulerState();
   const {
@@ -51,6 +54,20 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
     weekdays: config.hasWeekdaySelection && selectedWeekdays.length > 0 ? selectedWeekdays : undefined,
   }), [subScenarioId, dateRange.from, dateRange.to, config.hasDateRange, config.hasWeekdaySelection, selectedWeekdays]);
 
+  // Convertir initialAvailabilityData al formato esperado por el hook si existe
+  const initialDataFormatted = useMemo(() => {
+    if (!initialAvailabilityData) return undefined;
+
+    return {
+      subScenarioId,
+      timeSlots: initialAvailabilityData.timeSlots,
+      calculatedDates: initialAvailabilityData.calculatedDates,
+      stats: initialAvailabilityData.stats,
+      requestedConfiguration: initialAvailabilityData.requestedConfiguration,
+      queriedAt: new Date().toISOString(),
+    };
+  }, [initialAvailabilityData, subScenarioId]);
+
   const {
     availableSlotIds,
     isLoading: isLoadingAvailability,
@@ -58,7 +75,9 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
     checkAvailability,
     checkSlotAvailability,
     getSlotStatus,
-  } = useAvailabilityConfiguration();
+  } = useAvailabilityConfiguration({
+    initialData: initialDataFormatted,
+  });
 
   // Hook de selección de slots
   const slotSelection = useTimeSlotSelection(checkSlotAvailability, setConfig);
@@ -117,16 +136,38 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
     handleRestoreWeekdays
   );
 
-  // Auto-consultar cuando cambie la configuración
+  // Auto-consultar cuando cambie la configuración (solo si no tenemos datos iniciales)
   useEffect(() => {
+    // Si tenemos datos iniciales y la configuración coincide con los datos iniciales, no hacer nueva consulta
+    if (initialDataFormatted) {
+      const configMatches =
+        availabilityConfig.initialDate === initialDataFormatted.requestedConfiguration.initialDate &&
+        availabilityConfig.finalDate === initialDataFormatted.requestedConfiguration.finalDate &&
+        JSON.stringify(availabilityConfig.weekdays) === JSON.stringify(initialDataFormatted.requestedConfiguration.weekdays);
+
+      if (configMatches) {
+        console.log('Using initial availability data, skipping API call');
+        return;
+      }
+    }
+
     console.log('Availability config changed:', availabilityConfig);
     checkAvailability(availabilityConfig);
-  }, [availabilityConfig, checkAvailability]);
+  }, [availabilityConfig, checkAvailability, initialDataFormatted]);
 
   // Generar timeSlots con estado de disponibilidad
   const timeSlots = useMemo(() => {
+    // Si tenemos datos iniciales, usar esos timeSlots con IDs reales
+    if (initialAvailabilityData?.timeSlots) {
+      return convertBackendTimeSlotsToUI(
+        initialAvailabilityData.timeSlots,
+        getSlotStatus
+      );
+    }
+
+    // Fallback: generar timeSlots tradicionales si no hay datos iniciales
     return generateTimeSlots((hour) => getSlotStatus(hour));
-  }, [getSlotStatus]);
+  }, [initialAvailabilityData?.timeSlots, getSlotStatus]);
 
   // Manejadores de eventos
   const handleSubmit = () => {

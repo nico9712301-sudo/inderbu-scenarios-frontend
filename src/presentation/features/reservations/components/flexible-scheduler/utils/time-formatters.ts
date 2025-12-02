@@ -1,5 +1,20 @@
 import { TimeSlot } from "../types/scheduler.types";
 
+interface BackendTimeSlot {
+  id: number;
+  startTime: string;
+  endTime: string;
+  isAvailableInAllDates: boolean;
+}
+
+/**
+ * Convierte un tiempo en formato "HH:mm:ss" a hora (número)
+ */
+const timeToHour = (time: string): number => {
+  const [hours] = time.split(':');
+  return parseInt(hours);
+};
+
 /**
  * Formatea una hora en formato humano legible
  */
@@ -26,6 +41,25 @@ export const generateTimeSlots = (
     });
   }
   return slots;
+};
+
+/**
+ * Convierte timeSlots del backend al formato esperado por la UI
+ */
+export const convertBackendTimeSlotsToUI = (
+  backendSlots: BackendTimeSlot[],
+  availabilityChecker?: (slotId: number) => 'available' | 'occupied' | 'unknown'
+): TimeSlot[] => {
+  return backendSlots.map(slot => {
+    const hour = timeToHour(slot.startTime);
+    return {
+      hour: slot.id, // Usar el ID real del backend en lugar del hour
+      label: formatHourHuman(hour), // Pero mostrar la hora formateada
+      selected: false,
+      status: availabilityChecker ? availabilityChecker(slot.id) :
+              (slot.isAvailableInAllDates ? 'available' : 'occupied'),
+    };
+  });
 };
 
 /**

@@ -20,6 +20,9 @@ export interface ScenarioDetailPageProps {
 export function ScenarioDetailPage({ initialData, availabilityData, searchParams }: ScenarioDetailPageProps) {
   const { scenario } = initialData;
 
+  console.log({availabilityData});
+  console.log({initialData});
+
   return (
     <main className="min-h-screen flex flex-col bg-gray-50">
       {/* Header Organism */}
@@ -48,7 +51,10 @@ export function ScenarioDetailPage({ initialData, availabilityData, searchParams
         </div>
 
         {/* Main Content - Existing ScenarioDetail Component */}
-        <ScenarioDetail subScenario={scenario} />
+        <ScenarioDetail
+          subScenario={scenario}
+          availabilityData={availabilityData}
+        />
       </div>
     </main>
   );

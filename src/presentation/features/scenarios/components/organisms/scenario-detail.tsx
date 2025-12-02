@@ -4,14 +4,16 @@ import { FlexibleScheduler } from "@/presentation/features/reservations/componen
 import { ScenarioImageCarousel } from "./scenario-image-carousel";
 import { ScenarioInfoCard } from "./scenario-info-card";
 import { SubScenarioBackend } from "@/infrastructure/transformers/SubScenarioTransformer";
+import { SerializedAvailabilityResponse } from "@/presentation/utils/serialization.utils";
 import { slidesPlaceerholderScenario } from "@/shared/mock-data/slides-scenario";
 
 
 interface Props {
   subScenario: SubScenarioBackend;
+  availabilityData?: SerializedAvailabilityResponse;
 }
 
-export function ScenarioDetail({ subScenario }: Props) {
+export function ScenarioDetail({ subScenario, availabilityData }: Props) {
   return (
     <div className="space-y-8">
       {/* Main content - Imagen e información del escenario */}
@@ -26,7 +28,8 @@ export function ScenarioDetail({ subScenario }: Props) {
       {/* Configurador de reservas - Full width abajo */}
       <div className="w-full">
         <FlexibleScheduler
-          subScenarioId={subScenario.id!} 
+          subScenarioId={subScenario.id!}
+          initialAvailabilityData={availabilityData}
         />
       </div>
     </div>

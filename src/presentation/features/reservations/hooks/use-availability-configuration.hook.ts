@@ -42,6 +42,7 @@ interface SimplifiedAvailabilityResponse {
 
 interface UseAvailabilityConfigurationOptions {
   enabled?: boolean;
+  initialData?: SimplifiedAvailabilityResponse;
 }
 
 interface UseAvailabilityConfigurationResult {
@@ -72,9 +73,9 @@ interface UseAvailabilityConfigurationResult {
 export function useAvailabilityConfiguration(
   options: UseAvailabilityConfigurationOptions = {}
 ): UseAvailabilityConfigurationResult {
-  const { enabled = true } = options;
-  
-  const [data, setData] = useState<SimplifiedAvailabilityResponse | null>(null);
+  const { enabled = true, initialData } = options;
+
+  const [data, setData] = useState<SimplifiedAvailabilityResponse | null>(initialData || null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   

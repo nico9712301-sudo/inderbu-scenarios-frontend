@@ -55,9 +55,6 @@ export default async function ScenarioDetailRoute({ params, searchParams }: Page
     const serializedResult: SerializedScenarioDetailResponse = serializeScenarioDetailData(domainResult);
     const serializedAvailability: SerializedAvailabilityResponse = serializeAvailabilityData(availabilityResult);
 
-    console.log('ScenarioDetailRoute - Fetched Scenario Data:', serializedResult);
-    console.log('ScenarioDetailRoute - Fetched Availability Data:', serializedAvailability);
-
     // Atomic Design: Render page template with serialized data (plain objects)
     return <ScenarioDetailPage
       initialData={serializedResult}

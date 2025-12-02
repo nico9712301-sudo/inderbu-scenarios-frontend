@@ -46,6 +46,30 @@ export interface IFromTo {
 
 export interface FlexibleSchedulerProps {
   subScenarioId: number;
+  initialAvailabilityData?: {
+    timeSlots: Array<{
+      id: number;
+      startTime: string;
+      endTime: string;
+      isAvailableInAllDates: boolean;
+    }>;
+    calculatedDates: string[];
+    stats: {
+      totalDates: number;
+      totalTimeslots: number;
+      totalSlots: number;
+      availableSlots: number;
+      occupiedSlots: number;
+      globalAvailabilityPercentage: number;
+      datesWithFullAvailability: number;
+      datesWithNoAvailability: number;
+    };
+    requestedConfiguration: {
+      initialDate: string;
+      finalDate?: string;
+      weekdays?: number[];
+    };
+  };
 }
 
 // URL Persistence types
