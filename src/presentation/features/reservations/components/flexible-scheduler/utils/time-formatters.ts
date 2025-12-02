@@ -26,6 +26,28 @@ export const formatHourHuman = (hour: number): string => {
 };
 
 /**
+ * Formatea un tiempo en formato "HH:MM:SS" a formato de 12 horas
+ */
+const formatTime12Hour = (time: string): string => {
+  const [hours, minutes] = time.split(':');
+  const hour = parseInt(hours);
+
+  if (hour === 0) return `12:${minutes} AM`;
+  if (hour === 12) return `12:${minutes} PM`;
+  if (hour < 12) return `${hour}:${minutes} AM`;
+  return `${hour - 12}:${minutes} PM`;
+};
+
+/**
+ * Formatea una franja horaria en formato legible
+ */
+export const formatTimeRange = (startTime: string, endTime: string): string => {
+  const formattedStart = formatTime12Hour(startTime);
+  const formattedEnd = formatTime12Hour(endTime);
+  return `${formattedStart} - ${formattedEnd}`;
+};
+
+/**
  * Genera slots de tiempo con estado de disponibilidad
  */
 export const generateTimeSlots = (
@@ -51,10 +73,9 @@ export const convertBackendTimeSlotsToUI = (
   availabilityChecker?: (slotId: number) => 'available' | 'occupied' | 'unknown'
 ): TimeSlot[] => {
   return backendSlots.map(slot => {
-    const hour = timeToHour(slot.startTime);
     return {
       hour: slot.id, // Usar el ID real del backend en lugar del hour
-      label: formatHourHuman(hour), // Pero mostrar la hora formateada
+      label: formatTimeRange(slot.startTime, slot.endTime), // Mostrar franja completa
       selected: false,
       status: availabilityChecker ? availabilityChecker(slot.id) :
               (slot.isAvailableInAllDates ? 'available' : 'occupied'),

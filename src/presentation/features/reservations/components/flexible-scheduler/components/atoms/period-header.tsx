@@ -1,8 +1,8 @@
-import { ChevronDown } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
 import { PeriodHeaderProps } from "../../types/scheduler.types";
 import { Tooltip } from "@/shared/ui/tooltip";
+import { Button } from "@/shared/ui/button";
+import { ChevronDown } from "lucide-react";
+import { Badge } from "@/shared/ui/badge";
 
 export const PeriodHeader = ({
   period,
@@ -42,11 +42,6 @@ export const PeriodHeader = ({
         )}
       </div>
       <div className="flex items-center gap-2">
-        {selectedCount > 0 && (
-          <Badge variant="secondary" className="text-xs animate-pulse">
-            {selectedCount} seleccionado{selectedCount > 1 ? 's' : ''}
-          </Badge>
-        )}
         <Badge variant="outline" className="text-xs">
           {availableCount}/{period.hours.length} disponibles
         </Badge>

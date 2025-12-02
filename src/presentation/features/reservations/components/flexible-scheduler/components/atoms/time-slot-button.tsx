@@ -25,7 +25,7 @@ export const TimeSlotButton = ({
           ? "bg-primary !text-white !border-primary-700 shadow-md font-medium"
           : isOccupied
           ? "opacity-50 cursor-not-allowed !bg-red-50 !border-red-200 !text-red-400"
-          : "hover:bg-primary-500 border-primary-200 bg-white hover:shadow-md"
+          : "border-primary-200 bg-white"
       }`}
       onClick={() => onToggle(slot.hour)}
     >
