@@ -34,9 +34,6 @@ export class GetScenarioDetailUseCaseImpl implements GetScenarioDetailUseCase {
       );
     }
 
-    console.log("GetScenarioDetailUseCase - Fetched SubScenario:", subScenario);
-    
-
     const subScenarioDTO = SubScenarioTransformer.toBackend(subScenario);
     return subScenario;
   }

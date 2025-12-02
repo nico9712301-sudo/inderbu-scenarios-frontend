@@ -1,10 +1,10 @@
-// Application Layer: Get Availability Use Case
-
 import { 
   IReservationRepository, 
   AvailabilityConfiguration,
   SimplifiedAvailabilityResponse
 } from '@/entities/reservation/infrastructure/IReservationRepository';
+// Application Layer: Get Availability Use Case
+
 
 export interface AvailabilityQuery {
   subScenarioId: number;
@@ -26,8 +26,6 @@ export class GetAvailabilityUseCaseImpl implements GetAvailabilityUseCase {
   ) {}
 
   async execute(query: AvailabilityQuery): Promise<AvailabilityResult> {
-    console.log('GetAvailabilityUseCase: Starting execution with query:', query);
-
     try {
       // Convert AvailabilityQuery to AvailabilityConfiguration
       const config: AvailabilityConfiguration = {
@@ -40,7 +38,6 @@ export class GetAvailabilityUseCaseImpl implements GetAvailabilityUseCase {
       // Call repository method
       const result = await this.reservationRepository.getAvailabilityForConfiguration(config);
 
-      console.log('GetAvailabilityUseCase: Execution completed successfully');
       return result;
 
     } catch (error) {

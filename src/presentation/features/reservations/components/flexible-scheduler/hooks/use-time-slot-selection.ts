@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { validateSlotAvailability, getUnavailableSlots } from "../utils/slot-validators";
+import { validateSlotAvailability, getUnavailableSlots, validateSlotAvailabilityWithTime } from "../utils/slot-validators";
 import { formatHourHuman, getAvailableSlotsInPeriod } from "../utils/time-formatters";
 import { SMART_SHORTCUTS } from "../constants/smart-shortcuts";
 import { TIME_PERIODS } from "../constants/time-periods";
@@ -88,6 +88,24 @@ export const useTimeSlotSelection = (
     }));
   };
 
+  const clearPeriodSlots = (periodId: string) => {
+    const period = TIME_PERIODS.find(p => p.id === periodId);
+    if (!period) return;
+
+    setSelectedSlots(prev => {
+      const newSet = new Set(prev);
+      period.hours.forEach(hour => newSet.delete(hour));
+      return newSet;
+    });
+
+    setConfig(prevConfig => ({
+      ...prevConfig,
+      timeSlots: prevConfig.timeSlots.filter(slot => !period.hours.includes(slot)),
+    }));
+
+    toast.success(`Limpiados los horarios de ${period.name.toLowerCase()}`);
+  };
+
   const removeUnavailableSlots = () => {
     const selectedSlotsArray = Array.from(selectedSlots);
     const unavailableSlots = getUnavailableSlots(selectedSlotsArray, checkSlotAvailability);
@@ -117,6 +135,7 @@ export const useTimeSlotSelection = (
     applySmartShortcut,
     selectPeriodHours,
     clearAllTimeSlots,
+    clearPeriodSlots,
     removeUnavailableSlots,
     getSelectedTimeSlotsCount,
   };

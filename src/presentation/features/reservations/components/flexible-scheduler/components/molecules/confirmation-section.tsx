@@ -1,5 +1,5 @@
 import { ConfirmationSectionProps } from "../../types/scheduler.types";
-import { CalendarCheck, CalendarCheck2, Zap } from "lucide-react";
+import { CalendarCheck2 } from "lucide-react";
 import { ReservationSummary } from "../atoms/reservation-summary";
 import { Button } from "@/shared/ui/button";
 import { FiLoader } from "react-icons/fi";
@@ -9,6 +9,7 @@ export const ConfirmationSection = ({
   selectedSlots,
   selectedWeekdays,
   config,
+  timeSlots,
   isSubmitting,
   isLoading,
   onSubmit,
@@ -23,6 +24,7 @@ export const ConfirmationSection = ({
         selectedSlots={selectedSlots}
         selectedWeekdays={selectedWeekdays}
         config={config}
+        timeSlots={timeSlots}
       />
 
       <div className="relative">

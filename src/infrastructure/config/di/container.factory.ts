@@ -156,8 +156,6 @@ export class ContainerFactory {
    * Create the appropriate container based on environment
    */
   private static createEnvironmentContainer(environment: Environment): IContainer {
-    console.log(`Creating ${environment} container...`);
-
     const container = new SimpleContainer();
     
     // Configure base dependencies

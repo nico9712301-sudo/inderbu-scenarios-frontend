@@ -1,5 +1,6 @@
 import { IFromTo, ScheduleConfig } from "../types/scheduler.types";
 import { validateDateRange } from "../utils/date-helpers";
+import { getTodayInColombia } from "../utils/slot-validators";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -9,7 +10,7 @@ export const useDateConfiguration = (
 ) => {
   const [selectedWeekdays, setSelectedWeekdays] = useState<number[]>([]);
   const [dateRange, setDateRange] = useState<IFromTo>(() => ({
-    from: new Date().toISOString().split("T")[0],
+    from: getTodayInColombia(),
     to: undefined,
   }));
 

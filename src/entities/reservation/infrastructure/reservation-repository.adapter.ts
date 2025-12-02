@@ -278,10 +278,6 @@ export class ApiReservationRepository implements ReservationRepository {
     };
 
     try {
-      console.log(
-        `Calling availability configuration endpoint: /reservations/availability?${searchParams.toString()}`
-      );
-
       const url = `/reservations/availability?${searchParams.toString()}`;
 
       const response = await this.httpClient.get<

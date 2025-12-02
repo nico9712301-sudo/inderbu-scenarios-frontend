@@ -79,6 +79,8 @@ export const convertBackendTimeSlotsToUI = (
       selected: false,
       status: availabilityChecker ? availabilityChecker(slot.id) :
               (slot.isAvailableInAllDates ? 'available' : 'occupied'),
+      startTime: slot.startTime,
+      endTime: slot.endTime,
     };
   });
 };

@@ -92,8 +92,6 @@ export const useURLPersistence = (
       return; // No hay estado en URL
     }
 
-    console.log('Restaurando estado desde URL:', urlState);
-
     // Restaurar configuración de fechas
     const restoredDateRange: IFromTo = {
       from: urlState.date,

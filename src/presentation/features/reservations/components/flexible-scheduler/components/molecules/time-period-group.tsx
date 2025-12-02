@@ -8,8 +8,10 @@ export const TimePeriodGroup = ({
   selectedSlots,
   isExpanded,
   isLoading,
+  selectedDate,
   onSlotToggle,
   onPeriodSelect,
+  onPeriodClear,
   onToggleExpand,
 }: TimePeriodGroupProps) => {
   const periodSlots = timeSlots.filter(slot => period.hours.includes(slot.hour));
@@ -24,6 +26,7 @@ export const TimePeriodGroup = ({
         availableCount={availableInPeriod}
         isExpanded={isExpanded}
         onSelectAll={() => onPeriodSelect(period.id)}
+        onClearSelection={() => onPeriodClear(period.id)}
         onToggleExpand={() => onToggleExpand(period.id)}
       />
 
@@ -37,6 +40,7 @@ export const TimePeriodGroup = ({
               slot={slot}
               isSelected={selectedSlots.has(slot.hour)}
               isLoading={isLoading}
+              selectedDate={selectedDate}
               onToggle={onSlotToggle}
             />
           ))}

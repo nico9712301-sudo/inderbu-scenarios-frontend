@@ -3,6 +3,8 @@ export interface TimeSlot {
   label: string;
   selected: boolean;
   status: 'available' | 'occupied' | 'unknown';
+  startTime?: string;
+  endTime?: string;
 }
 
 export interface TimePeriod {
@@ -84,6 +86,7 @@ export interface TimeSlotButtonProps {
   slot: TimeSlot;
   isSelected: boolean;
   isLoading: boolean;
+  selectedDate: string;
   onToggle: (hour: number) => void;
 }
 
@@ -93,6 +96,7 @@ export interface PeriodHeaderProps {
   availableCount: number;
   isExpanded: boolean;
   onSelectAll: () => void;
+  onClearSelection: () => void;
   onToggleExpand: () => void;
 }
 
@@ -102,8 +106,10 @@ export interface TimePeriodGroupProps {
   selectedSlots: Set<number>;
   isExpanded: boolean;
   isLoading: boolean;
+  selectedDate: string;
   onSlotToggle: (hour: number) => void;
   onPeriodSelect: (periodId: string) => void;
+  onPeriodClear: (periodId: string) => void;
   onToggleExpand: (periodId: string) => void;
 }
 
@@ -133,6 +139,7 @@ export interface ConfirmationSectionProps {
   selectedSlots: Set<number>;
   selectedWeekdays: number[];
   config: ScheduleConfig;
+  timeSlots: TimeSlot[];
   isSubmitting: boolean;
   isLoading: boolean;
   onSubmit: () => void;
@@ -144,6 +151,7 @@ export interface ReservationSummaryProps {
   selectedSlots: Set<number>;
   selectedWeekdays: number[];
   config: ScheduleConfig;
+  timeSlots: TimeSlot[];
 }
 
 export interface WeekdaySelectorProps {

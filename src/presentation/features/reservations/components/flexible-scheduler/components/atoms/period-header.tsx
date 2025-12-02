@@ -1,7 +1,7 @@
 import { PeriodHeaderProps } from "../../types/scheduler.types";
 import { Tooltip } from "@/shared/ui/tooltip";
 import { Button } from "@/shared/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { Badge } from "@/shared/ui/badge";
 
 export const PeriodHeader = ({
@@ -10,6 +10,7 @@ export const PeriodHeader = ({
   availableCount,
   isExpanded,
   onSelectAll,
+  onClearSelection,
   onToggleExpand,
 }: PeriodHeaderProps) => {
   const IconComponent = period.icon;
@@ -27,7 +28,8 @@ export const PeriodHeader = ({
             {period.description}
           </span>
         </div>
-        {availableCount > 0 && (
+        <div className="flex gap-1">
+          {availableCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
@@ -39,7 +41,22 @@ export const PeriodHeader = ({
             >
               + Seleccionar todo
             </Button>
-        )}
+          )}
+          {selectedCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs h-6 px-2 transition-all duration-200 hover:scale-105 text-red-600 hover:text-red-700 hover:bg-red-50"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClearSelection();
+              }}
+            >
+              <X className="h-3 w-3 mr-1" />
+              Limpiar
+            </Button>
+          )}
+        </div>
       </div>
       <div className="flex items-center gap-2">
         <Badge variant="outline" className="text-xs">

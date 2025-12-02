@@ -11,8 +11,10 @@ interface TimeSelectionGridProps {
   availableSlotIds: number[];
   expandedPeriods: Record<string, boolean>;
   isLoading: boolean;
+  selectedDate: string;
   onSlotToggle: (hour: number) => void;
   onPeriodSelect: (periodId: string) => void;
+  onPeriodClear: (periodId: string) => void;
   onToggleExpand: (periodId: string) => void;
   onApplyShortcut: (shortcutId: string) => void;
 }
@@ -23,15 +25,14 @@ export const TimeSelectionGrid = ({
   availableSlotIds,
   expandedPeriods,
   isLoading,
+  selectedDate,
   onSlotToggle,
   onPeriodSelect,
+  onPeriodClear,
   onToggleExpand,
   onApplyShortcut,
 }: TimeSelectionGridProps) => {
   const selectedCount = selectedSlots.size;
-
-  console.log({timeSlots});
-  
 
   if (isLoading) {
     return (
@@ -76,8 +77,10 @@ export const TimeSelectionGrid = ({
             selectedSlots={selectedSlots}
             isExpanded={expandedPeriods[period.id]}
             isLoading={isLoading}
+            selectedDate={selectedDate}
             onSlotToggle={onSlotToggle}
             onPeriodSelect={onPeriodSelect}
+            onPeriodClear={onPeriodClear}
             onToggleExpand={onToggleExpand}
           />
         ))}

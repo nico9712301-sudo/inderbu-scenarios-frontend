@@ -93,11 +93,7 @@ export function useAvailabilityConfiguration(
     setError(null);
     
     try {
-      console.log(`Checking availability for configuration:`, config);
-      
       const result = await repository.getAvailabilityForConfiguration(config);
-      
-      console.log(`Availability result:`, result);
       
       if (!result || typeof result !== 'object') {
         throw new Error('Invalid response format from availability API');

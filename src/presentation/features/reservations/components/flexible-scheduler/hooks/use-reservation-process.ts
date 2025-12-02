@@ -40,8 +40,6 @@ export const useReservationProcess = (
 
     setIsSubmitting(true);
     try {
-      console.log("FlexibleScheduler: Creando reservas múltiples");
-      
       const command: CreateReservationDto = {
         subScenarioId,
         timeSlotIds: selectedSlotsArray,
@@ -54,8 +52,6 @@ export const useReservationProcess = (
       if (selectedWeekdays.length > 0) {
         command.weekdays = selectedWeekdays;
       }
-
-      console.log("FlexibleScheduler: Enviando comando:", command);
 
       const result = await createReservation(command);
 

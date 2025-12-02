@@ -8,12 +8,13 @@ import {
 } from "@/shared/ui/card";
 import { FlexibleSchedulerProps, ScheduleConfig, IFromTo } from "../../types/scheduler.types";
 import { generateTimeSlots, convertBackendTimeSlotsToUI } from "../../utils/time-formatters";
+import { getTodayInColombia } from "../../utils/slot-validators";
 import { AuthModal } from "@/presentation/features/auth/components/organisms/auth-modal";
 import { useReservationProcess } from "../../hooks/use-reservation-process";
 import { useTimeSlotSelection } from "../../hooks/use-time-slot-selection";
 import { useDateConfiguration } from "../../hooks/use-date-configuration";
 import { ConfirmationSection } from "../molecules/confirmation-section";
-import { CalendarIcon, HelpCircle, AlertTriangle } from "lucide-react";
+import { CalendarIcon, AlertTriangle } from "lucide-react";
 import { TimeSelectionGrid } from "../organisms/time-selection-grid";
 import { useSchedulerState } from "../../hooks/use-scheduler-state";
 import { useURLPersistence } from "../../hooks/use-url-persistence";
@@ -49,7 +50,7 @@ export default function FlexibleScheduler({
   // Hook único para disponibilidad
   const availabilityConfig = useMemo(() => ({
     subScenarioId,
-    initialDate: dateRange.from || new Date().toISOString().split("T")[0],
+    initialDate: dateRange.from || getTodayInColombia(),
     finalDate: config.hasDateRange ? dateRange.to : undefined,
     weekdays: config.hasWeekdaySelection && selectedWeekdays.length > 0 ? selectedWeekdays : undefined,
   }), [subScenarioId, dateRange.from, dateRange.to, config.hasDateRange, config.hasWeekdaySelection, selectedWeekdays]);
@@ -87,6 +88,7 @@ export default function FlexibleScheduler({
     applySmartShortcut,
     selectPeriodHours,
     clearAllTimeSlots,
+    clearPeriodSlots,
     removeUnavailableSlots,
   } = slotSelection;
 
@@ -146,12 +148,10 @@ export default function FlexibleScheduler({
         JSON.stringify(availabilityConfig.weekdays) === JSON.stringify(initialDataFormatted.requestedConfiguration.weekdays);
 
       if (configMatches) {
-        console.log('Using initial availability data, skipping API call');
         return;
       }
     }
 
-    console.log('Availability config changed:', availabilityConfig);
     checkAvailability(availabilityConfig);
   }, [availabilityConfig, checkAvailability, initialDataFormatted]);
 
@@ -227,8 +227,10 @@ export default function FlexibleScheduler({
                 availableSlotIds={availableSlotIds}
                 expandedPeriods={expandedPeriods}
                 isLoading={isLoadingAvailability}
+                selectedDate={dateRange.from || getTodayInColombia()}
                 onSlotToggle={toggleTimeSlot}
                 onPeriodSelect={selectPeriodHours}
+                onPeriodClear={clearPeriodSlots}
                 onToggleExpand={togglePeriodExpansion}
                 onApplyShortcut={applySmartShortcut}
               />
@@ -240,6 +242,7 @@ export default function FlexibleScheduler({
             selectedSlots={selectedSlots}
             selectedWeekdays={selectedWeekdays}
             config={config}
+            timeSlots={timeSlots}
             isSubmitting={isSubmitting}
             isLoading={isLoadingAvailability}
             onSubmit={handleSubmit}
