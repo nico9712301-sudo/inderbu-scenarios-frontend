@@ -37,9 +37,6 @@ export function useDashboardPagination(config: PaginationConfig) {
   const router: AppRouterInstance = useRouter();
   const searchParams = useSearchParams();
 
-  console.log("Initializing useDashboardPagination with config:", config);
-  
-  
   const { baseUrl, defaultLimit = 10, defaultPage = 1 } = config;
 
   // ─── Extract filters from URL (memoized) ───────────────────────────────────

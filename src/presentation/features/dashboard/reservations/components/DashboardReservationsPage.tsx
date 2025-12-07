@@ -13,10 +13,19 @@ import { Filter, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
+import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
 
 
 interface DashboardReservationsPageProps {
   initialData: DashboardReservationsResponse;
+}
+
+interface IStats {
+  total: number;
+  today: number;
+  approved: number;
+  pending: number;
+  rejected: number;
 }
 
 export function DashboardReservationsPage({ initialData }: DashboardReservationsPageProps) {
@@ -33,17 +42,17 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
     buildPageMeta,
   } = useDashboardReservationsData();
 
-  // Use initial data directly (will update on SSR re-render)
-  const reservations = initialData.reservations;
-  const stats = initialData.stats;
-  
-  // Build page meta from initial data
-  const pageMeta = buildPageMeta(initialData.meta.totalItems);
-
   // UI state
   const [showFilters, setShowFilters] = useState(false);
   const [creating, setCreating] = useState(false);
   const [viewingDetails, setViewingDetails] = useState<ReservationDto | null>(null);
+
+  // Use initial data directly (will update on SSR re-render)
+  const reservations: any[] = initialData.reservations;
+  const stats: IStats = initialData.stats;
+
+  // Build page meta from initial data
+  const pageMeta: PageMeta = buildPageMeta(initialData.meta.totalItems);
 
   // Extract advanced filters from URL (non-pagination filters)
   const advancedFilters = {
@@ -66,7 +75,7 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
 
   const clearFilters = () => {
     startTransition(() => {
-      onFilterChange({ 
+      onFilterChange({
         scenarioId: undefined,
         activityAreaId: undefined,
         neighborhoodId: undefined,
@@ -97,26 +106,9 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant={showFilters ? "default" : "outline"}
-            size="sm"
-            onClick={() => setShowFilters((p) => !p)}
-            className={showFilters ? "bg-blue-600 hover:bg-blue-700" : ""}
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            Filtros
-            {hasActiveFilters && (
-              <Badge
-                variant="secondary"
-                className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs"
-              >
-                !
-              </Badge>
-            )}
-          </Button>
-          <Button size="sm" onClick={() => setCreating(true)}>
+          {/*<Button size="sm" onClick={() => setCreating(true)}>
             <Plus className="h-4 w-4 mr-2" /> Nueva Reserva
-          </Button>
+          </Button>*/}
         </div>
       </div>
 
@@ -137,6 +129,24 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
       )}
 
       <StatsGrid stats={stats} />
+
+      <Button
+            variant={showFilters ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowFilters((p) => !p)}
+            className={showFilters ? "bg-blue-600 hover:bg-blue-700" : ""}
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Filtros
+            {hasActiveFilters && (
+              <Badge
+                variant="secondary"
+                className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs"
+              >
+                !
+              </Badge>
+            )}
+          </Button>
 
       <FiltersCard
         open={showFilters}
@@ -163,7 +173,7 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
         reservation={viewingDetails}
         onClose={() => setViewingDetails(null)}
       />
-      
+
       <CreateReservationModal
         open={creating}
         onClose={() => setCreating(false)}

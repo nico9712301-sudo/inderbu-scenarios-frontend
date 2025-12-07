@@ -42,8 +42,6 @@ export default async function DashboardRoute(props: DashboardPageProps) {
     return <DashboardReservationsPage initialData={result} />;
 
   } catch (error) {
-    console.error('SSR Error in DashboardRoute:', error);
-    // For unexpected errors, let Next.js error boundary handle it
     console.error('Unexpected error in DashboardRoute:', error);
     throw error;
   }

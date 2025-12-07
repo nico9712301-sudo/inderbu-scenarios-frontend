@@ -9,10 +9,13 @@ import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
-import { FileEdit, Calendar, Repeat, Clock, Search } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+import { FileEdit, Calendar, Repeat, Clock, Search, MoreHorizontal } from "lucide-react";
 import { Input } from "@/shared/ui/input";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale/es";
+import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 
 interface DashboardReservationsTableProps {
   reservations: ReservationDto[];
@@ -27,10 +30,90 @@ interface DashboardReservationsTableProps {
 
 const weekdayNames = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"] as const;
 
-const fmtDate = (d: string) =>
-  format(parseISO(d), "dd MMM yyyy", { locale: es });
+/* -------------------------- Instant Hover Tooltip -------------------------- */
+const InstantHoverTooltip = ({ availableSlots }: { availableSlots: any[] }) => {
+  return (
+    <TooltipProvider delayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="font-semibold text-primary hover:text-primary/80 cursor-pointer transition-colors duration-200">
+            +{availableSlots.length - 2} más
+          </div>
+        </TooltipTrigger>
+        <TooltipContent
+          side="right"
+          className="max-w-xs p-3 bg-white border border-gray-200 shadow-lg rounded-lg"
+          sideOffset={5}
+        >
+          <div className="space-y-1">
+            <div className="text-xs font-medium text-gray-700 mb-2 flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              Todos los horarios ({availableSlots.length})
+            </div>
+            <div className="grid gap-1">
+              {availableSlots.map((slot, idx) => (
+                <div
+                  key={slot.id || idx}
+                  className="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded border border-blue-200"
+                >
+                  {fmtTime(slot.startTime)} – {fmtTime(slot.endTime)}
+                </div>
+              ))}
+            </div>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
+
+// Zona horaria de Colombia (America/Bogota = UTC-5)
+const COLOMBIA_TIMEZONE = "America/Bogota";
+
+// Normaliza una fecha string a formato ISO UTC para parsing
+const normalizeToUTC = (d: string): string => {
+  // Si ya tiene 'Z' al final (formato ISO UTC), usarla tal cual
+  if (d.endsWith("Z")) {
+    return d;
+  }
+  
+  // Si tiene offset de zona horaria (+00:00, -05:00, etc.), usarla tal cual
+  if (d.includes("+") || (d.includes("-") && d.length > 19)) {
+    return d;
+  }
+  
+  // Detectar formato MySQL datetime (YYYY-MM-DD HH:mm:ss)
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(d)) {
+    // Reemplazar el espacio por 'T' y agregar 'Z' para indicar UTC
+    return d.replace(" ", "T") + "Z";
+  }
+  
+  // Si no tiene indicador de zona horaria, asumimos UTC
+  return d.endsWith("T") ? `${d}Z` : `${d.replace(" ", "T")}Z`;
+};
+
+const fmtDate = (d: string) => {
+  const utcDateString = normalizeToUTC(d);
+  
+  // formatInTimeZone puede recibir un string ISO directamente
+  // y lo interpreta como UTC automáticamente
+  return formatInTimeZone(utcDateString, COLOMBIA_TIMEZONE, "dd MMM yyyy", { locale: es });
+};
+
+// Formatea fecha y hora completa en zona horaria de Colombia
+const fmtDateTime = (d: string) => {
+  const utcDateString = normalizeToUTC(d);
+  
+  // parseISO interpreta correctamente las fechas ISO con 'Z' como UTC
+  const utcDate = parseISO(utcDateString);
+  
+  // formatInTimeZone interpreta el Date object como UTC y lo formatea en la zona horaria especificada
+  // Esto es la forma correcta de formatear fechas UTC en una zona horaria específica
+  return formatInTimeZone(utcDate, COLOMBIA_TIMEZONE, "dd MMM yyyy, h:mm aaa", { locale: es });
+};
+
 const fmtTime = (t: string) =>
-  format(parseISO(`1970-01-01T${t}`), "h aaa", { locale: es });
+  format(parseISO(`1970-01-01T${t}`), "h:mm aaa", { locale: es });
 
 const ReservationTypeBadge = ({ type }: { type: string }) =>
   type === "SINGLE" ? (
@@ -67,52 +150,51 @@ const WeekDaysDisplay = ({ weekDays }: { weekDays: number[] | null }) => {
 const TimeSlotDisplay = ({ reservation }: { reservation: ReservationDto }) => {
   const { type, timeSlot, timeslots } = reservation;
 
-  if (type === "SINGLE" && timeSlot) {
+  // Priorizar el array timeslots si existe y tiene datos
+  let availableSlots = timeslots?.length ? timeslots : (timeSlot ? [timeSlot] : []);
+
+  if (!availableSlots.length) {
+    return <span className="text-xs text-muted-foreground">Sin horario</span>;
+  }
+
+  // Ordenar timeslots por hora de inicio (startTime)
+  availableSlots = [...availableSlots].sort((a, b) => {
+    return a.startTime.localeCompare(b.startTime);
+  });
+
+  // Una sola franja horaria
+  if (availableSlots.length === 1) {
     return (
       <div className="flex items-center gap-1">
         <Clock className="w-3 h-3 text-muted-foreground" />
         <span className="text-sm">
-          {fmtTime(timeSlot.startTime)} – {fmtTime(timeSlot.endTime)}
+          {fmtTime(availableSlots[0].startTime)} – {fmtTime(availableSlots[0].endTime)}
         </span>
       </div>
     );
   }
 
-  if (type === "RANGE" && timeslots?.length) {
-    if (timeslots.length === 1) {
-      return (
-        <div className="flex items-center gap-1">
-          <Clock className="w-3 h-3 text-muted-foreground" />
-          <span className="text-sm">
-            {fmtTime(timeslots[0].startTime)} – {fmtTime(timeslots[0].endTime)}
-          </span>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-1">
-        <div className="flex items-center gap-1">
-          <Clock className="w-3 h-3 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">
-            {timeslots.length} horarios
-          </span>
-        </div>
-        <div className="text-xs text-muted-foreground space-y-0.5">
-          {timeslots.slice(0, 2).map((slot, idx) => (
-            <div key={idx}>
-              {fmtTime(slot.startTime)} – {fmtTime(slot.endTime)}
-            </div>
-          ))}
-          {timeslots.length > 2 && (
-            <div className="text-muted">+{timeslots.length - 2} más…</div>
-          )}
-        </div>
+  // Múltiples franjas horarias
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-1">
+        <Clock className="w-3 h-3 text-muted-foreground" />
+        <span className="text-xs text-muted-foreground">
+          {availableSlots.length} horarios
+        </span>
       </div>
-    );
-  }
-
-  return <span className="text-xs text-muted-foreground">Sin horario</span>;
+      <div className="text-xs text-muted-foreground space-y-0.5">
+        {availableSlots.slice(0, 2).map((slot, idx) => (
+          <div key={slot.id || idx}>
+            {fmtTime(slot.startTime)} – {fmtTime(slot.endTime)}
+          </div>
+        ))}
+        {availableSlots.length > 2 && (
+          <InstantHoverTooltip availableSlots={availableSlots} />
+        )}
+      </div>
+    </div>
+  );
 };
 
 /* ------------------------------ Date display ------------------------------ */
@@ -164,6 +246,8 @@ export function DashboardReservationsTable({
   // Local optimistic updates for status changes
   const [rows, setRows] = useState<ReservationDto[]>([]);
   useEffect(() => setRows(reservations), [reservations]);
+
+  console.log({reservations});
 
   /* -------------------------------- Columns -------------------------------- */
   const columns = useMemo(
@@ -242,10 +326,10 @@ export function DashboardReservationsTable({
         header: "Creada",
         cell: (row: ReservationDto) => (
           <div className="text-sm">
-            <div>{fmtDate(row.createdAt)}</div>
+            <div>{fmtDateTime(row.createdAt)}</div>
             {row.updatedAt && row.updatedAt !== row.createdAt && (
               <div className="text-xs text-muted-foreground mt-0.5">
-                Act. {fmtDate(row.updatedAt)}
+                Act. {fmtDateTime(row.updatedAt)}
               </div>
             )}
           </div>
