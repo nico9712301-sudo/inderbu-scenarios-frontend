@@ -17,13 +17,13 @@ export const StatsGrid = ({
     />
     <StatCard
       title="Escenarios Activos"
-      value="—"
+      value={stats.activeScenarios.toString()}
       Icon={MapPin}
-      trend="neutral"
+      trend="up"
     />
     <StatCard
       title="Clientes Registrados"
-      value="—"
+      value={stats.registeredClients.toString()}
       Icon={Users}
       trend="up"
       // changeLabel="+3% desde el mes pasado"

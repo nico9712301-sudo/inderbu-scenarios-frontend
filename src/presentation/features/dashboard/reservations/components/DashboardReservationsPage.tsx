@@ -26,6 +26,8 @@ interface IStats {
   approved: number;
   pending: number;
   rejected: number;
+  activeScenarios: number;
+  registeredClients: number;
 }
 
 export function DashboardReservationsPage({ initialData }: DashboardReservationsPageProps) {
@@ -172,6 +174,10 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
       <ReservationDetailsModal
         reservation={viewingDetails}
         onClose={() => setViewingDetails(null)}
+        onStatusChange={() => {
+          // Refrescar datos del dashboard tras cambio de estado
+          refetch();
+        }}
       />
 
       <CreateReservationModal

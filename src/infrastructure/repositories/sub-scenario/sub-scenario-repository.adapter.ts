@@ -3,6 +3,8 @@ import { executeWithDomainError } from "./execute-with-domain-error.wrapper";
 import {
   ISubScenarioRepository,
   SubScenariosFilters,
+  SubScenarioStatsFilters,
+  SubScenarioStats,
 } from "@/entities/sub-scenario/infrastructure/ISubScenarioRepository";
 import { PaginatedSubScenarios } from "@/entities/sub-scenario/domain/sub-scenario.domain";
 import { SubScenarioEntity } from "@/entities/sub-scenario/domain/SubScenarioEntity";
@@ -148,5 +150,25 @@ export class SubScenarioRepository implements ISubScenarioRepository {
       // Make API request (soft delete - set isActive to false)
       await this.httpClient.delete(`/sub-scenarios/${id}`);
     }, `Failed to delete sub-scenario ${id}`);
+  }
+
+  async getStats(filters?: SubScenarioStatsFilters): Promise<SubScenarioStats> {
+    return executeWithDomainError(async () => {
+      // Build query params
+      const params = new URLSearchParams();
+      if (filters?.active !== undefined) {
+        params.append("active", filters.active.toString());
+      }
+
+      // Call HTTP client - backend returns { statusCode, message, data: { count: number } }
+      const result = await this.httpClient.get<BackendResponse<{ count: number }>>(
+        `/sub-scenarios/stats?${params.toString()}`
+      );
+
+      // Return the stats directly from the backend response
+      return {
+        count: result.data.count,
+      };
+    }, "Failed to fetch sub-scenario stats");
   }
 }

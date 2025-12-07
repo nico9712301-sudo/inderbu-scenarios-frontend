@@ -44,6 +44,15 @@ export interface PaginatedUsers {
   meta: PageMetaDto;
 }
 
+export interface UserStatsFilters {
+  roleId?: number[];
+  isActive?: boolean;
+}
+
+export interface UserStats {
+  count: number;
+}
+
 /**
  * User Repository Interface
  * 
@@ -55,4 +64,5 @@ export interface IUserRepository {
   getById(id: number): Promise<UserEntity>;
   create(userData: CreateUserDto): Promise<UserEntity>;
   update(id: number, userData: UpdateUserDto): Promise<UserEntity>;
+  getStats(filters?: UserStatsFilters): Promise<UserStats>;
 }

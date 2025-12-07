@@ -76,6 +76,18 @@ export function ClickableStatusBadge({
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [selectedState, setSelectedState] = useState<number | null>(null);
 
+  // Función para validar transiciones de estado permitidas
+  const isStatusTransitionAllowed = (currentStatusId: number, targetStatusId: number): boolean => {
+    // Solo se permite cambiar de PENDIENTE (1) a CONFIRMADA (2) o CANCELADA (3)
+    // Estados finales (CONFIRMADA y CANCELADA) no pueden cambiar
+    if (currentStatusId === 1) { // PENDIENTE
+      return targetStatusId === 2 || targetStatusId === 3; // CONFIRMADA o CANCELADA
+    }
+
+    // Estados finales no pueden cambiar
+    return false;
+  };
+
   /** 2. Estado actual (puede ser undefined mientras carga) */
   const currentState: ReservationStateDto | undefined = states.find(
     (s) => s.id === statusId
@@ -166,16 +178,20 @@ export function ClickableStatusBadge({
     setSelectedState(null);
   };
 
+  // Verificar si el estado actual permite cambios
+  const canChangeStatus = statusId === 1; // Solo PENDIENTE puede cambiar
+
   return (
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger
-          disabled={loading || isUpdating || !reservationId}
+          disabled={loading || isUpdating || !reservationId || !canChangeStatus}
           asChild
         >
           <Badge
             className={cn(
-              "text-xs px-2 py-0.5 cursor-pointer border",
+              "text-xs px-2 py-0.5 border",
+              canChangeStatus ? "cursor-pointer" : "cursor-default opacity-75",
               currentCatalog.tw
             )}
           >
@@ -206,20 +222,30 @@ export function ClickableStatusBadge({
                 dotTw: "bg-gray-500",
               };
 
+              const isCurrentState = state.id === statusId;
+              const isTransitionAllowed = isStatusTransitionAllowed(statusId, state.id);
+              const isDisabled = !isTransitionAllowed && !isCurrentState;
+
               return (
                 <DropdownMenuItem
                   key={state.id}
-                  onClick={() => showConfirmDialog(state.id)}
+                  onClick={() => !isDisabled && showConfirmDialog(state.id)}
                   className={cn(
                     "text-xs flex items-center",
-                    state.id === statusId && "font-medium"
+                    isCurrentState && "font-medium",
+                    isDisabled && "opacity-50 cursor-not-allowed pointer-events-none"
                   )}
                 >
-                  {state.id === statusId && <Check className="h-3 w-3 mr-1" />}
+                  {isCurrentState && <Check className="h-3 w-3 mr-1" />}
                   <span
                     className={cn("h-2 w-2 rounded-full mr-2", cat.dotTw)}
                   />
                   {cat.label}
+                  {isDisabled && !isCurrentState && (
+                    <span className="ml-auto text-xs text-muted-foreground">
+                      No disponible
+                    </span>
+                  )}
                 </DropdownMenuItem>
               );
             })

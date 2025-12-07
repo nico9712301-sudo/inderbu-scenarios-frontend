@@ -18,6 +18,14 @@ export interface PaginatedSubScenarios {
   meta: PageMetaDto;
 }
 
+export interface SubScenarioStatsFilters {
+  active?: boolean;
+}
+
+export interface SubScenarioStats {
+  count: number;
+}
+
 export interface ISubScenarioRepository {
   getAll(filters?: SubScenariosFilters): Promise<PaginatedSubScenarios>;
   getById(id: number): Promise<SubScenarioEntity | null>;
@@ -25,5 +33,6 @@ export interface ISubScenarioRepository {
   update(id: number, data: Partial<SubScenarioEntity>): Promise<SubScenarioEntity>;
   updateActiveStatus(id: number, active: boolean): Promise<SubScenarioEntity>;
   delete(id: number): Promise<void>;
+  getStats(filters?: SubScenarioStatsFilters): Promise<SubScenarioStats>;
 }
 

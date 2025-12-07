@@ -1,4 +1,6 @@
 import { IReservationRepository, ReservationFilters } from '../domain/repositories/IReservationRepository';
+import { GetSubScenarioStatsUseCase } from '@/application/sub-scenario/use-cases/GetSubScenarioStatsUseCase';
+import { GetUserStatsUseCase } from '@/application/user/use-cases/GetUserStatsUseCase';
 
 export interface DashboardReservationsResponse {
   reservations: any[];
@@ -8,6 +10,8 @@ export interface DashboardReservationsResponse {
     approved: number;
     pending: number;
     rejected: number;
+    activeScenarios: number;
+    registeredClients: number;
   };
   meta: {
     page: number;
@@ -19,7 +23,9 @@ export interface DashboardReservationsResponse {
 
 export class GetDashboardReservationsUseCase {
   constructor(
-    private readonly reservationRepository: IReservationRepository
+    private readonly reservationRepository: IReservationRepository,
+    private readonly getSubScenarioStatsUseCase: GetSubScenarioStatsUseCase,
+    private readonly getUserStatsUseCase: GetUserStatsUseCase
   ) {}
 
   async execute(filters: ReservationFilters = {}): Promise<DashboardReservationsResponse> {
@@ -38,6 +44,14 @@ export class GetDashboardReservationsUseCase {
       const allReservations = await this.reservationRepository.getAllSimple();
       console.log({allReservations});
 
+      // Get active sub-scenarios stats
+      const activeScenarioStats = await this.getSubScenarioStatsUseCase.execute({ active: true });
+
+      // Get registered clients stats (roleId: 3, 4, 5 and isActive: true)
+      const userStats = await this.getUserStatsUseCase.execute({ 
+        roleId: [3, 4, 5], 
+        isActive: true 
+      });
 
       // Calculate stats
       const today = new Date().toISOString().split('T')[0];
@@ -47,6 +61,8 @@ export class GetDashboardReservationsUseCase {
         approved: allReservations.filter(r => r.reservationStateId === 2).length,
         pending: allReservations.filter(r => r.reservationStateId === 1).length,
         rejected: allReservations.filter(r => r.reservationStateId === 3).length,
+        activeScenarios: activeScenarioStats.count,
+        registeredClients: userStats.count,
       };
 
       return {
@@ -90,6 +106,8 @@ export class GetDashboardReservationsUseCase {
         approved: 0,
         pending: 0,
         rejected: 0,
+        activeScenarios: 0,
+        registeredClients: 0,
       },
       meta: {
         page: 1,

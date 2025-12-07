@@ -6,6 +6,8 @@ import {
   CreateUserDto,
   UpdateUserDto,
   PaginatedUsers,
+  UserStatsFilters,
+  UserStats,
 } from "@/entities/user/infrastructure/IUserRepository";
 import { UserEntity } from "@/entities/user/domain/UserEntity";
 
@@ -127,5 +129,34 @@ export class UserRepositoryAdapter implements IUserRepository {
       // Extract data from wrapper and transform to domain entity
       return UserTransformer.toDomain(result.data);
     }, `Failed to update user ${id}`);
+  }
+
+  async getStats(filters?: UserStatsFilters): Promise<UserStats> {
+    return executeWithDomainError(async () => {
+      // Build query params
+      const params = new URLSearchParams();
+      
+      // Add roleId filters (multiple roleIds can be passed)
+      if (filters?.roleId && filters.roleId.length > 0) {
+        filters.roleId.forEach((roleId) => {
+          params.append("roleId", roleId.toString());
+        });
+      }
+      
+      // Add isActive filter
+      if (filters?.isActive !== undefined) {
+        params.append("isActive", filters.isActive.toString());
+      }
+
+      // Call HTTP client - backend returns { statusCode, message, data: { count: number } }
+      const result = await this.httpClient.get<BackendResponse<{ count: number }>>(
+        `/users/stats?${params.toString()}`
+      );
+
+      // Return the stats directly from the backend response
+      return {
+        count: result.data.count,
+      };
+    }, "Failed to fetch user stats");
   }
 }
