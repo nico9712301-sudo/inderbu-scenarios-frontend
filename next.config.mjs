@@ -22,6 +22,11 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'inderbu.gov.co',
+        pathname: '/escenarios/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'inderbu-scenarios-backend.vercel.app',
         pathname: '/**',
       },

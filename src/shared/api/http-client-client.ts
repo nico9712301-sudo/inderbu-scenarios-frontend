@@ -120,6 +120,30 @@ export class ClientHttpClient implements IHttpClient {
 
       if (!response.ok) {
         const errorData = await this.parseJsonSafe<any>(response);
+
+        // Special handling for 401 Unauthorized - could be post-logout race condition
+        if (response.status === 401) {
+          // Check if this might be a post-logout request by attempting to get token
+          const token = this.authContext ? await this.authContext.getToken() : null;
+
+          if (!token) {
+            // No token available - this is likely a post-logout request
+            // Log as warning instead of error and add post-logout flag
+            console.warn('HTTP Client: 401 Unauthorized - likely post-logout request, suppressing error for:', endpoint);
+
+            const gracefulError = new ApiHttpError(
+              401,
+              errorData?.path ?? endpoint,
+              errorData?.timestamp ?? new Date().toISOString(),
+              'Authentication required - session ended'
+            );
+
+            // Add post-logout flag for wrapper detection
+            (gracefulError as any).isPostLogout = true;
+            throw gracefulError;
+          }
+        }
+
         throw new ApiHttpError(
           errorData?.statusCode ?? response.status,
           errorData?.path ?? endpoint,

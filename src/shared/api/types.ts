@@ -27,6 +27,7 @@ export interface ApiError {
   message: string | string[];
   timestamp: string;
   path: string;
+  isPostLogout?: boolean; // Flag to indicate this is a post-logout request
 }
 
 export interface PaginationParams {

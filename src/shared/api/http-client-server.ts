@@ -95,6 +95,28 @@ export class ServerHttpClient implements HttpClient {
           path: endpoint,
         }));
 
+        // Special handling for 401 Unauthorized - could be post-logout race condition
+        if (response.status === 401) {
+          // Check if this might be a post-logout request by attempting to get token
+          const token = this.authContext ? await this.authContext.getToken() : null;
+
+          if (!token) {
+            // No token available - this is likely a post-logout request
+            // Log as warning instead of error and return a more graceful error
+            console.warn('HTTP Client: 401 Unauthorized - likely post-logout request, suppressing error for:', endpoint);
+
+            const gracefulError: ApiError = {
+              statusCode: 401,
+              message: 'Authentication required - session ended',
+              timestamp: new Date().toISOString(),
+              path: endpoint,
+              isPostLogout: true, // Flag to indicate this is post-logout
+            };
+
+            throw gracefulError;
+          }
+        }
+
         // Backend error structure: { statusCode, message, timestamp, path }
         const apiError: ApiError = {
           statusCode: errorData.statusCode || response.status,

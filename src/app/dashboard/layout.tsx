@@ -1,19 +1,13 @@
-"use client";
+import { requireAdmin } from "@/shared/utils/auth-guard.server";
+import { DashboardClientLayout } from "./dashboard-client-layout";
 
-import { SimpleLayout } from "@/shared/components/layout/simple-layout";
-import { SidebarProvider } from "@/shared/providers/dashboard-sidebar.provider";
-import { ProtectedRouteProvider } from "@/shared/providers/protected-route-provider";
-
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <ProtectedRouteProvider adminOnly={true}>
-      <SidebarProvider>
-        <SimpleLayout>{children}</SimpleLayout>
-      </SidebarProvider>
-    </ProtectedRouteProvider>
-  );
+  // Server-side auth validation - redirects if not admin
+  await requireAdmin();
+
+  return <DashboardClientLayout>{children}</DashboardClientLayout>;
 }

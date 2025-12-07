@@ -14,8 +14,6 @@ import { AuthState } from "@/entities/user/model/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-
-
 interface AuthContextType extends AuthState {
   // Actions
   login: (credentials: TLoginData) => Promise<void>;

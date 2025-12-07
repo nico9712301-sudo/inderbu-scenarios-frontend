@@ -19,7 +19,6 @@ export function Providers({ children }: ProvidersProps) {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           {children}
-          {/* <ReactQueryDevtools initialIsOpen={false} /> */}
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
