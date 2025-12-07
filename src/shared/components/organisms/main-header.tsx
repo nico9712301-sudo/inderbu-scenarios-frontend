@@ -15,6 +15,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+
 // import { AuthModal } from "@/presentation/features/auth/components";
 // import { AuthModal } from "@/presentation/features/auth"; // AuthModal not implemented yet
 
@@ -192,8 +193,8 @@ export function MainHeader() {
             ) : (
               <Button
                 variant="outline"
-                className="bg-background text-secondary-600 hover:bg-secondary-50 border-secondary-200 
-                         hover:border-secondary-300 transition-all duration-200 shadow-sm"
+                className="bg-background text-secondary-600 hover:bg-primary hover:text-white border-secondary-200 
+                        transition-all duration-200 shadow-sm"
                 onClick={handleOpenModal}
               >
                 <User className="w-4 h-4 mr-2" />
