@@ -31,6 +31,11 @@ const nextConfig = {
         port: '3001',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'pub-e5ed0e0f2745440cb1d7aaac4f06aaed.r2.dev',
+        pathname: '/**',
+      },
     ],
   },
   experimental: {
