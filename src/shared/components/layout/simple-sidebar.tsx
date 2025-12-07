@@ -8,6 +8,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { menuItems } from "./data/menu-items";
 import { ReactNode } from "react";
+import { useAuth } from "@/presentation/features/auth";
 
 // Strategy Pattern
 type ActiveStrategy = 'exact' | 'prefix' | 'custom';
@@ -130,6 +131,7 @@ function createSidebarConfig(): SidebarSection[] {
 export function SimpleSidebar() {
   const pathname = usePathname();
   const { collapsed, setCollapsed } = useSidebar();
+  const { logout } = useAuth();
   
   const sidebarConfig = createSidebarConfig();
 
@@ -170,7 +172,7 @@ export function SimpleSidebar() {
           <div className="mt-2 border-t border-gray-200 mb-2" />
           <button
             className="flex items-center rounded-md px-3 py-2 text-sm transition-colors text-red-500 hover:bg-red-50 w-full"
-            onClick={() => console.log("Cerrar sesión")}
+            onClick={logout}
           >
             <LogOut className="h-5 w-5 mr-2 text-red-500" />
             {!collapsed && <span>Cerrar sesión</span>}

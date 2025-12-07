@@ -10,12 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
-import { FileEdit, Calendar, Repeat, Clock, Search, MoreHorizontal } from "lucide-react";
+import { FileEdit, Calendar, Repeat, Clock, Search } from "lucide-react";
 import { Input } from "@/shared/ui/input";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale/es";
-import { formatInTimeZone, toZonedTime } from "date-fns-tz";
+import { formatInTimeZone, toZonedTime, } from "date-fns-tz";
 
 interface DashboardReservationsTableProps {
   reservations: ReservationDto[];
@@ -92,12 +91,12 @@ const normalizeToUTC = (d: string): string => {
   return d.endsWith("T") ? `${d}Z` : `${d.replace(" ", "T")}Z`;
 };
 
-const fmtDate = (d: string) => {
-  const utcDateString = normalizeToUTC(d);
+const fmtDate = (isoString: string) => {
+  // Convierte la fecha UTC a una que se vea correcta en UTC (o la zona que quieras)
+  // Aquí usamos 'UTC' para forzar que ignore nuestra zona local (Colombia, UTC-5)
+  const dateInUTC = toZonedTime(isoString, 'UTC');
   
-  // formatInTimeZone puede recibir un string ISO directamente
-  // y lo interpreta como UTC automáticamente
-  return formatInTimeZone(utcDateString, COLOMBIA_TIMEZONE, "dd MMM yyyy", { locale: es });
+  return format(dateInUTC, "dd MMM yyyy", { locale: es,  });
 };
 
 // Formatea fecha y hora completa en zona horaria de Colombia
@@ -202,6 +201,7 @@ const DateDisplay = ({ reservation }: { reservation: ReservationDto }) => {
   const { type, initialDate, finalDate, totalInstances } = reservation;
 
   if (type === "SINGLE") {
+    console.log({initialDate});
     return (
       <div>
         <div className="font-medium text-sm">{fmtDate(initialDate)}</div>

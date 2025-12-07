@@ -36,6 +36,8 @@ export class GetDashboardReservationsUseCase {
 
       // Get all reservations for stats calculation (without pagination)
       const allReservations = await this.reservationRepository.getAllSimple();
+      console.log({allReservations});
+      
 
       // Calculate stats
       const today = new Date().toISOString().split('T')[0];
