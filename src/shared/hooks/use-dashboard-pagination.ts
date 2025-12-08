@@ -67,6 +67,12 @@ export function useDashboardPagination(config: PaginationConfig) {
       }
     }
 
+    // SPECIAL HANDLING: reservationStateIds should always be an array
+    if (result.reservationStateIds !== undefined && !Array.isArray(result.reservationStateIds)) {
+      result.reservationStateIds = [result.reservationStateIds];
+    }
+
+    console.log('🔍 Pagination filters extracted from URL:', result);
     return result;
   }, [searchParams, defaultLimit, defaultPage]);
 

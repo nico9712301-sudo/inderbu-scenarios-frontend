@@ -37,6 +37,8 @@ export class GetDashboardReservationsUseCase {
         ...filters,
       };
 
+      console.log('🔍 Use case filters:', JSON.stringify(defaultFilters, null, 2));
+
       // Get paginated reservations with filters
       const paginatedResult = await this.reservationRepository.getAll(defaultFilters);
 

@@ -151,6 +151,16 @@ export interface CreateReservationResponseDto {
 
 export interface UpdateReservationStateCommand {
   reservationStateId: number; // FIXED: backend expects reservationStateId, not stateId
+  additionalReservationIds?: number[]; // NUEVO: Para operaciones múltiples
+}
+
+export interface BulkUpdateResult {
+  success: boolean;
+  updatedCount: number;
+  errors?: Array<{ reservationId: number; error: string }>;
+  data?: ReservationDto[];
+  message?: string;
+  error?: string;
 }
 
 export interface ReservationStateDto {

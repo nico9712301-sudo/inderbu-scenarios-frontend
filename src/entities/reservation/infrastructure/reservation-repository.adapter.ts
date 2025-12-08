@@ -1,4 +1,5 @@
 import {
+  BulkUpdateResult,
   CreateReservationDto,
   CreateReservationResponseDto,
   GetReservationsQuery,
@@ -61,6 +62,10 @@ export interface ReservationRepository {
     id: number,
     command: UpdateReservationStateCommand
   ): Promise<ReservationDto>;
+  updateMultipleStates(
+    primaryId: number,
+    command: UpdateReservationStateCommand
+  ): Promise<BulkUpdateResult>;
   delete(id: number): Promise<void>;
   getStates(): Promise<ReservationStateDto[]>;
   getAvailableTimeSlots(
@@ -220,13 +225,97 @@ export class ApiReservationRepository implements ReservationRepository {
       userId: response.data.user?.id,
       timeSlotId: response.data.timeSlot?.id,
       reservationStateId: response.data.reservationState?.id,
-      
+
       // IMPORTANT: Handle backend inconsistency - backend sends 'name' but frontend expects 'state'
       reservationState: response.data.reservationState ? {
         ...response.data.reservationState,
         state: (response.data.reservationState as any).name, // Map 'name' from backend to 'state' for frontend
       } : response.data.reservationState,
     } as ReservationDto;
+  }
+
+  async updateMultipleStates(
+    primaryId: number,
+    command: UpdateReservationStateCommand
+  ): Promise<BulkUpdateResult> {
+    // CONFIG para httpOnly cookies
+    const requestConfig = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      next: {
+        tags: [`reservation-${primaryId}`, "reservations"], // Cache tags para invalidación
+      },
+    };
+
+    console.log(
+      `Repository: Updating multiple reservations state - Primary: ${primaryId}, Additional: ${command.additionalReservationIds?.join(', ') || 'none'}, State: ${command.reservationStateId}`
+    );
+
+    try {
+      // Backend expects: { reservationStateId: number, additionalReservationIds?: number[] }
+      // Backend returns: { statusCode, message, data: ReservationDto[] } OR single ReservationDto for individual
+      const response = await this.httpClient.patch<any>(
+        `/reservations/${primaryId}/state`,
+        command,
+        requestConfig
+      );
+
+      // Handle both individual and bulk responses
+      if (Array.isArray(response.data)) {
+        // Bulk response - array of reservations
+        const transformedData = response.data.map((reservation: any) => ({
+          ...reservation,
+          subScenarioId: reservation.subScenario?.id,
+          userId: reservation.user?.id,
+          timeSlotId: reservation.timeSlot?.id,
+          reservationStateId: reservation.reservationState?.id,
+          reservationState: reservation.reservationState ? {
+            ...reservation.reservationState,
+            state: (reservation.reservationState as any).name,
+          } : reservation.reservationState,
+        }));
+
+        return {
+          success: true,
+          updatedCount: transformedData.length,
+          data: transformedData,
+          message: `${transformedData.length} reservas actualizadas exitosamente`,
+        };
+      } else {
+        // Single response - individual reservation (fallback)
+        const transformedReservation = {
+          ...response.data,
+          subScenarioId: response.data.subScenario?.id,
+          userId: response.data.user?.id,
+          timeSlotId: response.data.timeSlot?.id,
+          reservationStateId: response.data.reservationState?.id,
+          reservationState: response.data.reservationState ? {
+            ...response.data.reservationState,
+            state: (response.data.reservationState as any).name,
+          } : response.data.reservationState,
+        };
+
+        return {
+          success: true,
+          updatedCount: 1,
+          data: [transformedReservation],
+          message: "Reserva actualizada exitosamente",
+        };
+      }
+    } catch (error: any) {
+      console.error(`Error updating multiple reservations:`, error);
+
+      return {
+        success: false,
+        updatedCount: 0,
+        error: error.message || 'Error al actualizar las reservas',
+        errors: [{
+          reservationId: primaryId,
+          error: error.message || 'Unknown error'
+        }]
+      };
+    }
   }
 
   async delete(id: number): Promise<void> {

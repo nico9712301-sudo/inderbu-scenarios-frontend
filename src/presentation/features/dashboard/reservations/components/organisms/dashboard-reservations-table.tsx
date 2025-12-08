@@ -9,8 +9,9 @@ import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
+import { Checkbox } from "@/shared/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip";
-import { FileEdit, Calendar, Repeat, Clock, Search } from "lucide-react";
+import { FileEdit, Calendar, Repeat, Clock, Search, Settings } from "lucide-react";
 import { Input } from "@/shared/ui/input";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale/es";
@@ -25,6 +26,10 @@ interface DashboardReservationsTableProps {
   onLimitChange?(limit: number): void;
   onSearch(term: string): void;
   onEdit: (reservation: ReservationDto) => void;
+  selectedIds: Set<number>;
+  onSelectionChange: (reservationId: number, selected: boolean) => void;
+  onSelectAll: (selected: boolean) => void;
+  onBulkAction: () => void;
 }
 
 const weekdayNames = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"] as const;
@@ -242,6 +247,10 @@ export function DashboardReservationsTable({
   onLimitChange,
   onSearch,
   onEdit,
+  selectedIds,
+  onSelectionChange,
+  onSelectAll,
+  onBulkAction,
 }: DashboardReservationsTableProps) {
   // Local optimistic updates for status changes
   const [rows, setRows] = useState<ReservationDto[]>([]);
@@ -249,9 +258,60 @@ export function DashboardReservationsTable({
 
   console.log({reservations});
 
+  // Master checkbox state
+  const allSelected = selectedIds.size > 0 && selectedIds.size === rows.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < rows.length;
+
+  // Master checkbox component
+  const MasterCheckbox = () => (
+    <Checkbox
+      checked={allSelected}
+      ref={el => {
+        if (el) {
+          el.indeterminate = someSelected;
+        }
+      }}
+      onCheckedChange={(checked) => onSelectAll(!!checked)}
+      aria-label="Seleccionar todas las reservas"
+    />
+  );
+
+  // Row checkbox component
+  const RowCheckbox = ({ reservationId }: { reservationId: number }) => (
+    <Checkbox
+      checked={selectedIds.has(reservationId)}
+      onCheckedChange={(checked) => onSelectionChange(reservationId, !!checked)}
+      aria-label={`Seleccionar reserva ${reservationId}`}
+    />
+  );
+
+  // Bulk action button component
+  const BulkActionButton = () => (
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={selectedIds.size === 0}
+      onClick={onBulkAction}
+      className={`flex items-center gap-2 ${
+        selectedIds.size === 0
+          ? 'opacity-50 cursor-not-allowed'
+          : 'hover:bg-primary hover:text-primary-foreground'
+      }`}
+    >
+      <Settings className="h-4 w-4" />
+      Actualizar Estado ({selectedIds.size})
+    </Button>
+  );
+
   /* -------------------------------- Columns -------------------------------- */
   const columns = useMemo(
     () => [
+      {
+        id: "select",
+        header: <MasterCheckbox />,
+        cell: (row: ReservationDto) => <RowCheckbox reservationId={row.id} />,
+        width: "w-12",
+      },
       {
         id: "client",
         header: "Cliente",
@@ -383,7 +443,7 @@ export function DashboardReservationsTable({
         ),
       },
     ],
-    [onEdit]
+    [onEdit, selectedIds, onSelectionChange, onSelectAll, allSelected, someSelected]
   );
 
   // ─── Render ─────────────────────────────────────────────────────────────────
@@ -394,15 +454,7 @@ export function DashboardReservationsTable({
           <div className="flex items-center gap-2">
             <CardTitle>Listado de Reservas</CardTitle>
             <Badge variant="outline">{meta?.totalItems ?? 0}</Badge>
-          </div>
-          <div className="relative w-64">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              className="pl-8"
-              placeholder="Buscar reservas…"
-              value={filters.search}
-              onChange={(e) => onSearch(e.target.value)}
-            />
+            <BulkActionButton />
           </div>
         </div>
       </CardHeader>

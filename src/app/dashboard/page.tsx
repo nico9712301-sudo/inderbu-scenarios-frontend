@@ -12,6 +12,7 @@ interface DashboardPageProps {
     userId?: string;
     dateFrom?: string;
     dateTo?: string;
+    reservationStateIds?: string | string[];
   };
 }
 
@@ -32,7 +33,14 @@ export default async function DashboardRoute(props: DashboardPageProps) {
       userId: searchParams.userId ? parseInt(searchParams.userId) : undefined,
       dateFrom: searchParams.dateFrom || undefined,
       dateTo: searchParams.dateTo || undefined,
+      reservationStateIds: searchParams.reservationStateIds
+        ? Array.isArray(searchParams.reservationStateIds)
+          ? searchParams.reservationStateIds.map(id => parseInt(id))
+          : [parseInt(searchParams.reservationStateIds)]
+        : undefined,
     };
+
+    console.log('🔍 Page.tsx filters:', JSON.stringify(filters, null, 2));
 
     // DDD: Execute use case through service layer
     // All business logic, validation, and data fetching happens in domain/application layers

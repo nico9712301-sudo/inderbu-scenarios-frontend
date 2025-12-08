@@ -38,16 +38,33 @@ export class ReservationRepository implements IReservationRepository {
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
-      // Build query params (igual que el service original)
+      // Build query params (con soporte para arrays)
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, val]) => {
-        if (val !== undefined && val !== null && `${val}`.trim() !== "") {
-          params.set(key, `${val}`);
+        if (val !== undefined && val !== null) {
+          if (key === 'reservationStateIds') {
+            // TESTING: Try with explicit array conversion for NestJS
+            const values = Array.isArray(val) ? val : [val];
+            if (values.length > 0) {
+              // Convert array to comma-separated string for NestJS @Transform
+              params.set('reservationStateIds', values.join(','));
+            }
+          } else if (Array.isArray(val)) {
+            // Handle other arrays - append multiple entries for same key
+            val.forEach(v => {
+              if (v !== undefined && v !== null && `${v}`.trim() !== "") {
+                params.append(key, `${v}`);
+              }
+            });
+          } else if (`${val}`.trim() !== "") {
+            params.set(key, `${val}`);
+          }
         }
       });
 
       // CORRECTO - Usar el endpoint correcto: /reservations (no /reservations/paginated)
       const endpoint = `/reservations${params.toString() ? '?' + params.toString() : ''}`;
+      console.log('🔍 Dashboard Reservations API Call:', endpoint);
 
       // Direct API call with authentication
       const response = await httpClient.get<{
@@ -59,6 +76,12 @@ export class ReservationRepository implements IReservationRepository {
           totalPages: number;
         };
       }>(endpoint);
+
+      console.log('🔍 Reservations API Response:', {
+        dataCount: response.data.length,
+        meta: response.meta,
+        allReservations: response.data
+      });
 
       // CORRECTO - Normalizar datos igual que el service original
       return {

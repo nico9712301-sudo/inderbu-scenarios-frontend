@@ -2,6 +2,7 @@
 
 import { ReservationDetailsModal } from "@/presentation/features/reservations/components/organisms/reservation-details-modal";
 import { CreateReservationModal } from "@/presentation/features/reservations/components/organisms/create-reservation-modal";
+import { BulkStateChangeModal } from "@/presentation/features/reservations/components/organisms/bulk-state-change-modal";
 import { DashboardReservationsResponse } from "../application/GetDashboardReservationsUseCase";
 import { useDashboardReservationsData } from "../hooks/use-dashboard-reservations-data";
 import { FiltersCard } from "@/presentation/features/reservations/components/molecules/filters-card";
@@ -49,6 +50,10 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
   const [creating, setCreating] = useState(false);
   const [viewingDetails, setViewingDetails] = useState<ReservationDto | null>(null);
 
+  // Bulk actions state
+  const [selectedReservationIds, setSelectedReservationIds] = useState<Set<number>>(new Set());
+  const [showBulkStateModal, setShowBulkStateModal] = useState(false);
+
   // Use initial data directly (will update on SSR re-render)
   const reservations: any[] = initialData.reservations;
   const stats: IStats = initialData.stats;
@@ -64,10 +69,16 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
     userId: paginationFilters.userId,
     dateFrom: paginationFilters.dateFrom,
     dateTo: paginationFilters.dateTo,
+    reservationStateIds: paginationFilters.reservationStateIds,
   };
 
   // Check for active filters
-  const hasActiveFilters = Object.values(advancedFilters).some(value => value !== undefined);
+  const hasActiveFilters = Object.entries(advancedFilters).some(([key, value]) => {
+    if (key === 'reservationStateIds') {
+      return Array.isArray(value) && value.length > 0;
+    }
+    return value !== undefined;
+  });
 
   const handleFiltersChange = (newFilters: any) => {
     startTransition(() => {
@@ -84,6 +95,7 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
         userId: undefined,
         dateFrom: undefined,
         dateTo: undefined,
+        reservationStateIds: undefined,
         search: ""
       });
     });
@@ -93,6 +105,45 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
     startTransition(() => {
       router.refresh();
     });
+  };
+
+  // Bulk actions handlers
+  const handleSelectionChange = (reservationId: number, selected: boolean) => {
+    setSelectedReservationIds(prev => {
+      const newSelection = new Set(prev);
+      if (selected) {
+        newSelection.add(reservationId);
+      } else {
+        newSelection.delete(reservationId);
+      }
+      return newSelection;
+    });
+  };
+
+  const handleSelectAll = (selected: boolean) => {
+    if (selected) {
+      setSelectedReservationIds(new Set(reservations.map(r => r.id)));
+    } else {
+      setSelectedReservationIds(new Set());
+    }
+  };
+
+  const handleBulkAction = () => {
+    if (selectedReservationIds.size > 0) {
+      setShowBulkStateModal(true);
+    }
+  };
+
+  const handleBulkStateModalClose = () => {
+    setShowBulkStateModal(false);
+  };
+
+  const handleBulkUpdateSuccess = () => {
+    // Clear selection after successful bulk update
+    setSelectedReservationIds(new Set());
+
+    // Refetch data
+    refetch();
   };
 
   return (
@@ -169,6 +220,10 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
         onLimitChange={onLimitChange}
         onSearch={onSearch}
         onEdit={setViewingDetails}
+        selectedIds={selectedReservationIds}
+        onSelectionChange={handleSelectionChange}
+        onSelectAll={handleSelectAll}
+        onBulkAction={handleBulkAction}
       />
 
       <ReservationDetailsModal
@@ -190,6 +245,13 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
             refetch();
           }, 100);
         }}
+      />
+
+      <BulkStateChangeModal
+        open={showBulkStateModal}
+        selectedReservationIds={selectedReservationIds}
+        onClose={handleBulkStateModalClose}
+        onSuccess={handleBulkUpdateSuccess}
       />
     </section>
   );

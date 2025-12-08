@@ -1,7 +1,7 @@
 'use server';
 
 import { createReservationRepository, ReservationRepository } from '@/entities/reservation/infrastructure/reservation-repository.adapter';
-import { ReservationDto, UpdateReservationStateCommand } from '@/entities/reservation/model/types';
+import { BulkUpdateResult, ReservationDto, UpdateReservationStateCommand } from '@/entities/reservation/model/types';
 import { ClientHttpClient, ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext, ServerAuthContext } from '@/shared/api/server-auth';
 import { revalidateTag } from 'next/cache';
@@ -67,6 +67,82 @@ export async function updateReservationStateAction(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Error al actualizar el estado de la reserva',
+    };
+  }
+}
+
+/**
+ * Update Multiple Reservations State Server Action
+ *
+ * Handles bulk state updates for multiple reservations using the extended endpoint.
+ */
+export async function updateMultipleReservationStatesAction(
+  primaryReservationId: number,
+  additionalReservationIds: number[],
+  newStateId: number
+): Promise<BulkUpdateResult> {
+  try {
+    // Create repository with server-side authentication context
+    const authContext: ServerAuthContext = createServerAuthContext();
+    const httpClient: ClientHttpClient = ClientHttpClientFactory.createClient(authContext);
+    const repository: ReservationRepository = createReservationRepository(httpClient);
+
+    console.log(`Bulk updating reservations - Primary: ${primaryReservationId}, Additional: [${additionalReservationIds.join(', ')}], State: ${newStateId}`);
+
+    // Prepare command for bulk update
+    const command: UpdateReservationStateCommand = {
+      reservationStateId: newStateId,
+      additionalReservationIds: additionalReservationIds.length > 0 ? additionalReservationIds : undefined
+    };
+
+    // Update reservations through repository
+    const result: BulkUpdateResult = await repository.updateMultipleStates(primaryReservationId, command);
+
+    if (result.success) {
+      // CACHE INVALIDATION for all updated reservations
+      const allReservationIds = [primaryReservationId, ...additionalReservationIds];
+
+      // Invalidate individual reservation tags
+      allReservationIds.forEach(id => {
+        revalidateTag(`reservation-${id}`);
+      });
+
+      // Global cache invalidation
+      revalidateTag('reservations');
+
+      // GRANULAR INVALIDATION with response data
+      result.data?.forEach(reservation => {
+        if (reservation.userId) {
+          revalidateTag(`user-${reservation.userId}-reservations`);
+        }
+
+        if (reservation.subScenarioId) {
+          revalidateTag(`scenario-${reservation.subScenarioId}-reservations`);
+
+          // If state change affects availability, invalidate timeslots
+          const reservationDate = new Date(reservation.initialDate).toISOString().split('T')[0];
+          revalidateTag(`timeslots-${reservation.subScenarioId}-${reservationDate}`);
+          revalidateTag(`timeslots-${reservation.subScenarioId}`);
+        }
+      });
+
+      revalidateTag('timeslots');
+
+      console.log(`Bulk update successful: ${result.updatedCount} reservations updated`);
+    }
+
+    return result;
+  } catch (error) {
+    console.error(`Error in bulk update for reservations [${primaryReservationId}, ${additionalReservationIds.join(', ')}]:`, error);
+
+    return {
+      success: false,
+      updatedCount: 0,
+      error: error instanceof Error ? error.message : 'Error al actualizar las reservas',
+      errors: [{
+        reservationId: primaryReservationId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }]
     };
   }
 }
