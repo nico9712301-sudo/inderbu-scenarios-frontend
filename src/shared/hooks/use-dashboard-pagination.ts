@@ -50,27 +50,35 @@ export function useDashboardPagination(config: PaginationConfig) {
     // Extract any additional filters from URL
     for (const [key, value] of searchParams.entries()) {
       if (!['page', 'limit', 'search'].includes(key)) {
-        // Handle arrays (multiple values for same key)
-        if (result[key]) {
-          // If key already exists, convert to array
-          if (!Array.isArray(result[key])) {
-            result[key] = [result[key]];
+        if (key === 'reservationStateIds') {
+          // Special handling: ALWAYS keep as string for reservationStateIds
+          if (result[key]) {
+            // If key already exists, append to comma-separated string
+            result[key] = `${result[key]},${value}`;
+          } else {
+            // First occurrence, keep as string
+            result[key] = value;
           }
-          // Try to parse as number if possible, otherwise keep as string
-          const numValue = Number(value);
-          (result[key] as any[]).push(isNaN(numValue) ? value : numValue);
         } else {
-          // First occurrence, try to parse as number if possible
-          const numValue = Number(value);
-          result[key] = isNaN(numValue) ? value : numValue;
+          // Handle other filters with normal logic
+          if (result[key]) {
+            // If key already exists, convert to array
+            if (!Array.isArray(result[key])) {
+              result[key] = [result[key]];
+            }
+            // Try to parse as number if possible, otherwise keep as string
+            const numValue = Number(value);
+            (result[key] as any[]).push(isNaN(numValue) ? value : numValue);
+          } else {
+            // First occurrence, try to parse as number if possible
+            const numValue = Number(value);
+            result[key] = isNaN(numValue) ? value : numValue;
+          }
         }
       }
     }
 
-    // SPECIAL HANDLING: reservationStateIds should always be an array
-    if (result.reservationStateIds !== undefined && !Array.isArray(result.reservationStateIds)) {
-      result.reservationStateIds = [result.reservationStateIds];
-    }
+    // reservationStateIds is now guaranteed to be a string from the loop above
 
     console.log('🔍 Pagination filters extracted from URL:', result);
     return result;
@@ -98,8 +106,11 @@ export function useDashboardPagination(config: PaginationConfig) {
     // Add any additional filters
     Object.entries(newFilters).forEach(([key, value]) => {
       if (!['page', 'limit', 'search'].includes(key) && value !== undefined && value !== '') {
-        if (Array.isArray(value)) {
-          // Handle arrays - add multiple entries for same key
+        if (key === 'reservationStateIds') {
+          // Special handling: keep as single comma-separated parameter
+          params.set(key, value.toString());
+        } else if (Array.isArray(value)) {
+          // Handle other arrays - add multiple entries for same key
           value.forEach(v => {
             if (v !== undefined && v !== '') {
               params.append(key, v.toString());

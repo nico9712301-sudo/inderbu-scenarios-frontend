@@ -277,13 +277,21 @@ export function DashboardReservationsTable({
   );
 
   // Row checkbox component
-  const RowCheckbox = ({ reservationId }: { reservationId: number }) => (
-    <Checkbox
-      checked={selectedIds.has(reservationId)}
-      onCheckedChange={(checked) => onSelectionChange(reservationId, !!checked)}
-      aria-label={`Seleccionar reserva ${reservationId}`}
-    />
-  );
+  const RowCheckbox = ({ reservation }: { reservation: ReservationDto }) => {
+    const isPending = reservation.reservationState?.state === 'PENDIENTE' ||
+                     reservation.reservationState?.name === 'PENDIENTE' ||
+                     reservation.reservationStateId === 1;
+
+    return (
+      <Checkbox
+        checked={selectedIds.has(reservation.id)}
+        disabled={!isPending}
+        onCheckedChange={(checked) => onSelectionChange(reservation.id, !!checked)}
+        aria-label={`Seleccionar reserva ${reservation.id}`}
+        className={!isPending ? 'opacity-50 cursor-not-allowed' : ''}
+      />
+    );
+  };
 
   // Bulk action button component
   const BulkActionButton = () => (
@@ -309,7 +317,7 @@ export function DashboardReservationsTable({
       {
         id: "select",
         header: <MasterCheckbox />,
-        cell: (row: ReservationDto) => <RowCheckbox reservationId={row.id} />,
+        cell: (row: ReservationDto) => <RowCheckbox reservation={row} />,
         width: "w-12",
       },
       {

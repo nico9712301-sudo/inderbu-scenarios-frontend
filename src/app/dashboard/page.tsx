@@ -35,8 +35,8 @@ export default async function DashboardRoute(props: DashboardPageProps) {
       dateTo: searchParams.dateTo || undefined,
       reservationStateIds: searchParams.reservationStateIds
         ? Array.isArray(searchParams.reservationStateIds)
-          ? searchParams.reservationStateIds.map(id => parseInt(id))
-          : [parseInt(searchParams.reservationStateIds)]
+          ? searchParams.reservationStateIds.join(',')
+          : searchParams.reservationStateIds
         : undefined,
     };
 

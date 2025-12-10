@@ -73,12 +73,7 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
   };
 
   // Check for active filters
-  const hasActiveFilters = Object.entries(advancedFilters).some(([key, value]) => {
-    if (key === 'reservationStateIds') {
-      return Array.isArray(value) && value.length > 0;
-    }
-    return value !== undefined;
-  });
+  const hasActiveFilters = Object.values(advancedFilters).some(value => value !== undefined);
 
   const handleFiltersChange = (newFilters: any) => {
     startTransition(() => {
@@ -109,6 +104,19 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
 
   // Bulk actions handlers
   const handleSelectionChange = (reservationId: number, selected: boolean) => {
+    // Solo permitir selección de reservas PENDIENTES
+    if (selected) {
+      const reservation = reservations.find(r => r.id === reservationId);
+      const isPending = reservation?.reservationState?.state === 'PENDIENTE' ||
+                       reservation?.reservationState?.name === 'PENDIENTE' ||
+                       reservation?.reservationStateId === 1;
+
+      if (!isPending) {
+        console.log(`Skipping selection of reservation ${reservationId}: not in PENDIENTE state`);
+        return; // No permitir seleccionar reservas que no estén pendientes
+      }
+    }
+
     setSelectedReservationIds(prev => {
       const newSelection = new Set(prev);
       if (selected) {
@@ -122,7 +130,17 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
 
   const handleSelectAll = (selected: boolean) => {
     if (selected) {
-      setSelectedReservationIds(new Set(reservations.map(r => r.id)));
+      // Solo seleccionar reservas PENDIENTES
+      const pendingReservationIds = reservations
+        .filter(r => {
+          const isPending = r.reservationState?.state === 'PENDIENTE' ||
+                           r.reservationState?.name === 'PENDIENTE' ||
+                           r.reservationStateId === 1;
+          return isPending;
+        })
+        .map(r => r.id);
+
+      setSelectedReservationIds(new Set(pendingReservationIds));
     } else {
       setSelectedReservationIds(new Set());
     }

@@ -238,13 +238,21 @@ export class ApiReservationRepository implements ReservationRepository {
     primaryId: number,
     command: UpdateReservationStateCommand
   ): Promise<BulkUpdateResult> {
+    // Generar cache tags para todas las reservas afectadas
+    const allReservationIds = [primaryId, ...(command.additionalReservationIds || [])];
+    const cacheTags = [
+      "reservations", // General tag
+      ...allReservationIds.map(id => `reservation-${id}`), // Individual reservation tags
+      ...allReservationIds.map(id => `user-reservations-${id}`), // User-specific tags if needed
+    ];
+
     // CONFIG para httpOnly cookies
     const requestConfig = {
       headers: {
         "Content-Type": "application/json",
       },
       next: {
-        tags: [`reservation-${primaryId}`, "reservations"], // Cache tags para invalidación
+        tags: cacheTags, // Optimized cache tags para invalidación masiva
       },
     };
 

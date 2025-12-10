@@ -1,6 +1,8 @@
 "use client";
 
+import { useCallback } from "react";
 import { SearchSelect } from "@/shared/components/molecules/search-select";
+import { MultiSearchSelect } from "@/shared/components/molecules/multi-search-select";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import {
@@ -30,8 +32,8 @@ type Filters = {
   // NUEVOS FILTROS DE FECHA
   dateFrom?: string; // YYYY-MM-DD
   dateTo?: string; // YYYY-MM-DD
-  // NUEVO FILTRO DE ESTADO (ARRAY)
-  reservationStateIds?: number[];
+  // NUEVO FILTRO DE ESTADO (COMMA-SEPARATED STRING)
+  reservationStateIds?: string;
 };
 
 interface FiltersCardProps {
@@ -51,6 +53,30 @@ export const FiltersCard = ({
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
   const { states: reservationStates, loading: loadingStates } = useReservationStates();
+
+  // HANDLER PARA MULTI-SELECT DE ESTADOS - MEMOIZADO
+  const handleMultiReservationStateChange = useCallback((value: string | undefined) => {
+    onFiltersChange({ ...filters, reservationStateIds: value });
+
+    // Update chip
+    if (value) {
+      const stateIds = value.split(',');
+      const selectedStateNames = stateIds
+        .map(id => {
+          const state = reservationStates.find(s => s.id === Number(id.trim()));
+          return state ? ((state as any).name || (state as any).state || "").toUpperCase() : "";
+        })
+        .filter(Boolean);
+
+      const displayText = selectedStateNames.length === 1
+        ? `Estado: ${selectedStateNames[0]}`
+        : `Estados: ${selectedStateNames.length} seleccionados`;
+
+      updateChip("reservationState", value, displayText, true);
+    } else {
+      updateChip("reservationState", "", "", false);
+    }
+  }, [filters, reservationStates, onFiltersChange]);
 
   // AHORA SÍ PODEMOS HACER RETURN CONDICIONAL
   if (!open) return null;
@@ -113,49 +139,6 @@ export const FiltersCard = ({
     updateChip("dateTo", value ?? "", `Hasta: ${value}`, value !== undefined);
   };
 
-  // HANDLER PARA ESTADO DE RESERVA (ARRAY)
-  const handleReservationStateChange = (value: string | number | null) => {
-    if (value === "all" || value === null) {
-      onFiltersChange({ ...filters, reservationStateIds: undefined });
-      updateChip("reservationState", "", "", false);
-      return;
-    }
-
-    const newStateId = Number(value);
-    const currentStates = filters.reservationStateIds || [];
-
-    // Toggle state in array
-    const updatedStates = currentStates.includes(newStateId)
-      ? currentStates.filter(id => id !== newStateId)
-      : [...currentStates, newStateId];
-
-    const finalStates = updatedStates.length === 0 ? undefined : updatedStates;
-    onFiltersChange({ ...filters, reservationStateIds: finalStates });
-
-    // Update chip with selected state names
-    if (finalStates && finalStates.length > 0) {
-      const selectedStateNames = finalStates
-        .map(id => {
-          const state = reservationStates.find(s => s.id === id);
-          return state ? ((state as any).name || (state as any).state) : "";
-        })
-        .filter(Boolean);
-
-      const displayText = selectedStateNames.length === 1
-        ? `Estado: ${selectedStateNames[0]}`
-        : `Estados: ${selectedStateNames.length} seleccionados`;
-
-      updateChip(
-        "reservationState",
-        finalStates.join(","),
-        displayText,
-        true,
-      );
-    } else {
-      updateChip("reservationState", "", "", false);
-    }
-  };
-
   /* Debounce de búsqueda - searchTimeout ya está declarado arriba */
 
   /* ─────────── Chips visuales ─────────── */
@@ -196,7 +179,7 @@ export const FiltersCard = ({
     setActiveFilters([]);
   };
 
-  // Función para buscar estados (para el SearchSelect)
+  // Función para buscar estados (para el MultiSearchSelect)
   const searchReservationStates = async (query: string) => {
     if (loadingStates) return [];
 
@@ -205,20 +188,10 @@ export const FiltersCard = ({
       return stateName.includes(query.toLowerCase());
     });
 
-    const result = filteredStates.map(state => ({
+    return filteredStates.map(state => ({
       id: state.id,
-      name: (state as any).name || (state as any).state || "Estado desconocido",
+      name: ((state as any).name || (state as any).state || "Estado desconocido").toUpperCase(),
     }));
-
-    // Add special option for when multiple states are selected
-    if (filters.reservationStateIds?.length && filters.reservationStateIds.length > 1) {
-      result.unshift({
-        id: "multiple" as any,
-        name: `${filters.reservationStateIds.length} estados seleccionados`,
-      });
-    }
-
-    return result;
   };
 
   return (
@@ -239,7 +212,7 @@ export const FiltersCard = ({
               filters.userId ||
               filters.dateFrom ||
               filters.dateTo ||
-              filters.reservationStateIds?.length) && (
+              filters.reservationStateIds) && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -332,18 +305,12 @@ export const FiltersCard = ({
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Estado
                 </label>
-                <SearchSelect
+                <MultiSearchSelect
                   placeholder="Todos los estados"
                   searchPlaceholder="Buscar estado..."
                   icon={CheckCircle}
-                  value={
-                    !filters.reservationStateIds?.length
-                      ? "all"
-                      : filters.reservationStateIds.length === 1
-                      ? filters.reservationStateIds[0]
-                      : "multiple"
-                  }
-                  onValueChange={handleReservationStateChange}
+                  value={filters.reservationStateIds}
+                  onValueChange={handleMultiReservationStateChange}
                   onSearch={searchReservationStates}
                   emptyMessage="No se encontraron estados"
                   className="w-full"

@@ -43,12 +43,8 @@ export class ReservationRepository implements IReservationRepository {
       Object.entries(filters).forEach(([key, val]) => {
         if (val !== undefined && val !== null) {
           if (key === 'reservationStateIds') {
-            // TESTING: Try with explicit array conversion for NestJS
-            const values = Array.isArray(val) ? val : [val];
-            if (values.length > 0) {
-              // Convert array to comma-separated string for NestJS @Transform
-              params.set('reservationStateIds', values.join(','));
-            }
+            // Send comma-separated string directly to NestJS @Transform
+            params.set('reservationStateIds', `${val}`);
           } else if (Array.isArray(val)) {
             // Handle other arrays - append multiple entries for same key
             val.forEach(v => {

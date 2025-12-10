@@ -92,10 +92,14 @@ export class ClientHttpClient implements IHttpClient {
       delete headers["Content-Type"];
     }
 
+    // Detect bulk operations and increase timeout
+    const isBulkOperation = endpoint.includes('/state') && body?.additionalReservationIds?.length > 0;
+    const defaultTimeout = isBulkOperation ? 60000 : this.timeout; // 60s for bulk operations
+
     const controller = new AbortController();
     const timeoutId = setTimeout(
       () => controller.abort(),
-      config.timeout ?? this.timeout
+      config.timeout ?? defaultTimeout
     );
 
     try {

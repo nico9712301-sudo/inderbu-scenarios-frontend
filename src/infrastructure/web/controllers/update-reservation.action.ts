@@ -4,7 +4,7 @@ import { createReservationRepository, ReservationRepository } from '@/entities/r
 import { BulkUpdateResult, ReservationDto, UpdateReservationStateCommand } from '@/entities/reservation/model/types';
 import { ClientHttpClient, ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext, ServerAuthContext } from '@/shared/api/server-auth';
-import { revalidateTag } from 'next/cache';
+import { revalidateTag, revalidatePath } from 'next/cache';
 
 /**
  * Update Reservation Server Actions
@@ -127,6 +127,9 @@ export async function updateMultipleReservationStatesAction(
       });
 
       revalidateTag('timeslots');
+
+      // Force revalidation of dashboard page for immediate UI refresh
+      revalidatePath('/dashboard');
 
       console.log(`Bulk update successful: ${result.updatedCount} reservations updated`);
     }

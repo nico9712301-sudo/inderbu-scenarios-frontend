@@ -86,6 +86,13 @@ export const BulkStateChangeModal = ({
     try {
       setIsUpdating(true);
 
+      // Show processing toast for large operations
+      if (selectedIds.length > 5) {
+        toast.info("Procesando operación masiva", {
+          description: `Actualizando ${selectedIds.length} reservas. Esto puede tomar hasta 60 segundos.`,
+        });
+      }
+
       // Use the first ID as primary and rest as additional
       const [primaryId, ...additionalIds] = selectedIds;
 
@@ -111,8 +118,15 @@ export const BulkStateChangeModal = ({
       }
     } catch (err) {
       console.error('Bulk update exception:', err);
+
+      // Enhanced error messaging for timeout scenarios
+      const errorMessage = err instanceof Error ? err.message : "Error desconocido";
+      const isTimeoutError = errorMessage.includes("timeout") || errorMessage.includes("aborted");
+
       toast.error("Error al actualizar reservas", {
-        description: err instanceof Error ? err.message : "No se pudieron actualizar las reservas. Intenta de nuevo.",
+        description: isTimeoutError
+          ? "La operación tardó más de lo esperado. Verifica el estado de las reservas y reintenta si es necesario."
+          : errorMessage,
       });
     } finally {
       setIsUpdating(false);
@@ -136,6 +150,28 @@ export const BulkStateChangeModal = ({
     ? stateCatalog[selectedStateKey] || { label: selectedStateKey, tw: "bg-gray-100", dotTw: "bg-gray-500" }
     : null;
 
+  // Helper function para determinar si es confirmación o cancelación
+  const getActionType = () => {
+    if (!selectedState) return 'actualizar';
+
+    // Método directo: buscar por ID
+    if (selectedState === 2) return 'confirmar'; // ID 2 = CONFIRMADA
+    if (selectedState === 3) return 'cancelar';  // ID 3 = CANCELADA
+
+    // Fallback usando el selectedStateKey
+    if (selectedStateKey === "CONFIRMADA") return 'confirmar';
+    if (selectedStateKey === "CANCELADA") return 'cancelar';
+
+    return 'actualizar';
+  };
+
+  // Debug log para verificar el estado seleccionado
+  console.log('Debug - selectedState:', selectedState);
+  console.log('Debug - selectedStateInfo:', selectedStateInfo);
+  console.log('Debug - selectedStateKey:', selectedStateKey);
+  console.log('Debug - getActionType():', getActionType());
+  console.log('Debug - isUpdating:', isUpdating);
+
   return (
     <>
       {/* Main Selection Modal */}
@@ -144,10 +180,10 @@ export const BulkStateChangeModal = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5 text-primary" />
-              Actualizar Estado de Múltiples Reservas
+              Confirmar o Cancelar Múltiples Reservas
             </DialogTitle>
             <DialogDescription>
-              Selecciona el nuevo estado para {selectedIds.length} reserva(s) seleccionada(s).
+              Confirma o cancela {selectedIds.length} reserva(s) pendiente(s) seleccionada(s).
             </DialogDescription>
           </DialogHeader>
 
@@ -165,7 +201,7 @@ export const BulkStateChangeModal = ({
 
             {/* State selection */}
             <div className="space-y-3">
-              <h3 className="text-sm font-medium">Seleccionar nuevo estado:</h3>
+              <h3 className="text-sm font-medium">¿Qué acción deseas realizar?</h3>
 
               {loading ? (
                 <div className="flex items-center justify-center p-4">
@@ -174,15 +210,21 @@ export const BulkStateChangeModal = ({
                 </div>
               ) : (
                 <div className="grid gap-2">
-                  {states.map((state) => {
-                    const key = (state as any).name ?? (state as any).state;
-                    const cat = stateCatalog[key] ?? {
-                      label: key,
-                      tw: "bg-gray-100 hover:bg-gray-200 text-gray-800 border-gray-300",
-                      dotTw: "bg-gray-500",
-                    };
+                  {states
+                    .filter((state) => {
+                      // Solo mostrar CONFIRMADA y CANCELADA para operaciones bulk
+                      const key = (state as any).name ?? (state as any).state;
+                      return key === 'CONFIRMADA' || key === 'CANCELADA';
+                    })
+                    .map((state) => {
+                      const key = (state as any).name ?? (state as any).state;
+                      const cat = stateCatalog[key] ?? {
+                        label: key,
+                        tw: "bg-gray-100 hover:bg-gray-200 text-gray-800 border-gray-300",
+                        dotTw: "bg-gray-500",
+                      };
 
-                    const isSelected = selectedState === state.id;
+                      const isSelected = selectedState === state.id;
 
                     return (
                       <button
@@ -221,7 +263,18 @@ export const BulkStateChangeModal = ({
               onClick={handleConfirm}
               disabled={!selectedState || isUpdating || loading}
             >
-              Continuar
+              {(() => {
+                if (!selectedState) return "Continuar";
+
+                const actionType = getActionType();
+                if (actionType === 'confirmar') {
+                  return `Confirmar ${selectedIds.length} reserva${selectedIds.length > 1 ? 's' : ''}`;
+                } else if (actionType === 'cancelar') {
+                  return `Cancelar ${selectedIds.length} reserva${selectedIds.length > 1 ? 's' : ''}`;
+                } else {
+                  return "Continuar";
+                }
+              })()}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -233,7 +286,7 @@ export const BulkStateChangeModal = ({
           <AlertDialogHeader className="pb-2">
             <AlertDialogTitle className="flex items-center gap-2 text-lg">
               <AlertTriangle className="h-5 w-5 text-yellow-500" />
-              Confirmar actualización múltiple
+              {selectedStateKey === "CONFIRMADA" ? "Confirmar reservas múltiples" : "Cancelar reservas múltiples"}
             </AlertDialogTitle>
           </AlertDialogHeader>
 
@@ -241,21 +294,14 @@ export const BulkStateChangeModal = ({
             <div className="space-y-4">
               <div className="bg-slate-50 p-3 rounded-md border">
                 <div className="mb-2">
-                  ¿Estás seguro de que deseas cambiar el estado de{" "}
-                  <span className="font-medium text-primary">{selectedIds.length} reserva(s)</span>
-                  {" a "}
-                  <span
-                    className={cn(
-                      "font-semibold px-1.5 py-0.5 rounded-md text-sm",
-                      selectedStateKey === "CONFIRMADA" && "bg-green-100 text-green-800",
-                      selectedStateKey === "CANCELADA" && "bg-red-100 text-red-800",
-                      selectedStateKey === "PENDIENTE" && "bg-yellow-100 text-yellow-800",
-                      selectedStateKey === "RECHAZADA" && "bg-gray-100 text-gray-800"
-                    )}
-                  >
-                    {selectedStateCatalog.label.toLowerCase()}
-                  </span>
-                  ?
+                  {selectedStateKey === "CONFIRMADA"
+                    ? <>¿Estás seguro de que deseas <strong>confirmar</strong> {" "}
+                       <span className="font-medium text-primary">{selectedIds.length} reserva(s)</span>
+                       {" "}pendiente(s)?</>
+                    : <>¿Estás seguro de que deseas <strong>cancelar</strong> {" "}
+                       <span className="font-medium text-primary">{selectedIds.length} reserva(s)</span>
+                       {" "}pendiente(s)?</>
+                  }
                 </div>
               </div>
 
@@ -265,9 +311,16 @@ export const BulkStateChangeModal = ({
                   <span className="font-medium">Importante</span>
                 </div>
                 <div className="text-slate-700 text-sm">
-                  Esta acción afectará múltiples reservas y puede impactar la disponibilidad
-                  de los escenarios y las notificaciones enviadas a los usuarios.
+                  {selectedStateKey === "CONFIRMADA"
+                    ? "Esta acción confirmará múltiples reservas y enviará emails de confirmación a los usuarios. Los escenarios quedarán ocupados en las fechas y horarios especificados."
+                    : "Esta acción cancelará múltiples reservas y enviará emails de cancelación a los usuarios. Los escenarios quedarán disponibles nuevamente."
+                  }
                 </div>
+                {selectedIds.length > 5 && (
+                  <div className="mt-2 text-xs text-amber-600">
+                    💡 Operaciones con más de 5 reservas pueden tomar hasta 60 segundos
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -294,11 +347,37 @@ export const BulkStateChangeModal = ({
               {isUpdating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Actualizando...
+                  {(() => {
+                    const actionType = getActionType();
+                    let actionText;
+
+                    if (actionType === 'confirmar') {
+                      actionText = "Confirmando";
+                    } else if (actionType === 'cancelar') {
+                      actionText = "Cancelando";
+                    } else {
+                      actionText = "Actualizando";
+                    }
+
+                    if (selectedIds.length > 5) {
+                      return `${actionText} ${selectedIds.length} reservas...`;
+                    } else {
+                      return `${actionText} reservas...`;
+                    }
+                  })()}
                 </>
               ) : (
                 <>
-                  Confirmar actualización
+                  {(() => {
+                    const actionType = getActionType();
+                    if (actionType === 'confirmar') {
+                      return "Confirmar reservas";
+                    } else if (actionType === 'cancelar') {
+                      return "Cancelar reservas";
+                    } else {
+                      return "Actualizar reservas";
+                    }
+                  })()}
                 </>
               )}
             </AlertDialogAction>

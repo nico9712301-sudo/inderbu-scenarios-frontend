@@ -19,7 +19,7 @@ export interface ReservationFilters {
   userId?: number;
   dateFrom?: string;
   dateTo?: string;
-  reservationStateIds?: number[];
+  reservationStateIds?: string;
 }
 
 export interface IReservationRepository {
