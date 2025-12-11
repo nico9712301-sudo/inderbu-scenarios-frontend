@@ -10,7 +10,7 @@ export const useDateConfiguration = (
 ) => {
   const [selectedWeekdays, setSelectedWeekdays] = useState<number[]>([]);
   const [dateRange, setDateRange] = useState<IFromTo>(() => ({
-    from: getTodayInColombia(),
+    from: undefined, // Let URL persistence handle initialization
     to: undefined,
   }));
 
@@ -42,20 +42,20 @@ export const useDateConfiguration = (
   const handleStartDateChange = (dateStr: string) => {
     setDateRange((prev) => {
       const newRange = { ...prev, from: dateStr };
-      
+
       // Si hay fecha final y ahora es inválida, limpiarla
       if (prev.to && !validateDateRange(dateStr, prev.to)) {
         newRange.to = undefined;
         // También limpiar del config
         setConfig((prevConfig) => ({ ...prevConfig, endDate: undefined }));
-        
+
         // Notificar al usuario sobre el cambio
         toast.info("Fecha final actualizada", {
           description: "La fecha final fue ajustada automáticamente",
           duration: 3000,
         });
       }
-      
+
       return newRange;
     });
     setConfig((prev) => ({ ...prev, startDate: dateStr }));

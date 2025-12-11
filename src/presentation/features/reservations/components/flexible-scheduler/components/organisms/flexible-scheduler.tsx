@@ -8,18 +8,18 @@ import {
 } from "@/shared/ui/card";
 import { FlexibleSchedulerProps, ScheduleConfig, IFromTo } from "../../types/scheduler.types";
 import { generateTimeSlots, convertBackendTimeSlotsToUI } from "../../utils/time-formatters";
-import { getTodayInColombia } from "../../utils/slot-validators";
 import { AuthModal } from "@/presentation/features/auth/components/organisms/auth-modal";
 import { useReservationProcess } from "../../hooks/use-reservation-process";
 import { useTimeSlotSelection } from "../../hooks/use-time-slot-selection";
 import { useDateConfiguration } from "../../hooks/use-date-configuration";
 import { ConfirmationSection } from "../molecules/confirmation-section";
-import { CalendarIcon, AlertTriangle } from "lucide-react";
 import { TimeSelectionGrid } from "../organisms/time-selection-grid";
 import { useSchedulerState } from "../../hooks/use-scheduler-state";
 import { useURLPersistence } from "../../hooks/use-url-persistence";
+import { getTodayInColombia } from "../../utils/slot-validators";
 import { DateRangePicker } from "../molecules/date-range-picker";
 import { AdvancedOptions } from "../molecules/advanced-options";
+import { CalendarIcon, AlertTriangle } from "lucide-react";
 import { useMemo, useEffect } from "react";
 import { FiLoader } from "react-icons/fi";
 
@@ -112,9 +112,10 @@ export default function FlexibleScheduler({
   };
 
   const handleRestoreDateRange = (restoredRange: IFromTo) => {
-    if (restoredRange.from) {
-      handleStartDateChange(restoredRange.from);
-    }
+    // If there's a date from URL, use it; otherwise fallback to today
+    const dateToUse = restoredRange.from || getTodayInColombia();
+    handleStartDateChange(dateToUse);
+
     if (restoredRange.to) {
       handleEndDateChange(restoredRange.to);
     }
@@ -129,7 +130,7 @@ export default function FlexibleScheduler({
   };
 
   // URL Persistence
-  useURLPersistence(
+  const { hasRestoredFromURL } = useURLPersistence(
     config,
     dateRange,
     selectedWeekdays,
@@ -140,6 +141,11 @@ export default function FlexibleScheduler({
 
   // Auto-consultar cuando cambie la configuración (solo si no tenemos datos iniciales)
   useEffect(() => {
+    // NO ejecutar hasta que la URL haya sido procesada
+    if (!hasRestoredFromURL) {
+      return;
+    }
+
     // Si tenemos datos iniciales y la configuración coincide con los datos iniciales, no hacer nueva consulta
     if (initialDataFormatted) {
       const configMatches =
@@ -153,7 +159,7 @@ export default function FlexibleScheduler({
     }
 
     checkAvailability(availabilityConfig);
-  }, [availabilityConfig, checkAvailability, initialDataFormatted]);
+  }, [availabilityConfig, checkAvailability, initialDataFormatted, hasRestoredFromURL]);
 
   // Generar timeSlots con estado de disponibilidad
   const timeSlots = useMemo(() => {

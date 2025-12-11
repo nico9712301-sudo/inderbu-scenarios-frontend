@@ -16,6 +16,7 @@ export const useURLPersistence = (
   const router = useRouter();
   const searchParams = useSearchParams();
   const isInitialMount = useRef(true);
+  const hasRestoredFromURL = useRef(false);
 
   // Construir estado de URL desde el estado actual
   const buildURLState = useCallback((): URLSchedulerState => {
@@ -84,42 +85,35 @@ export const useURLPersistence = (
   // Restaurar estado desde URL al montar
   useEffect(() => {
     if (!isInitialMount.current) return;
-    
-    const urlState = parseURLState();
-    
-    if (Object.keys(urlState).length === 0) {
-      isInitialMount.current = false;
-      return; // No hay estado en URL
-    }
 
-    // Restaurar configuración de fechas
+    const urlState = parseURLState();
+
+    // Preparar configuración de fechas con fallback a hoy si no hay fecha en URL
     const restoredDateRange: IFromTo = {
-      from: urlState.date,
+      from: urlState.date, // Will be undefined if no date in URL
       to: urlState.endDate,
     };
-    
+
     const restoredConfig: Partial<ScheduleConfig> = {
       hasDateRange: urlState.mode === 'range',
       hasWeekdaySelection: Boolean(urlState.weekdays),
     };
 
     // Restaurar días de semana
-    const restoredWeekdays = urlState.weekdays 
+    const restoredWeekdays = urlState.weekdays
       ? urlState.weekdays.split(',').map(Number).filter(n => !isNaN(n))
       : [];
 
-    // Aplicar estado restaurado
-    if (restoredDateRange.from) {
-      onRestoreDateRange(restoredDateRange);
-    }
-    
+    // SIEMPRE aplicar estado restaurado (incluso si es undefined para permitir fallback)
+    onRestoreDateRange(restoredDateRange);
     onRestoreConfig(restoredConfig);
-    
+
     if (restoredWeekdays.length > 0) {
       onRestoreWeekdays(restoredWeekdays);
     }
 
     isInitialMount.current = false;
+    hasRestoredFromURL.current = true;
   }, []); // Solo al montar
 
   // Sincronizar estado a URL cuando cambie (pero no en el mount inicial)
@@ -133,5 +127,6 @@ export const useURLPersistence = (
   return {
     updateURL: (urlState: URLSchedulerState) => updateURL(urlState),
     parseURLState,
+    hasRestoredFromURL: hasRestoredFromURL.current,
   };
 };
