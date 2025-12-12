@@ -381,6 +381,16 @@ export class ApiReservationRepository implements ReservationRepository {
         SimpleApiResponse<SimplifiedAvailabilityResponse>
       >(url, cacheConfig);
 
+      console.log('📡 BACKEND RESPONSE - TIMESLOTS:');
+      console.log('- URL called:', url);
+      console.log('- Response data:', response.data);
+      console.log('- TimeSlots received:', response.data?.timeSlots);
+      console.log('- TimeSlots count:', response.data?.timeSlots?.length);
+      if (response.data?.timeSlots?.length > 0) {
+        console.log('- First timeslot:', response.data.timeSlots[0]);
+        console.log('- Last timeslot:', response.data.timeSlots[response.data.timeSlots.length - 1]);
+      }
+
       if (!response.data || typeof response.data !== 'object') {
         throw new Error('Invalid response format from availability configuration API');
       }

@@ -88,11 +88,20 @@ export const useURLPersistence = (
 
     const urlState = parseURLState();
 
+    console.log('🔍 CLIENT COMPONENT - URL PERSISTENCE:');
+    console.log('- Raw searchParams:', searchParams.toString());
+    console.log('- Parsed urlState:', urlState);
+    console.log('- urlState.date:', urlState.date);
+    console.log('- urlState.mode:', urlState.mode);
+    console.log('- urlState.weekdays:', urlState.weekdays);
+
     // Preparar configuración de fechas con fallback a hoy si no hay fecha en URL
     const restoredDateRange: IFromTo = {
       from: urlState.date, // Will be undefined if no date in URL
       to: urlState.endDate,
     };
+
+    console.log('- restoredDateRange:', restoredDateRange);
 
     const restoredConfig: Partial<ScheduleConfig> = {
       hasDateRange: urlState.mode === 'range',

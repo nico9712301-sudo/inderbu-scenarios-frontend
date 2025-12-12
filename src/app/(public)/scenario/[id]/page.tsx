@@ -23,32 +23,57 @@ interface PageProps {
   };
 }
 
+// Force dynamic rendering - always fetch fresh data, no cache
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 /**
  * Scenario Detail Page Route (Server Component)
  * 
  * Next.js App Router page that handles individual scenario details.
  * Uses dependency injection to get data and render the presentation layer.
  * Now using modern DDD Container pattern with ContainerFactory
+ * 
+ * IMPORTANT: This route is configured to always fetch fresh data without cache.
+ * Every request will get the latest information from the API.
  */
 export default async function ScenarioDetailRoute({ params, searchParams }: PageProps) {
   const { id } = await params;
   const awaitedSearchParams = await searchParams;
-  
+
+  console.log('🚀 SERVER COMPONENT - SCENARIO PAGE:');
+  console.log('- id:', id);
+  console.log('- awaitedSearchParams:', awaitedSearchParams);
+  console.log('- awaitedSearchParams.date:', awaitedSearchParams.date);
+  console.log('- awaitedSearchParams.finalDate:', awaitedSearchParams.finalDate);
+  console.log('- awaitedSearchParams.weekdays:', awaitedSearchParams.weekdays);
+  console.log('- getTodayString():', getTodayString());
+
+  const initialDateToUse = awaitedSearchParams.date || getTodayString();
+  console.log('- Final initialDate used for availability:', initialDateToUse);
+
   try {
     // DDD: Dependency injection - use central container factory
     const container = ContainerFactory.createContainer();
     const getScenarioDetailUseCase = container.get<GetScenarioDetailUseCase>(TOKENS.GetScenarioDetailUseCase);
     const getAvailabilityUseCase = container.get<GetAvailabilityUseCase>(TOKENS.GetAvailabilityUseCase);
-    
+
     // Execute Use Case through Application Layer - returns pure Domain Entities
     const domainResult: SubScenarioEntity = await getScenarioDetailUseCase.execute({ id });
-    
+
     // Execute Availability Use Case with query params
     const availabilityResult = await getAvailabilityUseCase.execute({
       subScenarioId: parseInt(id),
-      initialDate: awaitedSearchParams.date || getTodayString(),
+      initialDate: initialDateToUse,
       finalDate: awaitedSearchParams.finalDate,
       weekdays: parseWeekdays(awaitedSearchParams.weekdays),
+    });
+
+    console.log('✅ Availability result from use case:', {
+      subScenarioId: availabilityResult.subScenarioId,
+      requestedConfig: availabilityResult.requestedConfiguration,
+      timeSlots: availabilityResult.timeSlots?.length,
+      calculatedDates: availabilityResult.calculatedDates?.length
     });
     
     // Presentation Layer responsibility: Serialize domain entities for client components
