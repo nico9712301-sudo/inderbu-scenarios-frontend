@@ -73,6 +73,7 @@ export function CreateSubScenarioDialog({ open, onOpenChange, handleSubScenarioC
           value={{
             name: formData.name,
             hasCost: formData.hasCost,
+            hourlyPrice: formData.hourlyPrice,
             numberOfSpectators: formData.numberOfSpectators,
             numberOfPlayers: formData.numberOfPlayers,
             recommendations: formData.recommendations,
@@ -87,6 +88,9 @@ export function CreateSubScenarioDialog({ open, onOpenChange, handleSubScenarioC
             }
             if (newValue.hasCost !== formData.hasCost) {
               updateField('hasCost', newValue.hasCost || false);
+            }
+            if (newValue.hourlyPrice !== formData.hourlyPrice) {
+              updateField('hourlyPrice', newValue.hourlyPrice);
             }
             if (newValue.numberOfSpectators !== formData.numberOfSpectators) {
               updateField('numberOfSpectators', newValue.numberOfSpectators || 0);

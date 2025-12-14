@@ -172,35 +172,148 @@ export async function createReservation(command: CreateReservationDto): Promise<
 
     // Execute command
     console.log('Executing repository.create...');
-    const reservation = await repository.create(validatedCommand);
-    console.log('Repository result:', reservation);
+    try {
+      const reservation = await repository.create(validatedCommand);
+      console.log('Repository result:', reservation);
 
-    // Invalidate cache
-    console.log('Invalidating cache...');
-    revalidateTag('reservations');
-    revalidateTag(`reservations-user-${reservation.userId}`);
-    console.log('Cache invalidated');
+      // Invalidate cache
+      console.log('Invalidating cache...');
+      revalidateTag('reservations');
+      revalidateTag(`reservations-user-${reservation.userId}`);
+      console.log('Cache invalidated');
 
-    const result = {
-      success: true,
-      data: {
-        id: reservation.id,
-        reservationDate: reservation.reservationDate,
-      },
-    };
-    
-    console.log('Server Action createReservation: Success result:', result);
-    return result;
+      const result = {
+        success: true,
+        data: {
+          id: reservation.id,
+          reservationDate: reservation.reservationDate,
+        },
+      };
+      
+      console.log('Server Action createReservation: Success result:', result);
+      return result;
+    } catch (repoError) {
+      // Re-throw to outer catch to handle it properly
+      console.log('Repository error caught, re-throwing to outer catch:', repoError);
+      throw repoError;
+    }
     
   } catch (error) {
     console.error('Server Action createReservation: Error occurred:', error);
     console.error('Error name:', error instanceof Error ? error.name : 'Unknown');
     console.error('Error message:', error instanceof Error ? error.message : 'Unknown');
     console.error('Error stack:', error instanceof Error ? error.stack : 'Unknown');
+    console.error('Error details:', (error as any)?.details);
+    console.error('Error data:', (error as any)?.errorData);
+    console.error('Error originalError:', (error as any)?.originalError);
+    console.error('Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+
+    // Try to extract detailed error message from API error response
+    // Default to a generic message, but we'll try to extract the actual message from the error
+    let errorMessage = 'Error inesperado';
+    
+    console.log('[createReservation] Extracting error message...');
+    console.log('[createReservation] Error type:', error?.constructor?.name);
+    console.log('[createReservation] Error instanceof Error:', error instanceof Error);
+    console.log('[createReservation] Error object:', JSON.stringify(error, null, 2));
+    
+    // Handle both Error instances and plain objects (from ServerHttpClient)
+    if (error instanceof Error) {
+      // Start with the error message
+      errorMessage = error.message || 'Error inesperado';
+      console.log('[createReservation] Initial error message:', errorMessage);
+      
+      // Check multiple sources for conflict details
+      // 1. Direct details on error
+      let errorDetails = (error as any)?.details;
+      console.log('[createReservation] Direct details:', errorDetails);
+      
+      // 2. From originalError if available
+      if (!errorDetails && (error as any)?.originalError) {
+        errorDetails = (error as any)?.originalError?.details || (error as any)?.originalError?.errorData?.details;
+        console.log('[createReservation] Details from originalError:', errorDetails);
+      }
+      
+      // 3. From errorData if available
+      if (!errorDetails && (error as any)?.errorData) {
+        errorDetails = (error as any)?.errorData?.details;
+        console.log('[createReservation] Details from errorData:', errorDetails);
+      }
+      
+      // Build detailed conflict message if conflicts found
+      if (errorDetails && errorDetails.conflicts && Array.isArray(errorDetails.conflicts)) {
+        console.log('[createReservation] Found conflicts:', errorDetails.conflicts);
+        const conflictMessages = errorDetails.conflicts.map((c: any) => {
+          return `Fecha ${c.date}, horario ${c.timeslotId}`;
+        });
+        errorMessage = `${errorMessage}. Conflictos en: ${conflictMessages.join('; ')}`;
+        console.log('[createReservation] Final error message with conflicts:', errorMessage);
+      } else {
+        console.log('[createReservation] No conflicts found in errorDetails');
+      }
+    } else if (error && typeof error === 'object') {
+      // Handle plain objects (from ServerHttpClient ApiError)
+      console.log('[createReservation] Error is a plain object, extracting message...');
+      console.log('[createReservation] Error object structure:', {
+        hasMessage: !!(error as any).message,
+        message: (error as any).message,
+        messageType: typeof (error as any).message,
+        statusCode: (error as any).statusCode,
+        allKeys: Object.keys(error as any),
+      });
+      
+      // Extract message from object - USE THE MESSAGE DIRECTLY FROM BACKEND
+      // The backend sends the error message, we should use it instead of "Error inesperado"
+      if ((error as any).message) {
+        const backendMessage = typeof (error as any).message === 'string' 
+          ? (error as any).message 
+          : Array.isArray((error as any).message)
+            ? (error as any).message.join(', ')
+            : null;
+        
+        if (backendMessage) {
+          errorMessage = backendMessage; // Use the actual backend message!
+          console.log('[createReservation] Using backend message:', errorMessage);
+        } else {
+          console.log('[createReservation] Backend message is null or invalid');
+        }
+      } else {
+        console.log('[createReservation] No message property in error object');
+        // Fallback: try to build a message from statusCode
+        if ((error as any).statusCode === 409) {
+          errorMessage = 'Algunos horarios ya están ocupados';
+        }
+      }
+      
+      // Check for details in the error object (may not be present if backend filter didn't include them)
+      let errorDetails = (error as any)?.details;
+      if (!errorDetails && (error as any)?.errorData) {
+        errorDetails = (error as any)?.errorData?.details;
+      }
+      
+      console.log('[createReservation] Error details from object:', errorDetails);
+      console.log('[createReservation] Full error object keys:', Object.keys(error as any));
+      
+      // Build detailed conflict message if conflicts found
+      if (errorDetails && errorDetails.conflicts && Array.isArray(errorDetails.conflicts)) {
+        console.log('[createReservation] Found conflicts in object:', errorDetails.conflicts);
+        const conflictMessages = errorDetails.conflicts.map((c: any) => {
+          return `Fecha ${c.date}, horario ${c.timeslotId}`;
+        });
+        errorMessage = `${errorMessage}. Conflictos en: ${conflictMessages.join('; ')}`;
+        console.log('[createReservation] Final error message with conflicts:', errorMessage);
+      } else {
+        console.log('[createReservation] No conflicts found in error object, but using backend message:', errorMessage);
+      }
+    } else {
+      console.log('[createReservation] Error is not an Error instance or object, using default message');
+    }
+
+    console.log('[createReservation] Final error message to return:', errorMessage);
 
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Error inesperado',
+      error: errorMessage,
     };
   }
 }

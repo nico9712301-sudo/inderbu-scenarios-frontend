@@ -124,6 +124,14 @@ export class ClientHttpClient implements IHttpClient {
 
       if (!response.ok) {
         const errorData = await this.parseJsonSafe<any>(response);
+        
+        // Log error data for debugging
+        console.log('[HttpClient] Error response:', {
+          status: response.status,
+          errorData,
+          hasDetails: !!errorData?.details,
+          hasConflicts: !!errorData?.details?.conflicts,
+        });
 
         // Special handling for 401 Unauthorized - could be post-logout race condition
         if (response.status === 401) {
@@ -148,12 +156,24 @@ export class ClientHttpClient implements IHttpClient {
           }
         }
 
-        throw new ApiHttpError(
+        // Include full error data in details for better error handling
+        const errorMessage = errorData?.message ?? response.statusText;
+        const error = new ApiHttpError(
           errorData?.statusCode ?? response.status,
           errorData?.path ?? endpoint,
           errorData?.timestamp ?? new Date().toISOString(),
-          errorData?.message ?? response.statusText
+          errorMessage
         );
+        
+        // Attach additional error details (like conflicts) to the error object
+        if (errorData?.details) {
+          (error as any).details = errorData.details;
+        }
+        
+        // Also attach the full error data for debugging
+        (error as any).errorData = errorData;
+        
+        throw error;
       }
 
       const data = await this.parseJsonSafe<T>(response);

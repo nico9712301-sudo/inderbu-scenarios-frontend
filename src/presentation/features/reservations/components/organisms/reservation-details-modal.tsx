@@ -31,6 +31,7 @@ import {
   Repeat,
   User,
   X,
+  Receipt,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import type { ReservationDto } from "@/entities/reservation/model/types";
@@ -43,6 +44,8 @@ import { getStatusBadgeClass, cn } from "@/shared/utils/utils";
 import { useState as useLocalState } from "react";
 import { toast } from "sonner";
 import { UpdateReservationResult, updateReservationStateAction } from "@/infrastructure/web/controllers/update-reservation.action";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import type { PaymentProofPlainObject } from "@/entities/billing/domain/PaymentProofEntity";
 
 /* ------------------------------------------------------------------
     Utilidades de formato y helpers visuales
@@ -115,22 +118,51 @@ interface ReservationDetailsModalProps {
   reservation: ReservationDto | null;
   onClose: () => void;
   onStatusChange?: () => void; // Callback para refrescar datos tras cambio de estado
+  initialTab?: "details" | "payment-proofs"; // Permite abrir con pestaña específica (para notificaciones)
 }
 
 export const ReservationDetailsModal = ({
   reservation,
   onClose,
   onStatusChange,
+  initialTab = "details",
 }: ReservationDetailsModalProps) => {
   const [open, setOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useLocalState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<{ statusId: number; actionLabel: string } | null>(null);
+  const [activeTab, setActiveTab] = useState<"details" | "payment-proofs">(initialTab);
+  const [paymentProofs, setPaymentProofs] = useState<PaymentProofPlainObject[]>([]);
+  const [loadingProofs, setLoadingProofs] = useState(false);
 
   /* Sincronizar apertura con prop */
   useEffect(() => {
     setOpen(!!reservation);
-  }, [reservation]);
+    if (reservation) {
+      setActiveTab(initialTab);
+      // Load payment proofs if reservation has cost
+      if (reservation.subScenario?.hasCost) {
+        loadPaymentProofs();
+      }
+    }
+  }, [reservation, initialTab]);
+
+  const loadPaymentProofs = async () => {
+    if (!reservation) return;
+
+    setLoadingProofs(true);
+    try {
+      const { getPaymentProofsByReservationAction } = await import("@/infrastructure/web/controllers/dashboard/payment-proof.actions");
+      const result = await getPaymentProofsByReservationAction(reservation.id);
+      if (result.success) {
+        setPaymentProofs(result.data);
+      }
+    } catch (error) {
+      console.error("Error loading payment proofs:", error);
+    } finally {
+      setLoadingProofs(false);
+    }
+  };
 
   const handleOpenChange = useCallback(
     (v: boolean) => {
@@ -321,9 +353,23 @@ export const ReservationDetailsModal = ({
           )}
         </DialogHeader>
 
-        {/* ---------- Cuerpo ---------- */}
+        {/* ---------- Cuerpo con Pestañas ---------- */}
         {reservation && (
-          <div className="p-2 space-y-6 overflow-y-auto">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "details" | "payment-proofs")} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="details">
+                <FileText className="h-4 w-4 mr-2" />
+                Detalles
+              </TabsTrigger>
+              {reservation.subScenario?.hasCost && (
+                <TabsTrigger value="payment-proofs">
+                  <Receipt className="h-4 w-4 mr-2" />
+                  Comprobantes de pago
+                </TabsTrigger>
+              )}
+            </TabsList>
+
+            <TabsContent value="details" className="space-y-6 overflow-y-auto max-h-[60vh] p-2">
             {/* Cliente */}
             <section className="bg-slate-50 p-4 rounded-lg border">
               <header className="flex items-center gap-2 mb-3">
@@ -448,7 +494,57 @@ export const ReservationDetailsModal = ({
                 </p>
               </section>
             )}
-          </div>
+            </TabsContent>
+
+            {reservation.subScenario?.hasCost && (
+              <TabsContent value="payment-proofs" className="space-y-4 overflow-y-auto max-h-[60vh] p-2">
+                {loadingProofs ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="ml-2 text-sm text-muted-foreground">
+                      Cargando comprobantes...
+                    </span>
+                  </div>
+                ) : paymentProofs.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Receipt className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-sm text-muted-foreground">
+                      No se han subido comprobantes de pago para esta reserva.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {paymentProofs.map((proof) => (
+                      <div
+                        key={proof.id}
+                        className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border"
+                      >
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-5 w-5 text-blue-600" />
+                          <div>
+                            <p className="text-sm font-medium">{proof.originalFileName}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Subido el {format(parseISO(proof.createdAt.toString()), "dd/MM/yyyy HH:mm")}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={proof.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:underline"
+                          >
+                            Ver
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            )}
+          </Tabs>
         )}
 
         {/* ---------- Pie ---------- */}

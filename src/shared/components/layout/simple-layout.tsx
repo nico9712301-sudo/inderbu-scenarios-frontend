@@ -7,6 +7,7 @@ import {
 import Link from "next/link";
 import type React from "react";
 import { SimpleSidebar } from "./simple-sidebar";
+import { NotificationBell } from "../organisms/notification-bell";
 
 interface SimpleLayoutProps {
   children: React.ReactNode;
@@ -27,6 +28,7 @@ function AdminBar() {
 
       {/* Right Section */}
       <div className="ml-auto flex items-center gap-4">
+        <NotificationBell />
         <Link
           href={"/"}
           className="flex flex-row items-center gap-2 text-white"

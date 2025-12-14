@@ -1,7 +1,9 @@
 "use client";
 
-import { SimpleLayout } from "@/shared/components/layout/simple-layout";
+import { NotificationProvider } from "@/shared/providers/notification-context.provider";
 import { SidebarProvider } from "@/shared/providers/dashboard-sidebar.provider";
+import { SimpleLayout } from "@/shared/components/layout/simple-layout";
+
 
 export function DashboardClientLayout({
   children,
@@ -10,7 +12,9 @@ export function DashboardClientLayout({
 }) {
   return (
     <SidebarProvider>
-      <SimpleLayout>{children}</SimpleLayout>
+      <NotificationProvider>
+        <SimpleLayout>{children}</SimpleLayout>
+      </NotificationProvider>
     </SidebarProvider>
   );
 }

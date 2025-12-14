@@ -19,6 +19,10 @@ export const TOKENS = {
   IReservationRepository: 'IReservationRepository',
   ICommuneRepository: 'ICommuneRepository',
   ICityRepository: 'ICityRepository',
+  IReceiptRepository: 'IReceiptRepository',
+  ITemplateRepository: 'ITemplateRepository',
+  IPaymentProofRepository: 'IPaymentProofRepository',
+  ISubScenarioPriceRepository: 'ISubScenarioPriceRepository',
 
   // =============================================================================
   // USE CASES - SCENARIO (Application Layer)
@@ -90,6 +94,19 @@ export const TOKENS = {
   CreateUserUseCase: 'CreateUserUseCase',
   UpdateUserUseCase: 'UpdateUserUseCase',
   GetRolesUseCase: 'GetRolesUseCase',
+
+  // =============================================================================
+  // USE CASES - BILLING (Application Layer)
+  // =============================================================================
+  GenerateReceiptUseCase: 'GenerateReceiptUseCase',
+  SendReceiptByEmailUseCase: 'SendReceiptByEmailUseCase',
+  GetReceiptsByReservationUseCase: 'GetReceiptsByReservationUseCase',
+  GetReceiptTemplatesUseCase: 'GetReceiptTemplatesUseCase',
+  CreateSubScenarioPriceUseCase: 'CreateSubScenarioPriceUseCase',
+  UpdateSubScenarioPriceUseCase: 'UpdateSubScenarioPriceUseCase',
+  GetSubScenarioPriceUseCase: 'GetSubScenarioPriceUseCase',
+  DeleteSubScenarioPriceUseCase: 'DeleteSubScenarioPriceUseCase',
+  UploadPaymentProofUseCase: 'UploadPaymentProofUseCase',
 
   // =============================================================================
   // APPLICATION SERVICES (Cross-Domain Operations)

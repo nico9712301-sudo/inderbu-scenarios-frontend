@@ -3,13 +3,14 @@
 import { IAdminUsersDataClientResponse } from "@/presentation/utils/serialization.utils";
 import { AdminUsersPage } from "@/presentation/features/dashboard/admin-users/components/AdminUsersPage";
 import { BannersManagementPage } from "../organisms/banners-management-page";
+import { ReceiptTemplatesManagement } from "@/presentation/features/dashboard/billing/components/organisms/receipt-templates-management";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import { Settings, Users, Image } from "lucide-react";
+import { Settings, Users, Image, FileText } from "lucide-react";
 
 interface OptionsPageWithTabsProps {
-  currentTab: "admins" | "banners";
+  currentTab: "admins" | "banners" | "templates";
   adminUsersData: IAdminUsersDataClientResponse | null;
 }
 
@@ -26,6 +27,12 @@ const OptionsNavValues = [
     label: "Banners",
     icon: <Image className="h-4 w-4" />,
     description: "Administra banners y contenido visual de la aplicación",
+  },
+  {
+    value: "templates",
+    label: "Plantillas",
+    icon: <FileText className="h-4 w-4" />,
+    description: "Gestiona plantillas de recibos",
   },
 ] as const;
 
@@ -78,7 +85,7 @@ export function OptionsPageWithTabs({
         className="w-full"
       >
         {/* Tabs Navigation */}
-        <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+        <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
           {OptionsNavValues.map((tab) => (
             <TabsTrigger
               key={tab.value}
@@ -110,6 +117,13 @@ export function OptionsPageWithTabs({
         <TabsContent value="banners" className="space-y-4">
           <div className="rounded-lg border bg-card p-4">
             <BannersManagementPage />
+          </div>
+        </TabsContent>
+
+        {/* Tab Content: Templates */}
+        <TabsContent value="templates" className="space-y-4">
+          <div className="rounded-lg border bg-card p-4">
+            <ReceiptTemplatesManagement />
           </div>
         </TabsContent>
       </Tabs>

@@ -9,6 +9,7 @@ import { SubScenarioPlainObject } from "@/entities/sub-scenario/domain/SubScenar
 export interface SubScenarioFormData {
   name: string;
   hasCost: boolean;
+  hourlyPrice?: number; // Precio por hora (requerido cuando hasCost es true)
   numberOfSpectators: number;
   numberOfPlayers: number;
   recommendations: string;
@@ -36,6 +37,7 @@ export interface SubScenarioFormData {
 
 export interface SubScenarioFormErrors {
   name?: string;
+  hourlyPrice?: string;
   numberOfSpectators?: string;
   numberOfPlayers?: string;
   recommendations?: string;
@@ -85,14 +87,31 @@ const validateSubScenarioForm = (data: SubScenarioFormData): SubScenarioFormErro
     errors.name = "El nombre no puede exceder 100 caracteres";
   }
 
+  // Validate hourlyPrice when hasCost is true
+  if (data.hasCost) {
+    if (data.hourlyPrice === undefined || data.hourlyPrice === null) {
+      errors.hourlyPrice = "El valor por hora es requerido cuando tiene costo";
+    } else if (data.hourlyPrice <= 0) {
+      errors.hourlyPrice = "El valor por hora debe ser mayor a 0";
+    } else if (data.hourlyPrice > 10000) {
+      errors.hourlyPrice = "El valor por hora no puede exceder 10,000 MXN";
+    } else {
+      // Validate decimal places (max 2)
+      const decimalPlaces = (data.hourlyPrice.toString().split('.')[1] || '').length;
+      if (decimalPlaces > 2) {
+        errors.hourlyPrice = "El valor por hora no puede tener más de 2 decimales";
+      }
+    }
+  }
+
   if (data.numberOfSpectators < 0) {
-    errors.numberOfSpectators = "El número de espectadores no puede ser negativo";
+    errors.numberOfSpectators = "El nรบmero de espectadores no puede ser negativo";
   }
 
   if (data.numberOfPlayers < 1) {
     errors.numberOfPlayers = "Debe haber al menos 1 jugador";
   } else if (data.numberOfPlayers > 50) {
-    errors.numberOfPlayers = "No puede haber más de 50 jugadores";
+    errors.numberOfPlayers = "No puede haber mรกs de 50 jugadores";
   }
 
   if (data.recommendations && data.recommendations.length > 500) {
@@ -104,7 +123,7 @@ const validateSubScenarioForm = (data: SubScenarioFormData): SubScenarioFormErro
   }
 
   if (!data.activityArea.id) {
-    errors.activityAreaId = "Debe seleccionar un área de actividad";
+    errors.activityAreaId = "Debe seleccionar un รกrea de actividad";
   }
 
   if (!data.fieldSurfaceType.id) {
@@ -222,6 +241,24 @@ export function useSubScenarioForm({ initialData, onSuccess, onError }: UseSubSc
         fieldSurfaceTypeId: parseInt(formData.fieldSurfaceType.id),
       });
 
+      // Step 1.5: Create price if hasCost is true
+      if (formData.hasCost && formData.hourlyPrice && result.success) {
+        const subScenario: SubScenarioPlainObject = result.data;
+        try {
+          const { createSubScenarioPriceAction } = await import('@/infrastructure/web/controllers/dashboard/sub-scenario-price.actions');
+          await createSubScenarioPriceAction({
+            subScenarioId: subScenario.id!,
+            hourlyPrice: formData.hourlyPrice,
+          });
+        } catch (priceError) {
+          console.error('Price creation error:', priceError);
+          // Sub-scenario was created but price failed - show partial success
+          onError?.("Sub-escenario creado, pero falló la configuración del precio");
+          onSuccess?.(subScenario as SubScenario);
+          return true;
+        }
+      }
+
       if (!result.success) {
         onError?.(result.error || "Error al crear sub-escenario");
         return false;
@@ -237,14 +274,14 @@ export function useSubScenarioForm({ initialData, onSuccess, onError }: UseSubSc
           
           if (!imageResult.success) {
             // Sub-scenario was created but images failed - show partial success
-            onError?.(`Sub-escenario creado, pero falló la subida de imágenes: ${imageResult.error}`);
+            onError?.(`Sub-escenario creado, pero fallรณ la subida de imรกgenes: ${imageResult.error}`);
             onSuccess?.(subScenario as SubScenario); // Still call success for the sub-scenario
             return true;
           }
         } catch (imageError) {
           console.error('Image upload error:', imageError);
           // Sub-scenario was created but images failed - show partial success
-          onError?.("Sub-escenario creado, pero falló la subida de imágenes");
+          onError?.("Sub-escenario creado, pero fallรณ la subida de imรกgenes");
           onSuccess?.(subScenario as SubScenario); // Still call success for the sub-scenario
           return true;
         }
@@ -272,7 +309,12 @@ export function useSubScenarioForm({ initialData, onSuccess, onError }: UseSubSc
         return false;
       }
 
-      // Step 1: Update the sub-scenario basic data
+      // Step 1: Get current sub-scenario to check previous hasCost state
+      const { getSubScenarioPriceAction, createSubScenarioPriceAction, updateSubScenarioPriceAction, deleteSubScenarioPriceAction } = await import('@/infrastructure/web/controllers/dashboard/sub-scenario-price.actions');
+      const currentPrice = await getSubScenarioPriceAction(id);
+      const previousHasCost = currentPrice !== null;
+
+      // Step 2: Update the sub-scenario basic data
       const result = await updateSubScenarioAction(id, {
         name: formData.name,
         hasCost: formData.hasCost,
@@ -284,12 +326,51 @@ export function useSubScenarioForm({ initialData, onSuccess, onError }: UseSubSc
         fieldSurfaceTypeId: parseInt(formData.fieldSurfaceType.id),
       });
 
+      // Step 2.5: Handle price changes
       if (!result.success) {
         onError?.(result.error || "Error al actualizar sub-escenario");
         return false;
       }
 
-      // Step 2: Handle image management if there are changes
+      // If hasCost changed from true to false, delete price
+      if (previousHasCost && !formData.hasCost) {
+        try {
+          await deleteSubScenarioPriceAction(id);
+        } catch (priceError) {
+          console.error('Price deletion error:', priceError);
+          // Continue anyway - price deletion is not critical
+        }
+      }
+      // If hasCost is true, create or update price
+      else if (formData.hasCost && formData.hourlyPrice) {
+        try {
+          if (currentPrice) {
+            // Update existing price
+            await updateSubScenarioPriceAction(id, {
+              hourlyPrice: formData.hourlyPrice,
+            });
+          } else {
+            // Create new price
+            await createSubScenarioPriceAction({
+              subScenarioId: id,
+              hourlyPrice: formData.hourlyPrice,
+            });
+          }
+        } catch (priceError) {
+          console.error('Price update error:', priceError);
+          // Sub-scenario was updated but price failed - show partial success
+          onError?.("Sub-escenario actualizado, pero falló la configuración del precio");
+          onSuccess?.(result.data as SubScenario);
+          return true;
+        }
+      }
+
+      if (!result.success) {
+        onError?.(result.error || "Error al actualizar sub-escenario");
+        return false;
+      }
+
+      // Step 3: Handle image management if there are changes
       if (formData.imageManagement) {
         try {
           const { ManageSubScenarioImagesUseCase } = await import('@/application/dashboard/sub-scenarios/use-cases/ManageSubScenarioImagesUseCase');
@@ -299,20 +380,20 @@ export function useSubScenarioForm({ initialData, onSuccess, onError }: UseSubSc
           
           if (!imageResult.success) {
             // Sub-scenario was updated but images failed - show partial success
-            onError?.(`Sub-escenario actualizado, pero falló la gestión de imágenes: ${imageResult.error}`);
+            onError?.(`Sub-escenario actualizado, pero fallรณ la gestiรณn de imรกgenes: ${imageResult.error}`);
             onSuccess?.(result.data as SubScenario); // Still call success for the sub-scenario
             return true;
           }
         } catch (imageError) {
           console.error('Image management error:', imageError);
           // Sub-scenario was updated but images failed - show partial success
-          onError?.("Sub-escenario actualizado, pero falló la gestión de imágenes");
+          onError?.("Sub-escenario actualizado, pero fallรณ la gestiรณn de imรกgenes");
           onSuccess?.(result.data as SubScenario); // Still call success for the sub-scenario
           return true;
         }
       }
 
-      // Step 3: Success for both sub-scenario and images
+      // Step 4: Success for both sub-scenario and images
       onSuccess?.(result.data as SubScenario);
       return true;
     } catch (error) {
@@ -332,10 +413,26 @@ export function useSubScenarioForm({ initialData, onSuccess, onError }: UseSubSc
   }, []);
 
   // Load sub-scenario data for editing
-  const loadSubScenario = useCallback((subScenario: SubScenario) => {
+  const loadSubScenario = useCallback(async (subScenario: SubScenario) => {
+    // Load price if hasCost is true
+    let hourlyPrice: number | undefined = undefined;
+    if (subScenario.hasCost && subScenario.id) {
+      try {
+        const { getSubScenarioPriceAction } = await import('@/infrastructure/web/controllers/dashboard/sub-scenario-price.actions');
+        const price = await getSubScenarioPriceAction(subScenario.id);
+        if (price) {
+          hourlyPrice = price.hourlyPrice;
+        }
+      } catch (error) {
+        console.error('Error loading price:', error);
+        // Continue without price - will be set when user edits
+      }
+    }
+
     setFormData({
       name: subScenario.name,
       hasCost: subScenario.hasCost,
+      hourlyPrice,
       numberOfSpectators: subScenario.numberOfSpectators || 0,
       numberOfPlayers: subScenario.numberOfPlayers || 0,
       recommendations: subScenario.recommendations || "",

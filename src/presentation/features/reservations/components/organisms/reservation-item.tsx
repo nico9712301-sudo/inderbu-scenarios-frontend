@@ -39,6 +39,7 @@ import {
   cancelReservationAction,
   CancelReservationResult,
 } from "@/infrastructure/web/controllers/cancel-reservation.action";
+import { PaymentProofUploadSection } from "@/presentation/features/dashboard/billing/components/organisms/payment-proof-upload-section";
 
 /* ───────────────────────────────────  Props  ─────────────────────────────── */
 interface ReservationItemProps {
@@ -292,6 +293,17 @@ export function ReservationItem({
               </div>
             </div>
           </div>
+
+          {/* Payment Proof Upload Section (only for paid pending reservations) */}
+          {reservation.hasCost && isPending && reservation.userId && (
+            <PaymentProofUploadSection
+              reservation={reservation}
+              userId={reservation.userId}
+              onUploadSuccess={() => {
+                // Optionally refresh data
+              }}
+            />
+          )}
 
           {/* Acciones */}
           {isActive ? (

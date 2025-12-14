@@ -11,7 +11,8 @@ import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip";
-import { FileEdit, Calendar, Repeat, Clock, Search, Settings } from "lucide-react";
+import { Calendar, Repeat, Clock, Search, Settings } from "lucide-react";
+import { ReservationActionsMenu } from "./reservation-actions-menu";
 import { Input } from "@/shared/ui/input";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale/es";
@@ -26,6 +27,9 @@ interface DashboardReservationsTableProps {
   onLimitChange?(limit: number): void;
   onSearch(term: string): void;
   onEdit: (reservation: ReservationDto) => void;
+  onGenerateReceipt?: (reservation: ReservationDto) => void;
+  onSendReceipt?: (reservation: ReservationDto) => void;
+  onViewReceipts?: (reservation: ReservationDto) => void;
   selectedIds: Set<number>;
   onSelectionChange: (reservationId: number, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
@@ -247,6 +251,9 @@ export function DashboardReservationsTable({
   onLimitChange,
   onSearch,
   onEdit,
+  onGenerateReceipt,
+  onSendReceipt,
+  onViewReceipts,
   selectedIds,
   onSelectionChange,
   onSelectAll,
@@ -267,8 +274,8 @@ export function DashboardReservationsTable({
     <Checkbox
       checked={allSelected}
       ref={el => {
-        if (el) {
-          el.indeterminate = someSelected;
+        if (el && 'indeterminate' in el) {
+          (el as any).indeterminate = someSelected;
         }
       }}
       onCheckedChange={(checked) => onSelectAll(!!checked)}
@@ -279,7 +286,6 @@ export function DashboardReservationsTable({
   // Row checkbox component
   const RowCheckbox = ({ reservation }: { reservation: ReservationDto }) => {
     const isPending = reservation.reservationState?.state === 'PENDIENTE' ||
-                     reservation.reservationState?.name === 'PENDIENTE' ||
                      reservation.reservationStateId === 1;
 
     return (
@@ -417,6 +423,11 @@ export function DashboardReservationsTable({
                 userEmail: row.user?.email,
                 date: fmtDate(row.initialDate),
               }}
+              reservation={{
+                hasCost: row.subScenario?.hasCost ?? false,
+                hasPaymentProofs: false, // TODO: Add hasPaymentProofs to ReservationDto if needed
+                subScenario: row.subScenario,
+              }}
               onStatusChange={(newStatusId) => {
                 setRows((prev) => {
                   const copy = [...prev];
@@ -438,20 +449,19 @@ export function DashboardReservationsTable({
       },
       {
         id: "actions",
-        header: "",
+        header: "Acciones",
         cell: (row: ReservationDto) => (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onEdit(row)}
-            aria-label="Ver detalles"
-          >
-            <FileEdit className="w-4 h-4" />
-          </Button>
+          <ReservationActionsMenu
+            reservation={row}
+            onViewDetail={onEdit}
+            onGenerateReceipt={onGenerateReceipt}
+            onSendReceipt={onSendReceipt}
+            onViewReceipts={onViewReceipts}
+          />
         ),
       },
     ],
-    [onEdit, selectedIds, onSelectionChange, onSelectAll, allSelected, someSelected]
+    [onEdit, onGenerateReceipt, onSendReceipt, onViewReceipts, selectedIds, onSelectionChange, onSelectAll, allSelected, someSelected]
   );
 
   // ─── Render ─────────────────────────────────────────────────────────────────

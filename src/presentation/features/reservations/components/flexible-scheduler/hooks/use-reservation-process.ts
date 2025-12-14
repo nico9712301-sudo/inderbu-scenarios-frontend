@@ -56,6 +56,9 @@ export const useReservationProcess = (
       const result = await createReservation(command);
 
       if (!result.success) {
+        // Limpiar la selección cuando hay un error
+        clearAllTimeSlots();
+        
         if (result.error?.includes('conflicto') || result.error?.includes('ocupado')) {
           toast.error("Algunos horarios fueron ocupados por otro usuario. Refrescando disponibilidad...");
           await checkAvailability(availabilityConfig);
@@ -73,6 +76,8 @@ export const useReservationProcess = (
       return true;
     } catch (err) {
       console.error("Server Action error:", err);
+      // Limpiar la selección cuando hay un error en el catch
+      clearAllTimeSlots();
       toast.error("No se pudo completar la reserva, inténtalo de nuevo");
       return false;
     } finally {

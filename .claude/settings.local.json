@@ -41,7 +41,13 @@
       "Bash(npx storybook:*)",
       "Bash(pnpm dedupe:*)",
       "Read(//var/folders/tf/p3dwmh9929x0tkstp0c4nvq00000gp/T/TemporaryItems/NSIRD_screencaptureui_01rFW7/**)",
-      "Read(//var/folders/tf/p3dwmh9929x0tkstp0c4nvq00000gp/T/TemporaryItems/NSIRD_screencaptureui_OLaC2n/**)"
+      "Read(//var/folders/tf/p3dwmh9929x0tkstp0c4nvq00000gp/T/TemporaryItems/NSIRD_screencaptureui_OLaC2n/**)",
+      "Bash(tree:*)",
+      "Bash(npm run migration:generate:*)",
+      "Bash(npm run migration:run:*)",
+      "Bash(mysql:*)",
+      "Bash(timeout 30 pnpm start:dev)",
+      "Bash(gtimeout:*)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [

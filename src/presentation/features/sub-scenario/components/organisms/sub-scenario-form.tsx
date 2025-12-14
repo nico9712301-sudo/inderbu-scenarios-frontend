@@ -11,7 +11,19 @@ import { ImageUploadData, ImageSlotManagement } from "@/application/dashboard/su
 
 
 interface Props {
-  value: any;
+  value: {
+    name: string;
+    hasCost: boolean;
+    hourlyPrice?: number;
+    numberOfSpectators: number;
+    numberOfPlayers: number;
+    recommendations: string;
+    scenarioId?: number;
+    activityAreaId?: number;
+    fieldSurfaceTypeId?: number;
+    active?: boolean;
+    state?: boolean;
+  };
   scenarios: Scenario[];
   activityAreas: ActivityAreaPlainObject[];
   fieldSurfaceTypes: { id: number; name: string }[];
@@ -159,9 +171,35 @@ export function SubScenarioForm({
             <Toggle
               label="Tiene Costo"
               checked={value.hasCost}
-              onChange={(v) => set("hasCost", v)}
+              onChange={(v) => {
+                set("hasCost", v);
+                // Clear hourlyPrice when hasCost is disabled
+                if (!v) {
+                  set("hourlyPrice", undefined);
+                }
+              }}
             />
           </div>
+          {value.hasCost && (
+            <div className="space-y-1">
+              <Label>Valor por Hora (MXN)*</Label>
+              <Input
+                type="number"
+                min="0"
+                max="10000"
+                step="0.01"
+                value={value.hourlyPrice ?? ""}
+                onChange={(e) => {
+                  const val = e.target.value ? parseFloat(e.target.value) : undefined;
+                  set("hourlyPrice", val);
+                }}
+                placeholder="Ej: 150.00"
+              />
+              <p className="text-xs text-muted-foreground">
+                Precio por hora (máximo 10,000 MXN, máximo 2 decimales)
+              </p>
+            </div>
+          )}
         </div>
       </section>
 

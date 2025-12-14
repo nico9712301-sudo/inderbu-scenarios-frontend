@@ -95,6 +95,13 @@ export class ServerHttpClient implements HttpClient {
           path: endpoint,
         }));
 
+        console.log('[ServerHttpClient] Error response:', {
+          status: response.status,
+          errorData,
+          hasDetails: !!errorData?.details,
+          hasConflicts: !!errorData?.details?.conflicts,
+        });
+
         // Special handling for 401 Unauthorized - could be post-logout race condition
         if (response.status === 401) {
           // Check if this might be a post-logout request by attempting to get token
@@ -117,13 +124,20 @@ export class ServerHttpClient implements HttpClient {
           }
         }
 
-        // Backend error structure: { statusCode, message, timestamp, path }
+        // Backend error structure: { statusCode, message, timestamp, path, details? }
         const apiError: ApiError = {
           statusCode: errorData.statusCode || response.status,
           message: errorData.message || `HTTP ${response.status}`,
           timestamp: errorData.timestamp || new Date().toISOString(),
           path: errorData.path || endpoint,
         };
+
+        // Preserve details (like conflicts) in the error object
+        if (errorData.details) {
+          (apiError as any).details = errorData.details;
+        }
+        // Also attach full errorData for debugging
+        (apiError as any).errorData = errorData;
 
         throw apiError;
       }

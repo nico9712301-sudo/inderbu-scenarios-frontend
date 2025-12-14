@@ -9,7 +9,7 @@ import { EUserRole } from '@/shared/enums/user-role.enum';
 
 interface OptionsRouteProps {
   searchParams: Promise<{
-    tab?: 'admins' | 'banners';
+    tab?: 'admins' | 'banners' | 'templates';
     page?: string;
     limit?: string;
     search?: string;

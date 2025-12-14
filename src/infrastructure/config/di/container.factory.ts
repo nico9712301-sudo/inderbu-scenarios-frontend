@@ -12,6 +12,10 @@ import { UserRepositoryAdapter } from '@/infrastructure/repositories/user/user-r
 import { RoleRepositoryAdapter } from '@/infrastructure/repositories/role/role-repository.adapter';
 import { CommuneRepository } from '@/infrastructure/repositories/commune/commune-repository.adapter';
 import { CityRepository } from '@/infrastructure/repositories/city/city-repository.adapter';
+import { ReceiptRepository, createReceiptRepository } from '@/infrastructure/repositories/billing/receipt-repository.adapter';
+import { TemplateRepository, createTemplateRepository } from '@/infrastructure/repositories/billing/template-repository.adapter';
+import { PaymentProofRepository, createPaymentProofRepository } from '@/infrastructure/repositories/billing/payment-proof-repository.adapter';
+import { SubScenarioPriceRepository, createSubScenarioPriceRepository } from '@/infrastructure/repositories/billing/sub-scenario-price-repository.adapter';
 
 // Domain imports
 import type { IFieldSurfaceTypeRepository } from '@/entities/field-surface-type/domain/IFieldSurfaceTypeRepository';
@@ -23,6 +27,10 @@ import type { IRoleRepository } from '@/entities/role/infrastructure/IRoleReposi
 import type { IUserRepository } from '@/entities/user/infrastructure/IUserRepository';
 import type { ICommuneRepository } from '@/entities/commune/infrastructure/commune-repository.port';
 import type { ICityRepository } from '@/entities/city/infrastructure/city-repository.port';
+import type { IReceiptRepository } from '@/entities/billing/infrastructure/IReceiptRepository';
+import type { ITemplateRepository } from '@/entities/billing/infrastructure/ITemplateRepository';
+import type { IPaymentProofRepository } from '@/entities/billing/infrastructure/IPaymentProofRepository';
+import type { ISubScenarioPriceRepository } from '@/entities/billing/infrastructure/ISubScenarioPriceRepository';
 
 // Use Case imports
 import { GetUserReservationsUseCase as AppGetUserReservationsUseCase } from '@/application/reservations/use-cases/GetUserReservationsUseCase';
@@ -54,6 +62,15 @@ import { GetCommunesUseCase } from '@/application/dashboard/locations/use-cases/
 import { GetCitiesUseCase } from '@/application/dashboard/locations/use-cases/GetCitiesUseCase';
 import { GetLocationsDataUseCase } from '@/application/dashboard/locations/use-cases/GetLocationsDataUseCase';
 import { GetLocationsDataService } from '@/application/dashboard/locations/services/GetLocationsDataService';
+import { GenerateReceiptUseCase } from '@/application/dashboard/billing/use-cases/GenerateReceiptUseCase';
+import { SendReceiptByEmailUseCase } from '@/application/dashboard/billing/use-cases/SendReceiptByEmailUseCase';
+import { GetReceiptsByReservationUseCase } from '@/application/dashboard/billing/use-cases/GetReceiptsByReservationUseCase';
+import { GetReceiptTemplatesUseCase } from '@/application/dashboard/billing/use-cases/GetReceiptTemplatesUseCase';
+import { CreateSubScenarioPriceUseCase } from '@/application/dashboard/billing/use-cases/CreateSubScenarioPriceUseCase';
+import { UpdateSubScenarioPriceUseCase } from '@/application/dashboard/billing/use-cases/UpdateSubScenarioPriceUseCase';
+import { GetSubScenarioPriceUseCase } from '@/application/dashboard/billing/use-cases/GetSubScenarioPriceUseCase';
+import { DeleteSubScenarioPriceUseCase } from '@/application/dashboard/billing/use-cases/DeleteSubScenarioPriceUseCase';
+import { UploadPaymentProofUseCase } from '@/application/dashboard/billing/use-cases/UploadPaymentProofUseCase';
 
 // HTTP Client imports  
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
@@ -238,6 +255,23 @@ export class ContainerFactory {
     // City Repository (singleton)
     container.bind<ICityRepository>(TOKENS.ICityRepository)
       .to(() => new CityRepository(createHttpClient()))
+      .singleton();
+
+    // Billing Repositories (singleton)
+    container.bind<IReceiptRepository>(TOKENS.IReceiptRepository)
+      .to(() => createReceiptRepository(createHttpClient()))
+      .singleton();
+
+    container.bind<ITemplateRepository>(TOKENS.ITemplateRepository)
+      .to(() => createTemplateRepository(createHttpClient()))
+      .singleton();
+
+    container.bind<IPaymentProofRepository>(TOKENS.IPaymentProofRepository)
+      .to(() => createPaymentProofRepository(createHttpClient()))
+      .singleton();
+
+    container.bind<ISubScenarioPriceRepository>(TOKENS.ISubScenarioPriceRepository)
+      .to(() => createSubScenarioPriceRepository(createHttpClient()))
       .singleton();
 
     // Event Bus (singleton)
@@ -434,6 +468,64 @@ export class ContainerFactory {
     container.bind<GetAvailabilityUseCase>(TOKENS.GetAvailabilityUseCase)
       .to(() => new GetAvailabilityUseCaseImpl(
         container.get<IReservationRepository>(TOKENS.IReservationRepository)
+      ));
+
+    // =============================================================================
+    // BILLING USE CASES
+    // =============================================================================
+
+    // Generate Receipt Use Case
+    container.bind<GenerateReceiptUseCase>(TOKENS.GenerateReceiptUseCase)
+      .to(() => new GenerateReceiptUseCase(
+        container.get<IReceiptRepository>(TOKENS.IReceiptRepository)
+      ));
+
+    // Send Receipt By Email Use Case
+    container.bind<SendReceiptByEmailUseCase>(TOKENS.SendReceiptByEmailUseCase)
+      .to(() => new SendReceiptByEmailUseCase(
+        container.get<IReceiptRepository>(TOKENS.IReceiptRepository)
+      ));
+
+    // Get Receipts By Reservation Use Case
+    container.bind<GetReceiptsByReservationUseCase>(TOKENS.GetReceiptsByReservationUseCase)
+      .to(() => new GetReceiptsByReservationUseCase(
+        container.get<IReceiptRepository>(TOKENS.IReceiptRepository)
+      ));
+
+    // Get Receipt Templates Use Case
+    container.bind<GetReceiptTemplatesUseCase>(TOKENS.GetReceiptTemplatesUseCase)
+      .to(() => new GetReceiptTemplatesUseCase(
+        container.get<ITemplateRepository>(TOKENS.ITemplateRepository)
+      ));
+
+    // Create Sub-Scenario Price Use Case
+    container.bind<CreateSubScenarioPriceUseCase>(TOKENS.CreateSubScenarioPriceUseCase)
+      .to(() => new CreateSubScenarioPriceUseCase(
+        container.get<ISubScenarioPriceRepository>(TOKENS.ISubScenarioPriceRepository)
+      ));
+
+    // Update Sub-Scenario Price Use Case
+    container.bind<UpdateSubScenarioPriceUseCase>(TOKENS.UpdateSubScenarioPriceUseCase)
+      .to(() => new UpdateSubScenarioPriceUseCase(
+        container.get<ISubScenarioPriceRepository>(TOKENS.ISubScenarioPriceRepository)
+      ));
+
+    // Get Sub-Scenario Price Use Case
+    container.bind<GetSubScenarioPriceUseCase>(TOKENS.GetSubScenarioPriceUseCase)
+      .to(() => new GetSubScenarioPriceUseCase(
+        container.get<ISubScenarioPriceRepository>(TOKENS.ISubScenarioPriceRepository)
+      ));
+
+    // Delete Sub-Scenario Price Use Case
+    container.bind<DeleteSubScenarioPriceUseCase>(TOKENS.DeleteSubScenarioPriceUseCase)
+      .to(() => new DeleteSubScenarioPriceUseCase(
+        container.get<ISubScenarioPriceRepository>(TOKENS.ISubScenarioPriceRepository)
+      ));
+
+    // Upload Payment Proof Use Case
+    container.bind<UploadPaymentProofUseCase>(TOKENS.UploadPaymentProofUseCase)
+      .to(() => new UploadPaymentProofUseCase(
+        container.get<IPaymentProofRepository>(TOKENS.IPaymentProofRepository)
       ));
   }
 

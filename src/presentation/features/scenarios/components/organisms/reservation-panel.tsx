@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { useState } from "react";
 import { FiCalendar, FiCheck, FiClock, FiLoader } from "react-icons/fi";
 import { toast } from "sonner";
-import { createReservation } from '@/presentation/features/reservations/create/api/createReservationAction';
+import { createReservation } from '@/infrastructure/web/controllers/create-reservation.action';
 
 interface IReservationPanelProps {
   subScenarioId: number;
@@ -36,37 +36,55 @@ export function ReservationPanel({ subScenarioId }: IReservationPanelProps) {
     }
     setIsSubmitting(true);
     try {
-      // USE SERVER ACTION DIRECTLY
-      console.log('ReservationPanel: Using Server Action directly');
-      
-      const command = {
+      const command: CreateReservationDto = {
         subScenarioId,
-        timeSlotId: selectedTimeSlotId,
-        reservationDate: date,
+        timeSlotIds: [selectedTimeSlotId],
+        reservationRange: {
+          initialDate: date,
+        },
       };
       
-      console.log('ReservationPanel: Sending command to server action:', command);
-      console.log('Command details:');
-      console.log('  - subScenarioId:', subScenarioId, typeof subScenarioId);
-      console.log('  - timeSlotId:', selectedTimeSlotId, typeof selectedTimeSlotId);
-      console.log('  - reservationDate:', date, typeof date);
-      
       const result = await createReservation(command);
-      
-      console.log('Server Action result:', result);
       
       if (result.success) {
         toast.success("¡Reserva realizada con éxito!");
         setSelectedTimeSlotId(null);
         setRefreshTrigger((r) => r + 1);
       } else {
+        // Limpiar la selección cuando hay un error
+        setSelectedTimeSlotId(null);
         console.error('Server action failed:', result.error);
-        toast.error(result.error || "No se pudo completar la reserva");
+        // Show the exact error message from the backend
+        toast.error(result.error || "No se pudo completar la reserva", {
+          description: result.error ? undefined : "Por favor, intenta de nuevo",
+        });
       }
       
     } catch (err) {
+      // Limpiar la selección cuando hay un error en el catch
+      setSelectedTimeSlotId(null);
       console.error('Server Action error (caught in try/catch):', err);
-      toast.error("No se pudo completar la reserva, inténtalo de nuevo");
+      console.error('Error type:', err?.constructor?.name);
+      console.error('Error message:', err instanceof Error ? err.message : 'Unknown');
+      console.error('Error details:', (err as any)?.details);
+      
+      // Try to extract error message from the caught error
+      let errorMessage = "No se pudo completar la reserva, inténtalo de nuevo";
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+        
+        // Check for conflict details in the error
+        const errorDetails = (err as any)?.details;
+        if (errorDetails && errorDetails.conflicts && Array.isArray(errorDetails.conflicts)) {
+          const conflictMessages = errorDetails.conflicts.map((c: any) => {
+            return `Fecha ${c.date}, horario ${c.timeslotId}`;
+          });
+          errorMessage = `${errorMessage}. Conflictos en: ${conflictMessages.join('; ')}`;
+        }
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

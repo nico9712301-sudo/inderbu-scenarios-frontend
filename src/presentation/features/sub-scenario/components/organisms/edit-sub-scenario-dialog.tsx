@@ -70,7 +70,9 @@ export function EditSubScenarioDialog({
   // Load sub-scenario data when dialog opens
   useEffect(() => {
     if (subScenario && open) {
-      loadSubScenario(subScenario);
+      loadSubScenario(subScenario).catch((error) => {
+        console.error('Error loading sub-scenario:', error);
+      });
     }
   }, [subScenario, open, loadSubScenario]);
 
@@ -106,6 +108,7 @@ export function EditSubScenarioDialog({
           value={{
             name: formData.name,
             hasCost: formData.hasCost,
+            hourlyPrice: formData.hourlyPrice,
             numberOfSpectators: formData.numberOfSpectators,
             numberOfPlayers: formData.numberOfPlayers,
             recommendations: formData.recommendations,
@@ -118,6 +121,9 @@ export function EditSubScenarioDialog({
             // Transform the flat structure back to the hook structure
             updateField('name', newValue.name || '');
             updateField('hasCost', newValue.hasCost || false);
+            if (newValue.hourlyPrice !== undefined) {
+              updateField('hourlyPrice', newValue.hourlyPrice);
+            }
             updateField('numberOfSpectators', newValue.numberOfSpectators || 0);
             updateField('numberOfPlayers', newValue.numberOfPlayers || 0);
             updateField('recommendations', newValue.recommendations || '');

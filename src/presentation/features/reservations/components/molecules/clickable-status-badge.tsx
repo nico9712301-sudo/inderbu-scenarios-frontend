@@ -23,6 +23,8 @@ import { useMemo, useState } from "react";
 import { cn } from "@/shared/utils/utils";
 import { toast } from "sonner";
 import { UpdateReservationResult, updateReservationStateAction } from "@/infrastructure/web/controllers/update-reservation.action";
+import { ConfirmPaidReservationModal } from "@/presentation/features/dashboard/billing/components/organisms/confirm-paid-reservation-modal";
+import { confirmReservationAction } from "@/infrastructure/web/controllers/dashboard/confirm-reservation.actions";
 
 interface ClickableStatusBadgeProps {
   /** id actual de la reserva – viene del backend */
@@ -32,6 +34,14 @@ interface ClickableStatusBadgeProps {
   reservationInfo?: {
     userEmail?: string;
     date?: string;
+  };
+  /** Reserva completa para verificar hasCost y hasPaymentProofs */
+  reservation?: {
+    hasCost?: boolean;
+    hasPaymentProofs?: boolean;
+    subScenario?: {
+      hasCost?: boolean;
+    };
   };
   /** callback opcional si el padre quiere reaccionar */
   onStatusChange?: (newStatusId: number) => void;
@@ -68,13 +78,18 @@ export function ClickableStatusBadge({
   statusId,
   reservationId,
   reservationInfo,
+  reservation,
   onStatusChange,
 }: ClickableStatusBadgeProps) {
   const { states, loading } = useReservationStates();
   const [isUpdating, setIsUpdating] = useState(false);
   const [open, setOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [confirmPaidDialogOpen, setConfirmPaidDialogOpen] = useState(false);
   const [selectedState, setSelectedState] = useState<number | null>(null);
+  
+  // Check if reservation has cost
+  const hasCost = reservation?.hasCost ?? reservation?.subScenario?.hasCost ?? false;
 
   // Función para validar transiciones de estado permitidas
   const isStatusTransitionAllowed = (currentStatusId: number, targetStatusId: number): boolean => {
@@ -122,14 +137,38 @@ export function ClickableStatusBadge({
   );
 
   /** 5. Mostrar diálogo de confirmación */
-  const showConfirmDialog = (newStateId: number) => {
+  const showConfirmDialog = async (newStateId: number) => {
     if (newStateId === statusId) {
       setOpen(false);
       return;
     }
 
-    setSelectedState(newStateId);
-    setConfirmDialogOpen(true);
+    // If confirming a paid reservation (CONFIRMADA = 2), check for payment proofs
+    if (newStateId === 2 && hasCost && reservationId) {
+      try {
+        const { getPaymentProofsByReservationAction } = await import("@/infrastructure/web/controllers/dashboard/payment-proof.actions");
+        const result = await getPaymentProofsByReservationAction(reservationId);
+        if (result.success && result.data.length > 0) {
+          // Has payment proofs, confirm directly
+          setSelectedState(newStateId);
+          setConfirmDialogOpen(true);
+        } else {
+          // No payment proofs, show special modal
+          setSelectedState(newStateId);
+          setConfirmPaidDialogOpen(true);
+        }
+      } catch (error) {
+        console.error("Error checking payment proofs:", error);
+        // On error, show special modal to be safe
+        setSelectedState(newStateId);
+        setConfirmPaidDialogOpen(true);
+      }
+    } else {
+      // Normal confirmation flow
+      setSelectedState(newStateId);
+      setConfirmDialogOpen(true);
+    }
+    
     setOpen(false); // Cerrar el dropdown
   };
 
@@ -169,6 +208,39 @@ export function ClickableStatusBadge({
     } finally {
       setIsUpdating(false);
       setConfirmDialogOpen(false);
+      setSelectedState(null);
+    }
+  };
+
+  /** 7. Acción al confirmar reserva de pago (con comprobante o justificación) */
+  const handleConfirmPaidReservation = async (data: { justification?: string; paymentProofFile?: File }) => {
+    if (selectedState === null || !reservationId) return;
+
+    try {
+      setIsUpdating(true);
+      
+      // Use special confirm endpoint for paid reservations
+      const result = await confirmReservationAction(reservationId, data);
+
+      if (result.success) {
+        toast.success("Reserva confirmada exitosamente", {
+          description: `La reserva #${reservationId} ha sido confirmada.`,
+        });
+
+        onStatusChange?.(selectedState);
+      } else {
+        toast.error("Error al confirmar reserva", {
+          description: result.error || "No se pudo confirmar la reserva. Intenta de nuevo.",
+        });
+      }
+    } catch (err) {
+      console.error('Confirm paid reservation exception:', err);
+      toast.error("Error al confirmar reserva", {
+        description: err instanceof Error ? err.message : "No se pudo confirmar la reserva. Intenta de nuevo.",
+      });
+    } finally {
+      setIsUpdating(false);
+      setConfirmPaidDialogOpen(false);
       setSelectedState(null);
     }
   };
@@ -344,6 +416,24 @@ export function ClickableStatusBadge({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Modal de confirmación para reservas de pago sin comprobante */}
+      {reservationId && (
+        <ConfirmPaidReservationModal
+          open={confirmPaidDialogOpen}
+          onClose={() => {
+            setConfirmPaidDialogOpen(false);
+            setSelectedState(null);
+          }}
+          reservation={reservation ? {
+            id: reservationId,
+            hasCost,
+            hasPaymentProofs: reservation.hasPaymentProofs,
+            subScenario: reservation.subScenario,
+          } as any : null}
+          onConfirm={handleConfirmPaidReservation}
+        />
+      )}
     </>
   );
 }

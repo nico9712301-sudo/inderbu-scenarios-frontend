@@ -3,18 +3,25 @@
 import { ReservationDetailsModal } from "@/presentation/features/reservations/components/organisms/reservation-details-modal";
 import { CreateReservationModal } from "@/presentation/features/reservations/components/organisms/create-reservation-modal";
 import { BulkStateChangeModal } from "@/presentation/features/reservations/components/organisms/bulk-state-change-modal";
+import { GenerateReceiptModal } from "@/presentation/features/dashboard/billing/components/organisms/generate-receipt-modal";
+import { SendReceiptModal } from "@/presentation/features/dashboard/billing/components/organisms/send-receipt-modal";
+import { ReceiptsHistoryModal } from "@/presentation/features/dashboard/billing/components/organisms/receipts-history-modal";
 import { DashboardReservationsResponse } from "../application/GetDashboardReservationsUseCase";
 import { useDashboardReservationsData } from "../hooks/use-dashboard-reservations-data";
 import { FiltersCard } from "@/presentation/features/reservations/components/molecules/filters-card";
 import { DashboardReservationsTable } from "./organisms/dashboard-reservations-table";
 import { StatsGrid } from "@/presentation/features/reservations/components/molecules/stats-grid";
 import { ReservationDto } from "@/entities/reservation/model/types";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Filter, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
+import { useNotificationContext } from "@/shared/providers/notification-context.provider";
+import { getReservationByIdAction } from "@/infrastructure/web/controllers/dashboard/reservations.actions";
+import type { NotificationResponseDto } from "@/infrastructure/web/controllers/dashboard/notifications.actions";
+import { toast } from "sonner";
 
 
 interface DashboardReservationsPageProps {
@@ -49,6 +56,13 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
   const [showFilters, setShowFilters] = useState(false);
   const [creating, setCreating] = useState(false);
   const [viewingDetails, setViewingDetails] = useState<ReservationDto | null>(null);
+  const [initialTab, setInitialTab] = useState<"details" | "payment-proofs">("details");
+  const [generatingReceipt, setGeneratingReceipt] = useState<ReservationDto | null>(null);
+  const [sendingReceipt, setSendingReceipt] = useState<ReservationDto | null>(null);
+  const [viewingReceipts, setViewingReceipts] = useState<ReservationDto | null>(null);
+
+  // Notification context
+  const { setNotificationHandler } = useNotificationContext();
 
   // Bulk actions state
   const [selectedReservationIds, setSelectedReservationIds] = useState<Set<number>>(new Set());
@@ -60,6 +74,33 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
 
   // Build page meta from initial data
   const pageMeta: PageMeta = buildPageMeta(initialData.meta.totalItems);
+
+  // Setup notification handler
+  useEffect(() => {
+    const handleNotificationClick = async (notification: NotificationResponseDto) => {
+      // Only handle payment_proof_uploaded notifications
+      if (notification.type === 'payment_proof_uploaded' && notification.reservationId) {
+        try {
+          const result = await getReservationByIdAction(notification.reservationId);
+          if (result.success && result.data) {
+            setInitialTab("payment-proofs");
+            setViewingDetails(result.data);
+          } else {
+            toast.error("Error al cargar la reserva", {
+              description: result.success === false ? result.error : "No se pudo cargar la información de la reserva.",
+            });
+          }
+        } catch (error) {
+          console.error("Error loading reservation from notification:", error);
+          toast.error("Error al cargar la reserva", {
+            description: "Ocurrió un error al intentar cargar la información de la reserva.",
+          });
+        }
+      }
+    };
+
+    setNotificationHandler(handleNotificationClick);
+  }, [setNotificationHandler]);
 
   // Extract advanced filters from URL (non-pagination filters)
   const advancedFilters = {
@@ -238,6 +279,9 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
         onLimitChange={onLimitChange}
         onSearch={onSearch}
         onEdit={setViewingDetails}
+        onGenerateReceipt={(reservation) => setGeneratingReceipt(reservation)}
+        onSendReceipt={(reservation) => setSendingReceipt(reservation)}
+        onViewReceipts={(reservation) => setViewingReceipts(reservation)}
         selectedIds={selectedReservationIds}
         onSelectionChange={handleSelectionChange}
         onSelectAll={handleSelectAll}
@@ -246,7 +290,11 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
 
       <ReservationDetailsModal
         reservation={viewingDetails}
-        onClose={() => setViewingDetails(null)}
+        onClose={() => {
+          setViewingDetails(null);
+          setInitialTab("details"); // Reset tab when closing
+        }}
+        initialTab={initialTab}
         onStatusChange={() => {
           // Refrescar datos del dashboard tras cambio de estado
           refetch();
@@ -270,6 +318,25 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
         selectedReservationIds={selectedReservationIds}
         onClose={handleBulkStateModalClose}
         onSuccess={handleBulkUpdateSuccess}
+      />
+
+      {/* Billing Modals */}
+      <GenerateReceiptModal
+        open={!!generatingReceipt}
+        onClose={() => setGeneratingReceipt(null)}
+        reservation={generatingReceipt}
+        onSuccess={() => refetch()}
+      />
+      <SendReceiptModal
+        open={!!sendingReceipt}
+        onClose={() => setSendingReceipt(null)}
+        reservation={sendingReceipt}
+        onSuccess={() => refetch()}
+      />
+      <ReceiptsHistoryModal
+        open={!!viewingReceipts}
+        onClose={() => setViewingReceipts(null)}
+        reservation={viewingReceipts}
       />
     </section>
   );
