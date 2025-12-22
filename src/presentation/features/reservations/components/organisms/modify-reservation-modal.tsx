@@ -17,28 +17,38 @@ import {
   Building,
   Mail,
   Phone,
+  CreditCard,
+  Receipt,
+  Download,
+  Loader2,
 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import Link from "next/link";
-
+import type { TemplateContent } from "@/presentation/features/dashboard/billing/components/organisms/template-builder/types/template-builder.types";
+import { getReceiptsByReservationAction } from "@/infrastructure/web/controllers/dashboard/billing.actions";
+import { cancelReservationAction } from "@/infrastructure/web/controllers/cancel-reservation.action";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { cancelReservationAction } from "@/infrastructure/web/controllers/cancel-reservation.action";
+import type { ReceiptPlainObject } from "@/entities/billing/domain/ReceiptEntity";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { ClickableStatusBadge } from "../molecules/clickable-status-badge";
 import { ReservationDto } from "@/entities/reservation/model/types";
 import { formatReservationInfo } from "../../utils/utils";
-import { Separator } from "@/shared/ui/separator";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
-import { tabTrigger } from "../../utils/ui";
 import { AnimatePresence, motion } from "framer-motion";
+import { Separator } from "@/shared/ui/separator";
+import { useState, useEffect } from "react";
+import { Button } from "@/shared/ui/button";
+import { tabTrigger } from "../../utils/ui";
+import { Badge } from "@/shared/ui/badge";
+import { es } from "date-fns/locale/es";
+import { format } from "date-fns";
+import { toast } from "sonner";
+import Link from "next/link";
+
+
 
 interface ModifyReservationModalProps {
   reservation: ReservationDto | null;
@@ -57,7 +67,12 @@ export function ModifyReservationModal({
 }: ModifyReservationModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-  const [tab, setTab] = useState<"details" | "client" | "actions">("details");
+  const [tab, setTab] = useState<"details" | "client" | "payments" | "actions">("details");
+
+  // Payment states
+  const [receipts, setReceipts] = useState<ReceiptPlainObject[]>([]);
+  const [loadingReceipts, setLoadingReceipts] = useState(false);
+  const [downloadingReceipt, setDownloadingReceipt] = useState(false);
 
   if (!reservation) return null;
 
@@ -96,6 +111,88 @@ export function ModifyReservationModal({
 
   const handleStatusChange = (_newStatusId: number) => {
     onReservationUpdated(reservation.id);
+  };
+
+  // Load receipts when tab changes to payments
+  useEffect(() => {
+    if (tab === "payments" && reservation?.subScenario.hasCost && receipts.length === 0) {
+      loadReceipts();
+    }
+  }, [tab, reservation]);
+
+  const loadReceipts = async () => {
+    if (!reservation) return;
+
+    setLoadingReceipts(true);
+    try {
+      const result = await getReceiptsByReservationAction(reservation.id);
+      if (result.success) {
+        setReceipts(result.data);
+      } else {
+        toast.error("Error al cargar recibos", {
+          description: result.error,
+        });
+      }
+    } catch (error) {
+      console.error("Error loading receipts:", error);
+      toast.error("Error al cargar recibos");
+    } finally {
+      setLoadingReceipts(false);
+    }
+  };
+
+  const handleDownloadReceipt = async (receipt: ReceiptPlainObject) => {
+    if (!reservation) {
+      toast.error("No se puede descargar el PDF");
+      return;
+    }
+
+    const templateContent: TemplateContent | null = receipt.templateContent
+      ? JSON.parse(receipt.templateContent)
+      : null;
+
+    if (!templateContent) {
+      toast.error("La plantilla no tiene contenido configurado");
+      return;
+    }
+
+    setDownloadingReceipt(true);
+    try {
+      // Dynamic import to avoid SSR issues
+      const React = await import("react");
+      const { pdf } = await import("@react-pdf/renderer");
+      const { ReceiptPDFDocument } = await import("@/presentation/features/dashboard/billing/components/organisms/receipt-pdf-renderer");
+
+      // Generate PDF blob using pdf() function
+      const doc = pdf(
+        React.createElement(ReceiptPDFDocument, {
+          receipt: receipt,
+          reservation: reservation,
+          content: templateContent
+        })
+      );
+
+      const blob = await doc.toBlob();
+
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `recibo_${receipt.id}_${receipt.templateName?.replace(/\s+/g, "_") || "factura"}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success("PDF descargado exitosamente");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Error al generar el PDF", {
+        description: "No se pudo descargar el PDF. Intente nuevamente.",
+      });
+    } finally {
+      setDownloadingReceipt(false);
+    }
   };
 
   return (
@@ -146,7 +243,7 @@ export function ModifyReservationModal({
   <Tabs
     value={tab}
     onValueChange={(value) =>
-      setTab(value as "details" | "client" | "actions")
+      setTab(value as "details" | "client" | "payments" | "actions")
     }
     className="w-full"
   >
@@ -160,6 +257,12 @@ export function ModifyReservationModal({
         <User className="h-4 w-4" />
         Detalles del cliente
       </TabsTrigger>
+      {reservation.subScenario.hasCost && (
+        <TabsTrigger value="payments" className={tabTrigger({ active: true })}>
+          <CreditCard className="h-4 w-4" />
+          Pagos
+        </TabsTrigger>
+      )}
       <TabsTrigger value="actions" className={tabTrigger({ active: true })}>
         <Zap className="h-4 w-4" />
         Acciones
@@ -491,6 +594,137 @@ export function ModifyReservationModal({
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* ---------- PAYMENTS ---------- */}
+        {tab === "payments" && (
+          <motion.div
+            key="payments"
+            layout
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="space-y-6"
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Receipt className="h-5 w-5 text-green-600" />
+                  Gestión de Pagos y Recibos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingReceipts ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="ml-2 text-sm text-muted-foreground">
+                      Cargando recibos...
+                    </span>
+                  </div>
+                ) : receipts.length === 0 ? (
+                  <div className="py-8 text-center">
+                    <Receipt className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h4 className="font-medium text-gray-700 mb-2">
+                      No se han generado recibos
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      No se han encontrado recibos para esta reserva de pago.
+                      Los recibos se generan desde el panel de administración.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium text-gray-700">
+                        Recibos Disponibles ({receipts.length})
+                      </h4>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={loadReceipts}
+                        disabled={loadingReceipts}
+                      >
+                        {loadingReceipts ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : null}
+                        Actualizar
+                      </Button>
+                    </div>
+
+                    <div className="grid gap-4">
+                      {receipts.map((receipt) => (
+                        <div
+                          key={receipt.id}
+                          className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <Receipt className="h-4 w-4 text-green-600" />
+                                <span className="font-medium text-gray-900">
+                                  {receipt.templateName || "Recibo"}
+                                </span>
+                                {receipt.isSent && (
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-green-50 text-green-700 border-green-200 text-xs"
+                                  >
+                                    Enviado por email
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600">
+                                Generado el{" "}
+                                {format(new Date(receipt.generatedAt), "dd MMM yyyy, HH:mm", {
+                                  locale: es,
+                                })}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDownloadReceipt(receipt)}
+                                disabled={downloadingReceipt}
+                                className="flex items-center gap-2"
+                              >
+                                {downloadingReceipt ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Download className="h-4 w-4" />
+                                )}
+                                Descargar PDF
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Latest receipt info */}
+                    {receipts.length > 1 && (
+                      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-start gap-2">
+                          <Info className="h-4 w-4 text-blue-600 mt-0.5" />
+                          <div>
+                            <h6 className="font-medium text-blue-800 mb-1">
+                              Recibo más reciente
+                            </h6>
+                            <p className="text-sm text-blue-700">
+                              Se mostrará automáticamente el recibo más reciente.
+                              Puedes descargar cualquier recibo anterior desde la lista.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>

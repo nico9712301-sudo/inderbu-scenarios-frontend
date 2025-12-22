@@ -13,7 +13,6 @@ import {
   CalendarDays,
   Repeat,
 } from "lucide-react";
-import { PaymentProofUploadSection } from "@/presentation/features/dashboard/billing/components/organisms/payment-proof-upload-section";
 import {
   Dialog,
   DialogContent,
@@ -314,16 +313,6 @@ export function ReservationItem({
             </div>
           </div>
 
-          {/* Payment Proof Upload Section (only for paid pending reservations) */}
-          {reservation.subScenario.hasCost && isPending && reservation.userId && (
-            <PaymentProofUploadSection
-              reservation={reservation}
-              userId={reservation.userId}
-              onUploadSuccess={() => {
-                // Optionally refresh data
-              }}
-            />
-          )}
 
           {/* Acciones */}
           {isActive ? (
