@@ -1,23 +1,3 @@
-/* ─────────────────────────────────────────────────────────────────────────────
- * ReservationItem.tsx  ·  Mejorado para SINGLE vs RANGE  ·  2025-06-15
- * ────────────────────────────────────────────────────────────────────────────*/
-
-"use client";
-
-import { ReservationDto } from "@/entities/reservation/model/types";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/ui/dialog";
-import { format, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
 import {
   CalendarIcon,
   CheckCircle2,
@@ -31,15 +11,35 @@ import {
   CalendarDays,
   Repeat,
 } from "lucide-react";
-import Image from "next/image";
-import { useState } from "react";
-import { toast } from "sonner";
-import { StatusBadge } from "../atoms/status-badge";
+import { PaymentProofUploadSection } from "@/presentation/features/dashboard/billing/components/organisms/payment-proof-upload-section";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
 import {
   cancelReservationAction,
   CancelReservationResult,
 } from "@/infrastructure/web/controllers/cancel-reservation.action";
-import { PaymentProofUploadSection } from "@/presentation/features/dashboard/billing/components/organisms/payment-proof-upload-section";
+import { ReservationDto } from "@/entities/reservation/model/types";
+import { Card, CardContent } from "@/shared/ui/card";
+import { StatusBadge } from "../atoms/status-badge";
+import { Button } from "@/shared/ui/button";
+import { format, parseISO } from "date-fns";
+import { Badge } from "@/shared/ui/badge";
+import { es } from "date-fns/locale";
+import { useState } from "react";
+import Image from "next/image";
+import { toast } from "sonner";
+/* ─────────────────────────────────────────────────────────────────────────────
+ * ReservationItem.tsx  ·  Mejorado para SINGLE vs RANGE  ·  2025-06-15
+ * ────────────────────────────────────────────────────────────────────────────*/
+
+"use client";
+
 
 /* ───────────────────────────────────  Props  ─────────────────────────────── */
 interface ReservationItemProps {
@@ -105,6 +105,7 @@ export function ReservationItem({
 
   const timeSlot = reservation.timeSlot ?? reservation.timeslots?.[0] ?? undefined;
   const dateInfo = formatReservationDate(reservation);
+  const isPending = reservation.reservationState.state === "PENDIENTE";
 
   const handleCancelReservation = async () => {
     setIsCancelling(true);
@@ -295,7 +296,7 @@ export function ReservationItem({
           </div>
 
           {/* Payment Proof Upload Section (only for paid pending reservations) */}
-          {reservation.hasCost && isPending && reservation.userId && (
+          {reservation.subScenario.hasCost && isPending && reservation.userId && (
             <PaymentProofUploadSection
               reservation={reservation}
               userId={reservation.userId}
