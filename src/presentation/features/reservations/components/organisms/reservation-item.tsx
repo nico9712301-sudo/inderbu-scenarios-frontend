@@ -31,11 +31,13 @@ import { Card, CardContent } from "@/shared/ui/card";
 import { StatusBadge } from "../atoms/status-badge";
 import { Button } from "@/shared/ui/button";
 import { format, parseISO } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 import { Badge } from "@/shared/ui/badge";
 import { es } from "date-fns/locale";
 import { useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
+
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * ReservationItem.tsx  ·  Mejorado para SINGLE vs RANGE  ·  2025-06-15
@@ -53,28 +55,43 @@ interface ReservationItemProps {
 }
 
 /* ──────────────────────  Helpers de formateo  ──────────────────────────── */
+// Función para formatear fechas igual que en el dashboard
+const fmtDate = (isoString: string) => {
+  // Convierte la fecha UTC a una que se vea correcta en UTC
+  const dateInUTC = toZonedTime(isoString, 'UTC');
+  return format(dateInUTC, "dd MMM yyyy", { locale: es });
+};
+
+const fmtDateShort = (isoString: string) => {
+  // Convierte la fecha UTC a una que se vea correcta en UTC
+  const dateInUTC = toZonedTime(isoString, 'UTC');
+  return format(dateInUTC, "dd MMM", { locale: es });
+};
+
+const fmtDateFull = (isoString: string) => {
+  // Convierte la fecha UTC a una que se vea correcta en UTC
+  const dateInUTC = toZonedTime(isoString, 'UTC');
+  return format(dateInUTC, "EEEE d 'de' MMMM", { locale: es });
+};
+
 const formatReservationDate = (reservation: ReservationDto) => {
   try {
-    const initialDate = parseISO(reservation.initialDate);
-    
     if (reservation.type === "RANGE" && reservation.finalDate) {
-      const finalDate = parseISO(reservation.finalDate);
-      
       // Para reservas RANGE, mostrar el rango
-      const startFormatted = format(initialDate, "dd MMM", { locale: es });
-      const endFormatted = format(finalDate, "dd MMM", { locale: es });
-      
+      const startFormatted = fmtDateShort(reservation.initialDate);
+      const endFormatted = fmtDateShort(reservation.finalDate);
+
       return {
         shortDate: `${startFormatted} - ${endFormatted}`,
-        fullDate: `${format(initialDate, "EEEE d 'de' MMMM", { locale: es })} hasta ${format(finalDate, "EEEE d 'de' MMMM", { locale: es })}`,
+        fullDate: `${fmtDateFull(reservation.initialDate)} hasta ${fmtDateFull(reservation.finalDate)}`,
         isRange: true,
         weekDays: reservation.weekDays || []
       };
     } else {
       // Para reservas SINGLE, mostrar fecha única
       return {
-        shortDate: format(initialDate, "dd MMM", { locale: es }),
-        fullDate: format(initialDate, "EEEE d 'de' MMMM", { locale: es }),
+        shortDate: fmtDateShort(reservation.initialDate),
+        fullDate: fmtDateFull(reservation.initialDate),
         isRange: false,
         weekDays: []
       };
