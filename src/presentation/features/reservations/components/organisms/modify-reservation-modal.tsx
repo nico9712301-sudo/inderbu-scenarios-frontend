@@ -37,9 +37,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { ClickableStatusBadge } from "../molecules/clickable-status-badge";
 import { ReservationDto } from "@/entities/reservation/model/types";
 import { formatReservationInfo } from "../../utils/utils";
+import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Separator } from "@/shared/ui/separator";
-import { useState, useEffect } from "react";
 import { Button } from "@/shared/ui/button";
 import { tabTrigger } from "../../utils/ui";
 import { Badge } from "@/shared/ui/badge";
@@ -47,6 +47,7 @@ import { es } from "date-fns/locale/es";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import Link from "next/link";
+
 
 
 
@@ -73,6 +74,34 @@ export function ModifyReservationModal({
   const [receipts, setReceipts] = useState<ReceiptPlainObject[]>([]);
   const [loadingReceipts, setLoadingReceipts] = useState(false);
   const [downloadingReceipt, setDownloadingReceipt] = useState(false);
+
+  const loadReceipts = useCallback(async () => {
+    if (!reservation) return;
+
+    setLoadingReceipts(true);
+    try {
+      const result = await getReceiptsByReservationAction(reservation.id);
+      if (result.success) {
+        setReceipts(result.data);
+      } else {
+        toast.error("Error al cargar recibos", {
+          description: result.error,
+        });
+      }
+    } catch (error) {
+      console.error("Error loading receipts:", error);
+      toast.error("Error al cargar recibos");
+    } finally {
+      setLoadingReceipts(false);
+    }
+  }, [reservation]);
+
+  // Load receipts when tab changes to payments
+  useEffect(() => {
+    if (tab === "payments" && reservation?.subScenario.hasCost && receipts.length === 0) {
+      loadReceipts();
+    }
+  }, [tab, reservation, loadReceipts, receipts.length]);
 
   if (!reservation) return null;
 
@@ -113,33 +142,6 @@ export function ModifyReservationModal({
     onReservationUpdated(reservation.id);
   };
 
-  // Load receipts when tab changes to payments
-  useEffect(() => {
-    if (tab === "payments" && reservation?.subScenario.hasCost && receipts.length === 0) {
-      loadReceipts();
-    }
-  }, [tab, reservation]);
-
-  const loadReceipts = async () => {
-    if (!reservation) return;
-
-    setLoadingReceipts(true);
-    try {
-      const result = await getReceiptsByReservationAction(reservation.id);
-      if (result.success) {
-        setReceipts(result.data);
-      } else {
-        toast.error("Error al cargar recibos", {
-          description: result.error,
-        });
-      }
-    } catch (error) {
-      console.error("Error loading receipts:", error);
-      toast.error("Error al cargar recibos");
-    } finally {
-      setLoadingReceipts(false);
-    }
-  };
 
   const handleDownloadReceipt = async (receipt: ReceiptPlainObject) => {
     if (!reservation) {
