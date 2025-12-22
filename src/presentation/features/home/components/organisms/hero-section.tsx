@@ -6,8 +6,6 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ slides }: HeroSectionProps) {
-  console.log('HeroSection: Rendering with slides:', slides);
-  
   if (slides && slides.length > 0) {
     return <MainCarousel slides={slides} />;
   }

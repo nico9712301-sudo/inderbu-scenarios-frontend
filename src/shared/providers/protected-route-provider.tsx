@@ -68,8 +68,6 @@ export function ProtectedRouteProvider({
     userRole: user?.role
   }), [authReady, isAuthenticated, user, hasRequiredRole]);
 
-  console.log({accessConditions});
-
   useEffect(() => {
     // Solo ejecutar si no hemos verificado acceso y auth está listo
     if (!accessConditions.authReady || hasCheckedAccess) return;
@@ -120,9 +118,7 @@ export function ProtectedRouteProvider({
         }
       }
 
-      console.log("Access granted");
       setHasCheckedAccess(true);
-      console.log("Access check completed");
     };
 
     checkAccess();

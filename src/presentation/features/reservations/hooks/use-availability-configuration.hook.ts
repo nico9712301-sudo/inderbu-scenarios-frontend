@@ -95,12 +95,6 @@ export function useAvailabilityConfiguration(
     try {
       const result = await repository.getAvailabilityForConfiguration(config);
 
-      console.log('🔄 HOOK AVAILABILITY RESULT:');
-      console.log('- Config used:', config);
-      console.log('- Result received:', result);
-      console.log('- TimeSlots in result:', result?.timeSlots);
-      console.log('- TimeSlots count:', result?.timeSlots?.length);
-
       if (!result || typeof result !== 'object') {
         throw new Error('Invalid response format from availability API');
       }

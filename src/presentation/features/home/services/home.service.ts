@@ -175,7 +175,6 @@ export async function searchActivityAreas(search: string = ""): Promise<Activity
     params.append('limit', '20');
 
     const url = `${API_BASE_URL}/activity-areas?${params.toString()}`;
-    console.log('Searching activity areas:', url);
 
     const response = await fetch(url, {
       cache: 'no-store',
@@ -189,7 +188,6 @@ export async function searchActivityAreas(search: string = ""): Promise<Activity
     }
 
     const result: ApiResponse<ActivityAreaApiData[]> = await response.json();
-    console.log(`Found ${result.data.length} activity areas matching "${search}"`);
     return result.data;
 
   } catch (error) {
@@ -205,8 +203,6 @@ export async function searchNeighborhoods(search: string = ""): Promise<Neighbor
       params.append('search', search.trim());
     }
     params.append('limit', '20');
-    console.log("params from search neighborhoods", params.toString());
-    
 
     const url = `${API_BASE_URL}/neighborhoods?${params.toString()}`;
 
@@ -222,7 +218,6 @@ export async function searchNeighborhoods(search: string = ""): Promise<Neighbor
     }
 
     const result: ApiResponse<NeighborhoodApiData[]> = await response.json();
-    console.log(`Found ${result.data.length} neighborhoods matching "${search}"`);
     return result.data;
 
   } catch (error) {

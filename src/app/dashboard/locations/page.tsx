@@ -50,8 +50,6 @@ export default async function LocationsRoute(props: LocationsRouteProps) {
 
     // Execute Use Case through Application Layer - returns pure Domain Entities
     const domainResult: ILocationsDataResponse = await getLocationsDataService.execute(communeFilters, neighborhoodFilters);
-
-    console.log('LocationsRoute - Domain Result:', domainResult.communes);
     
     // Presentation Layer responsibility: Serialize domain entities for client components
     const serializedResult = serializeLocationsData(domainResult);

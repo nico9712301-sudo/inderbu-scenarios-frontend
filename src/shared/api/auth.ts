@@ -32,13 +32,11 @@ export class ClientAuthManager {
     const token = localStorage.getItem(this.TOKEN_KEY);
     
     if (!token) {
-      console.log('ClientAuthManager: No token found');
       return null;
     }
 
     // Verificar si el token está expirado
     if (this.isTokenExpired(token)) {
-      console.log('ClientAuthManager: Token expired, attempting refresh...');
       return await this.refreshTokenIfNeeded();
     }
 
@@ -49,7 +47,6 @@ export class ClientAuthManager {
   private static async refreshTokenIfNeeded(): Promise<string | null> {
     // Evitar múltiples refreshes simultáneos
     if (this.isRefreshing && this.refreshPromise) {
-      console.log('ClientAuthManager: Refresh already in progress, waiting...');
       return await this.refreshPromise;
     }
 
@@ -70,12 +67,9 @@ export class ClientAuthManager {
       const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
       
       if (!refreshToken) {
-        console.log('ClientAuthManager: No refresh token available');
         this.clearTokens();
         return null;
       }
-
-      console.log('ClientAuthManager: Calling refresh endpoint...');
       
       // Importación dinámica para evitar ciclos
       const { createUserRepository } = await import('@/infrastructure/repositories/auth/auth-user-repository.adapter');
@@ -87,8 +81,6 @@ export class ClientAuthManager {
       
       // Llamar al endpoint de refresh
       const tokens = await userRepository.refreshToken(refreshToken);
-      
-      console.log('ClientAuthManager: Token refreshed successfully');
       
       // Guardar nuevos tokens
       this.setTokens(tokens.access_token, tokens.refresh_token);
@@ -119,8 +111,6 @@ export class ClientAuthManager {
     
     // Also store in cookies for server-side access
     this.setCookie(this.TOKEN_KEY, token, 7); // 7 days
-    
-    console.log('ClientAuthManager: Token stored in localStorage + cookies');
   }
 
   static setRefreshToken(token: string): void {
@@ -131,8 +121,6 @@ export class ClientAuthManager {
     
     // Also store in cookies for server-side access
     this.setCookie(this.REFRESH_TOKEN_KEY, token, 30); // 30 days
-    
-    console.log('ClientAuthManager: Refresh token stored in localStorage + cookies');
   }
 
   static getRefreshToken(): string | null {
@@ -150,8 +138,6 @@ export class ClientAuthManager {
     // Clear from cookies
     this.deleteCookie(this.TOKEN_KEY);
     this.deleteCookie(this.REFRESH_TOKEN_KEY);
-    
-    console.log('ClientAuthManager: Tokens cleared from localStorage + cookies');
   }
 
   static setTokens(accessToken: string, refreshToken?: string): void {

@@ -163,26 +163,17 @@ export default function FlexibleScheduler({
 
   // Generar timeSlots con estado de disponibilidad
   const timeSlots = useMemo(() => {
-    console.log('🎯 TIMESLOTS GENERATION:');
-    console.log('- initialAvailabilityData?.timeSlots:', initialAvailabilityData?.timeSlots);
-    console.log('- timeSlots count from initial data:', initialAvailabilityData?.timeSlots?.length);
-
     // Si tenemos datos iniciales, usar esos timeSlots con IDs reales
     if (initialAvailabilityData?.timeSlots) {
-      console.log('- Using initial data timeSlots');
       const convertedSlots = convertBackendTimeSlotsToUI(
         initialAvailabilityData.timeSlots,
         getSlotStatus
       );
-      console.log('- Converted UI timeSlots:', convertedSlots);
-      console.log('- Converted count:', convertedSlots.length);
       return convertedSlots;
     }
 
     // Fallback: generar timeSlots tradicionales si no hay datos iniciales
-    console.log('- Using generated timeSlots (fallback)');
     const generatedSlots = generateTimeSlots((hour) => getSlotStatus(hour));
-    console.log('- Generated timeSlots:', generatedSlots);
     return generatedSlots;
   }, [initialAvailabilityData?.timeSlots, getSlotStatus]);
 
