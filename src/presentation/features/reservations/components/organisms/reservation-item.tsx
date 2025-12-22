@@ -1,3 +1,5 @@
+"use client";
+
 import {
   CalendarIcon,
   CheckCircle2,
@@ -34,11 +36,11 @@ import { es } from "date-fns/locale";
 import { useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
+
 /* ─────────────────────────────────────────────────────────────────────────────
  * ReservationItem.tsx  ·  Mejorado para SINGLE vs RANGE  ·  2025-06-15
  * ────────────────────────────────────────────────────────────────────────────*/
 
-"use client";
 
 
 /* ───────────────────────────────────  Props  ─────────────────────────────── */
