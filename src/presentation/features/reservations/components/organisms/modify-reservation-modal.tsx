@@ -51,6 +51,7 @@ import Link from "next/link";
 
 
 
+
 interface ModifyReservationModalProps {
   reservation: ReservationDto | null;
   isOpen: boolean;
@@ -639,41 +640,43 @@ export function ModifyReservationModal({
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-gray-700">
-                        Recibos Disponibles ({receipts.length})
-                      </h4>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={loadReceipts}
-                        disabled={loadingReceipts}
-                      >
-                        {loadingReceipts ? (
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        ) : null}
-                        Actualizar
-                      </Button>
-                    </div>
+                  (() => {
+                    // Get the latest receipt (most recent by generatedAt)
+                    const latestReceipt = receipts
+                      .slice()
+                      .sort((a, b) => new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime())[0];
 
-                    <div className="grid gap-4">
-                      {receipts.map((receipt) => (
-                        <div
-                          key={receipt.id}
-                          className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                        >
+                    return (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-gray-700">
+                            Último Recibo Generado
+                          </h4>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={loadReceipts}
+                            disabled={loadingReceipts}
+                          >
+                            {loadingReceipts ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : null}
+                            Actualizar
+                          </Button>
+                        </div>
+
+                        <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
                           <div className="flex items-center justify-between">
-                            <div className="space-y-1">
+                            <div className="space-y-2">
                               <div className="flex items-center gap-2">
-                                <Receipt className="h-4 w-4 text-green-600" />
-                                <span className="font-medium text-gray-900">
-                                  {receipt.templateName || "Recibo"}
+                                <Receipt className="h-5 w-5 text-green-600" />
+                                <span className="font-semibold text-gray-900 text-lg">
+                                  {latestReceipt.templateName || "Recibo"}
                                 </span>
-                                {receipt.isSent && (
+                                {latestReceipt.isSent && (
                                   <Badge
                                     variant="outline"
-                                    className="bg-green-50 text-green-700 border-green-200 text-xs"
+                                    className="bg-green-50 text-green-700 border-green-200 text-sm"
                                   >
                                     Enviado por email
                                   </Badge>
@@ -681,19 +684,24 @@ export function ModifyReservationModal({
                               </div>
                               <p className="text-sm text-gray-600">
                                 Generado el{" "}
-                                {format(new Date(receipt.generatedAt), "dd MMM yyyy, HH:mm", {
+                                {format(new Date(latestReceipt.generatedAt), "dd MMM yyyy, HH:mm", {
                                   locale: es,
                                 })}
                               </p>
+                              {receipts.length > 1 && (
+                                <p className="text-xs text-green-700 font-medium">
+                                  ✨ Más reciente de {receipts.length} recibos generados
+                                </p>
+                              )}
                             </div>
 
                             <div className="flex items-center gap-2">
                               <Button
-                                variant="outline"
+                                variant="default"
                                 size="sm"
-                                onClick={() => handleDownloadReceipt(receipt)}
+                                onClick={() => handleDownloadReceipt(latestReceipt)}
                                 disabled={downloadingReceipt}
-                                className="flex items-center gap-2"
+                                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
                               >
                                 {downloadingReceipt ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -705,27 +713,28 @@ export function ModifyReservationModal({
                             </div>
                           </div>
                         </div>
-                      ))}
-                    </div>
 
-                    {/* Latest receipt info */}
-                    {receipts.length > 1 && (
-                      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div className="flex items-start gap-2">
-                          <Info className="h-4 w-4 text-blue-600 mt-0.5" />
-                          <div>
-                            <h6 className="font-medium text-blue-800 mb-1">
-                              Recibo más reciente
-                            </h6>
-                            <p className="text-sm text-blue-700">
-                              Se mostrará automáticamente el recibo más reciente.
-                              Puedes descargar cualquier recibo anterior desde la lista.
-                            </p>
+                        {/* Info about multiple receipts */}
+                        {receipts.length > 1 && (
+                          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div className="flex items-start gap-2">
+                              <Info className="h-4 w-4 text-blue-600 mt-0.5" />
+                              <div>
+                                <h6 className="font-medium text-blue-800 mb-1">
+                                  Información de Recibos
+                                </h6>
+                                <p className="text-sm text-blue-700">
+                                  Esta reserva tiene {receipts.length} recibos generados.
+                                  Se muestra automáticamente el más reciente para descarga.
+                                  Para acceder a recibos anteriores, contacta al administrador.
+                                </p>
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    );
+                  })()
                 )}
               </CardContent>
             </Card>
