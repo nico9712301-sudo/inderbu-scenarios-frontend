@@ -54,6 +54,7 @@ import Link from "next/link";
 
 
 
+
 interface ModifyReservationModalProps {
   reservation: ReservationDto | null;
   isOpen: boolean;
@@ -212,7 +213,7 @@ export function ModifyReservationModal({
               <div>
                 <h2 className="text-xl font-semibold">Gestionar Reserva</h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  ID: #{reservation.id} • {reservation.subScenario.name}
+                  {reservation.subScenario.name}
                 </p>
               </div>
             </div>
