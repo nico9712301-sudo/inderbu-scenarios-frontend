@@ -56,6 +56,7 @@ import Link from "next/link";
 
 
 
+
 interface ModifyReservationModalProps {
   reservation: ReservationDto | null;
   isOpen: boolean;
@@ -860,13 +861,6 @@ export function ModifyReservationModal({
 </div>
 
 
-        {/* Footer */}
-        <div className="flex-shrink-0 flex justify-end items-center pt-4 border-t bg-gray-50 -mx-6 -mb-6 px-6 py-4">
-          <Button variant="outline" onClick={onClose} className="px-6">
-            <X className="h-4 w-4 mr-2" />
-            Cerrar
-          </Button>
-        </div>
       </DialogContent>
     </Dialog>
   );
