@@ -21,6 +21,7 @@ import {
   Receipt,
   Download,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
 import type { TemplateContent } from "@/presentation/features/dashboard/billing/components/organisms/template-builder/types/template-builder.types";
 import { getReceiptsByReservationAction } from "@/infrastructure/web/controllers/dashboard/billing.actions";
@@ -47,6 +48,7 @@ import { es } from "date-fns/locale/es";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import Link from "next/link";
+
 
 
 
@@ -615,9 +617,24 @@ export function ModifyReservationModal({
           >
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Receipt className="h-5 w-5 text-green-600" />
-                  Gestión de Pagos y Recibos
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Receipt className="h-5 w-5 text-green-600" />
+                    Gestión de Pagos y Recibos
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={loadReceipts}
+                    disabled={loadingReceipts}
+                    className="h-8 w-8 p-0"
+                  >
+                    {loadingReceipts ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-4 w-4" />
+                    )}
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -647,91 +664,42 @@ export function ModifyReservationModal({
                       .sort((a, b) => new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime())[0];
 
                     return (
-                      <div className="space-y-4">
+                      <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
                         <div className="flex items-center justify-between">
-                          <h4 className="font-medium text-gray-700">
-                            Último Recibo Generado
-                          </h4>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={loadReceipts}
-                            disabled={loadingReceipts}
-                          >
-                            {loadingReceipts ? (
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                            ) : null}
-                            Actualizar
-                          </Button>
-                        </div>
-
-                        <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
-                          <div className="flex items-center justify-between">
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <Receipt className="h-5 w-5 text-green-600" />
-                                <span className="font-semibold text-gray-900 text-lg">
-                                  {latestReceipt.templateName || "Recibo"}
-                                </span>
-                                {latestReceipt.isSent && (
-                                  <Badge
-                                    variant="outline"
-                                    className="bg-green-50 text-green-700 border-green-200 text-sm"
-                                  >
-                                    Enviado por email
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className="text-sm text-gray-600">
-                                Generado el{" "}
-                                {format(new Date(latestReceipt.generatedAt), "dd MMM yyyy, HH:mm", {
-                                  locale: es,
-                                })}
-                              </p>
-                              {receipts.length > 1 && (
-                                <p className="text-xs text-green-700 font-medium">
-                                  ✨ Más reciente de {receipts.length} recibos generados
-                                </p>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Receipt className="h-5 w-5 text-green-600" />
+                              <span className="font-semibold text-gray-900 text-lg">
+                                Recibo de pago
+                              </span>
+                              {latestReceipt.isSent && (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-green-50 text-green-700 border-green-200 text-sm"
+                                >
+                                  Enviado por email
+                                </Badge>
                               )}
                             </div>
+                          </div>
 
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => handleDownloadReceipt(latestReceipt)}
-                                disabled={downloadingReceipt}
-                                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
-                              >
-                                {downloadingReceipt ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Download className="h-4 w-4" />
-                                )}
-                                Descargar PDF
-                              </Button>
-                            </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => handleDownloadReceipt(latestReceipt)}
+                              disabled={downloadingReceipt}
+                              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              {downloadingReceipt ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Download className="h-4 w-4" />
+                              )}
+                              Descargar PDF
+                            </Button>
                           </div>
                         </div>
-
-                        {/* Info about multiple receipts */}
-                        {receipts.length > 1 && (
-                          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                            <div className="flex items-start gap-2">
-                              <Info className="h-4 w-4 text-blue-600 mt-0.5" />
-                              <div>
-                                <h6 className="font-medium text-blue-800 mb-1">
-                                  Información de Recibos
-                                </h6>
-                                <p className="text-sm text-blue-700">
-                                  Esta reserva tiene {receipts.length} recibos generados.
-                                  Se muestra automáticamente el más reciente para descarga.
-                                  Para acceder a recibos anteriores, contacta al administrador.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     );
                   })()
