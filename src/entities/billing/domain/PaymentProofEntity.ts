@@ -7,6 +7,16 @@ export interface PaymentProofPlainObject {
   fileSize: number;
   uploadedBy: number;
   createdAt: Date;
+  uploadedByUser?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role?: {
+      id: number;
+      name: string;
+    } | null;
+  };
 }
 
 export interface UploadPaymentProofData {
@@ -28,7 +38,7 @@ export class PaymentProofEntity {
   ) {}
 
   static fromApiData(apiData: any): PaymentProofEntity {
-    return new PaymentProofEntity(
+    const entity = new PaymentProofEntity(
       apiData.id,
       apiData.reservationId,
       apiData.fileUrl,
@@ -38,10 +48,17 @@ export class PaymentProofEntity {
       apiData.uploadedBy,
       new Date(apiData.createdAt)
     );
+    
+    // Preserve user information if available
+    if (apiData.uploadedByUser) {
+      (entity as any).uploadedByUser = apiData.uploadedByUser;
+    }
+    
+    return entity;
   }
 
   toPlainObject(): PaymentProofPlainObject {
-    return {
+    const plain: PaymentProofPlainObject = {
       id: this.id,
       reservationId: this.reservationId,
       fileUrl: this.fileUrl,
@@ -51,5 +68,12 @@ export class PaymentProofEntity {
       uploadedBy: this.uploadedBy,
       createdAt: this.createdAt,
     };
+    
+    // Include user information if available
+    if ((this as any).uploadedByUser) {
+      plain.uploadedByUser = (this as any).uploadedByUser;
+    }
+    
+    return plain;
   }
 }

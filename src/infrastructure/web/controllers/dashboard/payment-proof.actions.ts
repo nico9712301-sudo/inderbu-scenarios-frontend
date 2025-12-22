@@ -59,7 +59,11 @@ export async function getPaymentProofsByReservationAction(reservationId: number)
     const repository = createPaymentProofRepository(httpClient);
     
     const results = await repository.getByReservationId(reservationId);
-
-    return results.map(r => r.toPlainObject());
+    console.log('[getPaymentProofsByReservationAction] Results from repository:', results);
+    
+    const plainObjects = results.map(r => r.toPlainObject());
+    console.log('[getPaymentProofsByReservationAction] Plain objects:', plainObjects);
+    
+    return plainObjects;
   }, 'getPaymentProofsByReservationAction');
 }

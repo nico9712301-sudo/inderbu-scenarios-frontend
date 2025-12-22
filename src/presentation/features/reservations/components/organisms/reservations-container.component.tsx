@@ -191,6 +191,7 @@ export function ReservationsContainer({
           onClose={() => setIsModalOpen(false)}
           onReservationUpdated={handleReservationUpdated}
           onCreateNewReservation={handleCreateNewReservation}
+          userId={userId}
         />
       </div>
     </div>

@@ -24,10 +24,14 @@ import {
   RefreshCw,
   Upload,
   FileImage,
+  FileText,
+  Image as ImageIcon,
 } from "lucide-react";
 import type { TemplateContent } from "@/presentation/features/dashboard/billing/components/organisms/template-builder/types/template-builder.types";
 import { getReceiptsByReservationAction } from "@/infrastructure/web/controllers/dashboard/billing.actions";
 import { cancelReservationAction } from "@/infrastructure/web/controllers/cancel-reservation.action";
+import { uploadPaymentProofForReservationAction } from "@/infrastructure/web/controllers/dashboard/reservations.actions";
+import { getPaymentProofsByReservationAction } from "@/infrastructure/web/controllers/dashboard/payment-proof.actions";
 import {
   Dialog,
   DialogContent,
@@ -65,6 +69,90 @@ interface ModifyReservationModalProps {
   onClose: () => void;
   onReservationUpdated: (reservationId: number) => void;
   onCreateNewReservation: (subScenarioId: number) => void;
+  userId: number;
+}
+
+// Component for displaying individual payment proof item
+function PaymentProofItem({ 
+  proof, 
+  index, 
+  isImage, 
+  isPdf, 
+  onDownload 
+}: { 
+  proof: any; 
+  index: number; 
+  isImage: boolean; 
+  isPdf: boolean; 
+  onDownload: () => void;
+}) {
+  const [imageError, setImageError] = useState(false);
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg p-4">
+      <div className="flex items-start gap-4">
+        {/* Preview/Icon */}
+        <div className="flex-shrink-0">
+          {isImage && proof.fileUrl && !imageError ? (
+            <div className="w-20 h-20 rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
+              <img 
+                src={proof.fileUrl} 
+                alt={proof.originalFileName || `Comprobante ${index + 1}`}
+                className="w-full h-full object-cover"
+                onError={() => setImageError(true)}
+              />
+            </div>
+          ) : (
+            <div className="w-20 h-20 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center">
+              {isPdf ? (
+                <FileText className="h-8 w-8 text-red-500" />
+              ) : (
+                <ImageIcon className="h-8 w-8 text-gray-400" />
+              )}
+            </div>
+          )}
+        </div>
+        
+        {/* File Info */}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-900 truncate">
+            {proof.originalFileName || `Comprobante ${index + 1}`}
+          </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          Subido el {(() => {
+                                            try {
+                                              if (!proof.createdAt) return "Fecha no disponible";
+                                              const date = proof.createdAt instanceof Date 
+                                                ? proof.createdAt 
+                                                : new Date(proof.createdAt);
+                                              if (isNaN(date.getTime())) return "Fecha inválida";
+                                              return format(date, "dd MMM yyyy, HH:mm", { locale: es });
+                                            } catch (error) {
+                                              console.error("Error formatting date:", error, proof.createdAt);
+                                              return "Fecha no disponible";
+                                            }
+                                          })()}
+                                          {proof.fileSize && (
+                                            <span> • {(proof.fileSize / 1024 / 1024).toFixed(2)} MB</span>
+                                          )}
+                                        </p>
+        </div>
+        
+        {/* Download Button */}
+        <div className="flex-shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onDownload}
+            className="flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Descargar
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function ModifyReservationModal({
@@ -73,6 +161,7 @@ export function ModifyReservationModal({
   onClose,
   onReservationUpdated,
   onCreateNewReservation,
+  userId,
 }: ModifyReservationModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -88,6 +177,10 @@ export function ModifyReservationModal({
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
+
+  // Payment proofs states
+  const [paymentProofs, setPaymentProofs] = useState<any[]>([]);
+  const [loadingPaymentProofs, setLoadingPaymentProofs] = useState(false);
 
   const loadReceipts = useCallback(async () => {
     if (!reservation) return;
@@ -107,6 +200,41 @@ export function ModifyReservationModal({
       toast.error("Error al cargar recibos");
     } finally {
       setLoadingReceipts(false);
+    }
+  }, [reservation]);
+
+  const loadPaymentProofs = useCallback(async () => {
+    if (!reservation) return;
+
+    setLoadingPaymentProofs(true);
+    try {
+      const result = await getPaymentProofsByReservationAction(reservation.id);
+      console.log('[ModifyReservationModal] Payment proofs result:', result);
+      if (result.success) {
+        // Ensure result.data is an array
+        const proofsArray = Array.isArray(result.data) ? result.data : [];
+        // Sort by most recent first and get only the latest one
+        const sorted = proofsArray.sort((a, b) => {
+          const dateA = new Date(a.createdAt).getTime();
+          const dateB = new Date(b.createdAt).getTime();
+          return dateB - dateA;
+        });
+        // Only keep the latest payment proof
+        console.log('[ModifyReservationModal] Setting payment proofs (latest only):', sorted.length > 0 ? [sorted[0]] : []);
+        setPaymentProofs(sorted.length > 0 ? [sorted[0]] : []);
+      } else {
+        console.error('[ModifyReservationModal] Error loading payment proofs:', result.error);
+        toast.error("Error al cargar comprobantes", {
+          description: result.error,
+        });
+        setPaymentProofs([]);
+      }
+    } catch (error) {
+      console.error("[ModifyReservationModal] Error loading payment proofs:", error);
+      toast.error("Error al cargar comprobantes");
+      setPaymentProofs([]);
+    } finally {
+      setLoadingPaymentProofs(false);
     }
   }, [reservation]);
 
@@ -148,23 +276,14 @@ export function ModifyReservationModal({
       const formData = new FormData();
       formData.append('file', selectedFile);
       formData.append('reservationId', reservation.id.toString());
+      formData.append('uploadedByUserId', userId.toString());
 
-      // Simulate upload progress for now
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 200);
+      // Real API call to upload payment proof
+      const result = await uploadPaymentProofForReservationAction(formData);
 
-      // TODO: Replace with actual API call
-      // const response = await uploadPaymentProofAction(formData);
-
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (!result.success) {
+        throw new Error(result.error || 'Error desconocido al subir el comprobante');
+      }
 
       setUploadProgress(100);
       toast.success("Comprobante de pago subido exitosamente", {
@@ -173,15 +292,24 @@ export function ModifyReservationModal({
 
       setSelectedFile(null);
       setUploadProgress(0);
+
+      // Reload payment proofs to show the new upload
+      // Add a small delay to ensure backend has processed the upload
+      setTimeout(async () => {
+        await loadPaymentProofs();
+      }, 500);
+
+      // Optionally refresh the reservation data or trigger a callback
+      onReservationUpdated(reservation.id);
     } catch (error) {
       console.error('Error uploading payment proof:', error);
       toast.error("Error al subir el comprobante", {
-        description: "Intenta nuevamente o contacta soporte"
+        description: error instanceof Error ? error.message : "Intenta nuevamente o contacta soporte"
       });
     } finally {
       setUploading(false);
     }
-  }, [selectedFile, reservation]);
+  }, [selectedFile, reservation, userId, onReservationUpdated, loadPaymentProofs]);
 
   // Handle drag and drop
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -210,12 +338,40 @@ export function ModifyReservationModal({
     }
   }, [handleFileSelect]);
 
-  // Load receipts when tab changes to payments
-  useEffect(() => {
-    if (tab === "payments" && reservation?.subScenario.hasCost && receipts.length === 0) {
-      loadReceipts();
+  // Handle payment proof download
+  const handleDownloadPaymentProof = useCallback((paymentProof: any) => {
+    if (!paymentProof.fileUrl) {
+      toast.error("URL del comprobante no disponible");
+      return;
     }
-  }, [tab, reservation, loadReceipts, receipts.length]);
+
+    // Create download link
+    const link = document.createElement('a');
+    link.href = paymentProof.fileUrl;
+    link.download = paymentProof.originalFileName || `comprobante_${paymentProof.id}`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success("Iniciando descarga del comprobante");
+  }, []);
+
+  // Load receipts and payment proofs when tab changes to payments
+  useEffect(() => {
+    if (tab === "payments" && reservation?.subScenario.hasCost) {
+      // Always reload receipts and payment proofs when switching to payments tab
+      loadReceipts();
+      loadPaymentProofs();
+    }
+  }, [tab, reservation?.id, reservation?.subScenario.hasCost, loadReceipts, loadPaymentProofs]);
+
+  // Load payment proofs when modal opens if payments tab is active
+  useEffect(() => {
+    if (isOpen && tab === "payments" && reservation?.subScenario.hasCost) {
+      loadPaymentProofs();
+    }
+  }, [isOpen, tab, reservation?.id, reservation?.subScenario.hasCost, loadPaymentProofs]);
 
   if (!reservation) return null;
 
@@ -826,10 +982,47 @@ export function ModifyReservationModal({
                                 Comprobante de Pago
                               </h4>
                               <p className="text-sm text-gray-600">
-                                Sube tu comprobante de pago para confirmar la reserva
+                                {paymentProofs.length > 0 
+                                  ? "Actualiza tu comprobante de pago" 
+                                  : "Sube tu comprobante de pago para confirmar la reserva"}
                               </p>
                             </div>
                           </div>
+
+                          {/* Latest Payment Proof */}
+                          {loadingPaymentProofs ? (
+                            <div className="flex items-center justify-center py-4">
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              <span className="text-sm text-gray-600">Cargando comprobantes...</span>
+                            </div>
+                          ) : paymentProofs.length > 0 ? (
+                            <div className="space-y-3">
+                              {(() => {
+                                // Only show the latest (first) payment proof
+                                const latestProof = paymentProofs[0];
+                                const isImage = latestProof.mimeType?.startsWith('image/');
+                                const isPdf = latestProof.mimeType === 'application/pdf';
+                                
+                                return (
+                                  <PaymentProofItem
+                                    key={latestProof.id}
+                                    proof={latestProof}
+                                    index={0}
+                                    isImage={isImage}
+                                    isPdf={isPdf}
+                                    onDownload={() => handleDownloadPaymentProof(latestProof)}
+                                  />
+                                );
+                              })()}
+                            </div>
+                          ) : null}
+
+                          {/* Upload Area */}
+                          {paymentProofs.length > 0 && (
+                            <div className="border-t border-gray-200 pt-4 mt-4">
+                              <h5 className="font-medium text-gray-900 text-sm mb-3">Actualizar comprobante:</h5>
+                            </div>
+                          )}
 
                           <div
                             className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
@@ -879,7 +1072,7 @@ export function ModifyReservationModal({
                                       ) : (
                                         <>
                                           <Upload className="h-4 w-4 mr-2" />
-                                          Subir archivo
+                                          {paymentProofs.length > 0 ? "Actualizar comprobante" : "Subir archivo"}
                                         </>
                                       )}
                                     </Button>
@@ -919,7 +1112,7 @@ export function ModifyReservationModal({
                                     className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 cursor-pointer transition-colors"
                                   >
                                     <Upload className="h-4 w-4" />
-                                    Seleccionar archivo
+                                    {paymentProofs.length > 0 ? "Seleccionar nuevo archivo" : "Seleccionar archivo"}
                                   </label>
                                 </>
                               )}

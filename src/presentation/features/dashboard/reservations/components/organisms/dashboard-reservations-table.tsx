@@ -30,6 +30,7 @@ interface DashboardReservationsTableProps {
   onGenerateReceipt?: (reservation: ReservationDto) => void;
   onSendReceipt?: (reservation: ReservationDto) => void;
   onViewReceipts?: (reservation: ReservationDto) => void;
+  onViewPaymentProofs?: (reservation: ReservationDto) => void;
   selectedIds: Set<number>;
   onSelectionChange: (reservationId: number, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
@@ -254,6 +255,7 @@ export function DashboardReservationsTable({
   onGenerateReceipt,
   onSendReceipt,
   onViewReceipts,
+  onViewPaymentProofs,
   selectedIds,
   onSelectionChange,
   onSelectAll,
@@ -457,11 +459,12 @@ export function DashboardReservationsTable({
             onGenerateReceipt={onGenerateReceipt}
             onSendReceipt={onSendReceipt}
             onViewReceipts={onViewReceipts}
+            onViewPaymentProofs={onViewPaymentProofs}
           />
         ),
       },
     ],
-    [onEdit, onGenerateReceipt, onSendReceipt, onViewReceipts, selectedIds, onSelectionChange, onSelectAll, allSelected, someSelected]
+    [onEdit, onGenerateReceipt, onSendReceipt, onViewReceipts, onViewPaymentProofs, selectedIds, onSelectionChange, onSelectAll, allSelected, someSelected]
   );
 
   // ─── Render ─────────────────────────────────────────────────────────────────

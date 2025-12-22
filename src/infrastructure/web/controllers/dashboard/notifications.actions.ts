@@ -45,6 +45,29 @@ export async function getUnreadNotificationsAction() {
 }
 
 // =============================================================================
+// GET ALL NOTIFICATIONS
+// =============================================================================
+
+export async function getAllNotificationsAction(page: number = 1, limit: number = 50) {
+  return await ErrorHandlerComposer.withErrorHandling(async () => {
+    const { ClientHttpClientFactory, createClientAuthContext } = await import('@/shared/api/http-client-client');
+    
+    const httpClient = ClientHttpClientFactory.createClient(createClientAuthContext());
+    const result = await httpClient.get<BackendResponse<{ data: NotificationResponseDto[]; total: number; page: number; limit: number }> | { data: NotificationResponseDto[]; total: number; page: number; limit: number }>(
+      `/api/notifications?page=${page}&limit=${limit}`
+    );
+
+    // Extract data from BackendResponse if needed
+    if (isBackendResponse<{ data: NotificationResponseDto[]; total: number; page: number; limit: number }>(result)) {
+      return result.data;
+    }
+    
+    // If it's already the response object, return it directly
+    return result as { data: NotificationResponseDto[]; total: number; page: number; limit: number };
+  }, 'getAllNotificationsAction');
+}
+
+// =============================================================================
 // GET UNREAD NOTIFICATIONS COUNT
 // =============================================================================
 

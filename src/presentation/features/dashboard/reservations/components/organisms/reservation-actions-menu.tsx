@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreVertical, Eye, FileText, Mail, Receipt } from "lucide-react";
+import { MoreVertical, Eye, FileText, Mail, Receipt, CreditCard } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +16,7 @@ interface ReservationActionsMenuProps {
   onGenerateReceipt?: (reservation: ReservationDto) => void;
   onSendReceipt?: (reservation: ReservationDto) => void;
   onViewReceipts?: (reservation: ReservationDto) => void;
+  onViewPaymentProofs?: (reservation: ReservationDto) => void;
 }
 
 export function ReservationActionsMenu({
@@ -24,6 +25,7 @@ export function ReservationActionsMenu({
   onGenerateReceipt,
   onSendReceipt,
   onViewReceipts,
+  onViewPaymentProofs,
 }: ReservationActionsMenuProps) {
   const hasCost = reservation.subScenario?.hasCost ?? false;
 
@@ -62,7 +64,13 @@ export function ReservationActionsMenu({
             {onViewReceipts && (
               <DropdownMenuItem onClick={() => onViewReceipts(reservation)}>
                 <Receipt className="mr-2 h-4 w-4" />
-                Ver facturas
+                Ver Recibos
+              </DropdownMenuItem>
+            )}
+            {onViewPaymentProofs && (
+              <DropdownMenuItem onClick={() => onViewPaymentProofs(reservation)}>
+                <CreditCard className="mr-2 h-4 w-4" />
+                Ver Comprobantes de pago
               </DropdownMenuItem>
             )}
           </>

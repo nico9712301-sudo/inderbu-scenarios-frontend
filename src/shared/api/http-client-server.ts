@@ -1,5 +1,5 @@
 import { createServerAuthContext, ServerAuthContext } from './server-auth';
-import { ApiError, HttpClient, RequestConfig } from './types';
+import { ApiError, HttpClient, IHttpClient, RequestConfig } from './types';
 
 export interface ServerHttpClientConfig {
   baseURL: string;
@@ -9,7 +9,7 @@ export interface ServerHttpClientConfig {
 }
 
 // SERVER-ONLY HTTP Client (can use server dependencies)
-export class ServerHttpClient implements HttpClient {
+export class ServerHttpClient implements IHttpClient {
   private baseURL: string;
   private timeout: number;
   private authContext?: ServerAuthContext;

@@ -69,3 +69,6 @@ export interface IHttpClient {
   patch<T>(endpoint: string, body?: any, config?: RequestConfig): Promise<T>;
   delete<T>(endpoint: string, config?: RequestConfig): Promise<T>;
 }
+
+// Alias for backward compatibility
+export type HttpClient = IHttpClient;

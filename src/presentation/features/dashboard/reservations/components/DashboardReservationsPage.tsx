@@ -6,6 +6,7 @@ import { BulkStateChangeModal } from "@/presentation/features/reservations/compo
 import { GenerateReceiptModal } from "@/presentation/features/dashboard/billing/components/organisms/generate-receipt-modal";
 import { SendReceiptModal } from "@/presentation/features/dashboard/billing/components/organisms/send-receipt-modal";
 import { ReceiptsHistoryModal } from "@/presentation/features/dashboard/billing/components/organisms/receipts-history-modal";
+import { PaymentProofsModal } from "@/presentation/features/dashboard/billing/components/organisms/payment-proofs-modal";
 import { DashboardReservationsResponse } from "../application/GetDashboardReservationsUseCase";
 import { useDashboardReservationsData } from "../hooks/use-dashboard-reservations-data";
 import { FiltersCard } from "@/presentation/features/reservations/components/molecules/filters-card";
@@ -56,10 +57,12 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
   const [showFilters, setShowFilters] = useState(false);
   const [creating, setCreating] = useState(false);
   const [viewingDetails, setViewingDetails] = useState<ReservationDto | null>(null);
+  const [highlightPaymentProofId, setHighlightPaymentProofId] = useState<number | undefined>(undefined);
   const [initialTab, setInitialTab] = useState<"details" | "payment-proofs">("details");
   const [generatingReceipt, setGeneratingReceipt] = useState<ReservationDto | null>(null);
   const [sendingReceipt, setSendingReceipt] = useState<ReservationDto | null>(null);
   const [viewingReceipts, setViewingReceipts] = useState<ReservationDto | null>(null);
+  const [viewingPaymentProofs, setViewingPaymentProofs] = useState<ReservationDto | null>(null);
 
   // Notification context
   const { setNotificationHandler } = useNotificationContext();
@@ -85,6 +88,10 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
           if (result.success && result.data) {
             setInitialTab("payment-proofs");
             setViewingDetails(result.data);
+            // Set the payment proof ID to highlight if available
+            if (notification.paymentProofId) {
+              setHighlightPaymentProofId(notification.paymentProofId);
+            }
           } else {
             toast.error("Error al cargar la reserva", {
               description: result.success === false ? result.error : "No se pudo cargar la información de la reserva.",
@@ -282,6 +289,7 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
         onGenerateReceipt={(reservation) => setGeneratingReceipt(reservation)}
         onSendReceipt={(reservation) => setSendingReceipt(reservation)}
         onViewReceipts={(reservation) => setViewingReceipts(reservation)}
+        onViewPaymentProofs={(reservation) => setViewingPaymentProofs(reservation)}
         selectedIds={selectedReservationIds}
         onSelectionChange={handleSelectionChange}
         onSelectAll={handleSelectAll}
@@ -293,8 +301,10 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
         onClose={() => {
           setViewingDetails(null);
           setInitialTab("details"); // Reset tab when closing
+          setHighlightPaymentProofId(undefined);
         }}
         initialTab={initialTab}
+        highlightPaymentProofId={highlightPaymentProofId}
         onStatusChange={() => {
           // Refrescar datos del dashboard tras cambio de estado
           refetch();
@@ -337,6 +347,12 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
         open={!!viewingReceipts}
         onClose={() => setViewingReceipts(null)}
         reservation={viewingReceipts}
+      />
+
+      <PaymentProofsModal
+        open={!!viewingPaymentProofs}
+        onClose={() => setViewingPaymentProofs(null)}
+        reservation={viewingPaymentProofs}
       />
     </section>
   );

@@ -16,7 +16,7 @@ import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale/es";
 import {
-  getUnreadNotificationsAction,
+  getAllNotificationsAction,
   getUnreadNotificationsCountAction,
   markNotificationAsReadAction,
   type NotificationResponseDto,
@@ -39,12 +39,15 @@ export function NotificationBell({ onNotificationClick: propOnNotificationClick 
   const loadNotifications = async () => {
     setLoading(true);
     try {
-      const result = await getUnreadNotificationsAction();
+      // Load ALL notifications (read and unread), ordered by most recent first
+      const result = await getAllNotificationsAction(1, 50);
       if (result.success) {
-        // result.data is already the array (extracted in server action)
-        const notificationsArray = Array.isArray(result.data) ? result.data : [];
-        setNotifications(notificationsArray);
-        setUnreadCount(notificationsArray.filter((n) => !n.isRead).length);
+        // result.data contains { data: NotificationResponseDto[], total: number, page: number, limit: number }
+        const notificationsData = result.data?.data || [];
+        setNotifications(notificationsData);
+        // Update unread count based on loaded notifications
+        const unreadCount = notificationsData.filter((n) => !n.isRead).length;
+        setUnreadCount(unreadCount);
       }
     } catch (error) {
       console.error("Error loading notifications:", error);
@@ -86,15 +89,23 @@ export function NotificationBell({ onNotificationClick: propOnNotificationClick 
   }, []);
 
   const handleNotificationClick = async (notification: NotificationResponseDto) => {
-    // Mark as read
+    // Mark as read if not already read
     if (!notification.isRead) {
       try {
         const result = await markNotificationAsReadAction(notification.id);
         if (result.success) {
-          // Update local state - result.data is already the NotificationResponseDto
+          // Update local state - mark as read but keep the notification visible
+          // result.data is already the NotificationResponseDto with updated isRead status
+          const updatedNotification = result.data;
+          
           setNotifications((prev) =>
-            prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n))
+            prev.map((n) => 
+              n.id === notification.id 
+                ? { ...n, isRead: true, readAt: updatedNotification?.readAt || new Date() }
+                : n
+            )
           );
+          // Update unread count
           setUnreadCount((prev) => Math.max(0, prev - 1));
         }
       } catch (error) {
@@ -104,7 +115,9 @@ export function NotificationBell({ onNotificationClick: propOnNotificationClick 
 
     // Call callback (prop takes precedence over context)
     const handler = propOnNotificationClick || contextOnNotificationClick;
-    handler(notification);
+    if (handler) {
+      handler(notification);
+    }
     setOpen(false);
   };
 

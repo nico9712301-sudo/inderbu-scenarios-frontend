@@ -32,8 +32,10 @@ import {
   User,
   X,
   Receipt,
+  Shield,
+  ChevronDown,
 } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { ReservationDto } from "@/entities/reservation/model/types";
 import { ClickableStatusBadge } from "../molecules/clickable-status-badge";
 import { Button } from "@/shared/ui/button";
@@ -55,6 +57,32 @@ const weekdayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
 const fmtDate = (d: string) => format(parseISO(d), "dd/MM/yyyy");
 const fmtTime = (t: string) => format(parseISO(`1970-01-01T${t}`), "HH:mm");
+
+// Safe date formatter that handles Date objects, ISO strings, null, undefined, and invalid dates
+const safeFormatDate = (dateValue: Date | string | null | undefined, formatStr: string = "dd/MM/yyyy HH:mm"): string => {
+  try {
+    if (!dateValue) return "Fecha no disponible";
+    
+    let date: Date;
+    if (dateValue instanceof Date) {
+      date = dateValue;
+    } else if (typeof dateValue === 'string') {
+      date = parseISO(dateValue);
+    } else {
+      date = new Date(dateValue);
+    }
+    
+    if (isNaN(date.getTime())) {
+      console.warn("Invalid date value:", dateValue);
+      return "Fecha inválida";
+    }
+    
+    return format(date, formatStr);
+  } catch (error) {
+    console.error("Error formatting date:", error, dateValue);
+    return "Fecha no disponible";
+  }
+};
 
 const ReservationTypeIndicator = ({ type }: { type: string }) =>
   type === "SINGLE" ? (
@@ -119,6 +147,7 @@ interface ReservationDetailsModalProps {
   onClose: () => void;
   onStatusChange?: () => void; // Callback para refrescar datos tras cambio de estado
   initialTab?: "details" | "payment-proofs"; // Permite abrir con pestaña específica (para notificaciones)
+  highlightPaymentProofId?: number; // ID del comprobante a resaltar (para notificaciones)
 }
 
 export const ReservationDetailsModal = ({
@@ -126,6 +155,7 @@ export const ReservationDetailsModal = ({
   onClose,
   onStatusChange,
   initialTab = "details",
+  highlightPaymentProofId,
 }: ReservationDetailsModalProps) => {
   const [open, setOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useLocalState(false);
@@ -134,6 +164,9 @@ export const ReservationDetailsModal = ({
   const [activeTab, setActiveTab] = useState<"details" | "payment-proofs">(initialTab);
   const [paymentProofs, setPaymentProofs] = useState<PaymentProofPlainObject[]>([]);
   const [loadingProofs, setLoadingProofs] = useState(false);
+  const [showAllUserProofs, setShowAllUserProofs] = useState(false);
+  const [showAllAdminProofs, setShowAllAdminProofs] = useState(false);
+  const highlightedProofRef = useRef<HTMLDivElement>(null);
 
   /* Sincronizar apertura con prop */
   useEffect(() => {
@@ -144,6 +177,9 @@ export const ReservationDetailsModal = ({
       if (reservation.subScenario?.hasCost) {
         loadPaymentProofs();
       }
+      // Reset "show all" states when reservation changes
+      setShowAllUserProofs(false);
+      setShowAllAdminProofs(false);
     }
   }, [reservation, initialTab]);
 
@@ -155,7 +191,16 @@ export const ReservationDetailsModal = ({
       const { getPaymentProofsByReservationAction } = await import("@/infrastructure/web/controllers/dashboard/payment-proof.actions");
       const result = await getPaymentProofsByReservationAction(reservation.id);
       if (result.success) {
-        setPaymentProofs(result.data);
+        // Sort by most recent first
+        const sorted = (result.data || []).sort((a, b) => {
+          const dateA = new Date(a.createdAt).getTime();
+          const dateB = new Date(b.createdAt).getTime();
+          return dateB - dateA;
+        });
+        setPaymentProofs(sorted);
+        // Reset "show all" states when loading new data
+        setShowAllUserProofs(false);
+        setShowAllAdminProofs(false);
       }
     } catch (error) {
       console.error("Error loading payment proofs:", error);
@@ -163,6 +208,19 @@ export const ReservationDetailsModal = ({
       setLoadingProofs(false);
     }
   };
+
+  // Scroll to highlighted payment proof when it loads
+  useEffect(() => {
+    if (highlightPaymentProofId && highlightedProofRef.current && !loadingProofs && paymentProofs.length > 0) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        highlightedProofRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }, 300);
+    }
+  }, [highlightPaymentProofId, loadingProofs, paymentProofs.length]);
 
   const handleOpenChange = useCallback(
     (v: boolean) => {
@@ -512,36 +570,163 @@ export const ReservationDetailsModal = ({
                       No se han subido comprobantes de pago para esta reserva.
                     </p>
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    {paymentProofs.map((proof) => (
-                      <div
-                        key={proof.id}
-                        className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border"
-                      >
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-5 w-5 text-blue-600" />
-                          <div>
-                            <p className="text-sm font-medium">{proof.originalFileName}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Subido el {format(parseISO(proof.createdAt.toString()), "dd/MM/yyyy HH:mm")}
-                            </p>
+                ) : (() => {
+                  // Separate payment proofs by user type
+                  const userProofs = paymentProofs.filter((proof) => {
+                    if (proof.uploadedByUser?.role) {
+                      return proof.uploadedByUser.role.id !== 1; // Not admin (role 1)
+                    }
+                    return proof.uploadedBy === reservation?.userId;
+                  });
+
+                  const adminProofs = paymentProofs.filter((proof) => {
+                    if (proof.uploadedByUser?.role) {
+                      return proof.uploadedByUser.role.id === 1; // Admin (role 1)
+                    }
+                    return proof.uploadedBy !== reservation?.userId;
+                  });
+
+                  // Get latest of each type
+                  const latestUserProof = userProofs.length > 0 ? userProofs[0] : null;
+                  const latestAdminProof = adminProofs.length > 0 ? adminProofs[0] : null;
+
+                  // Determine which proofs to show
+                  const userProofsToShow = showAllUserProofs ? userProofs : (latestUserProof ? [latestUserProof] : []);
+                  const adminProofsToShow = showAllAdminProofs ? adminProofs : (latestAdminProof ? [latestAdminProof] : []);
+
+                  const remainingUserProofs = userProofs.length - 1; // -1 because we show the latest
+                  const remainingAdminProofs = adminProofs.length - 1; // -1 because we show the latest
+
+                  return (
+                    <div className="space-y-6">
+                      {/* User Payment Proofs Section */}
+                      {userProofs.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <User className="h-4 w-4 text-blue-600" />
+                            <h4 className="text-sm font-semibold text-gray-900">
+                              Comprobantes subidos por el usuario
+                            </h4>
+                          </div>
+                          <div className="space-y-3">
+                            {userProofsToShow.map((proof) => {
+                              const isHighlighted = highlightPaymentProofId === proof.id;
+                              return (
+                                <div
+                                  key={proof.id}
+                                  ref={isHighlighted ? highlightedProofRef : null}
+                                  className={cn(
+                                    "flex items-center justify-between p-3 rounded-lg border transition-all duration-500",
+                                    isHighlighted 
+                                      ? "bg-blue-100 border-blue-400 border-2 shadow-lg ring-2 ring-blue-300 ring-opacity-50" 
+                                      : "bg-slate-50"
+                                  )}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <FileText className="h-5 w-5 text-blue-600" />
+                                    <div>
+                                      <p className="text-sm font-medium">{proof.originalFileName}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        Subido el {safeFormatDate(proof.createdAt, "dd/MM/yyyy HH:mm")}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <a
+                                      href={proof.fileUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-sm text-blue-600 hover:underline"
+                                    >
+                                      Ver
+                                    </a>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            {!showAllUserProofs && remainingUserProofs > 0 && (
+                              <button
+                                onClick={() => setShowAllUserProofs(true)}
+                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 w-full text-left"
+                              >
+                                Ver más ({remainingUserProofs})
+                                <ChevronDown className="h-4 w-4" />
+                              </button>
+                            )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <a
-                            href={proof.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-blue-600 hover:underline"
-                          >
-                            Ver
-                          </a>
+                      )}
+
+                      {/* Admin Payment Proofs Section */}
+                      {adminProofs.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <Shield className="h-4 w-4 text-green-600" />
+                            <h4 className="text-sm font-semibold text-gray-900">
+                              Comprobantes subidos por administrador
+                            </h4>
+                          </div>
+                          <div className="space-y-3">
+                            {adminProofsToShow.map((proof) => {
+                              const isHighlighted = highlightPaymentProofId === proof.id;
+                              return (
+                                <div
+                                  key={proof.id}
+                                  ref={isHighlighted ? highlightedProofRef : null}
+                                  className={cn(
+                                    "flex items-center justify-between p-3 rounded-lg border transition-all duration-500",
+                                    isHighlighted 
+                                      ? "bg-blue-100 border-blue-400 border-2 shadow-lg ring-2 ring-blue-300 ring-opacity-50" 
+                                      : "bg-slate-50"
+                                  )}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <FileText className="h-5 w-5 text-green-600" />
+                                    <div>
+                                      <p className="text-sm font-medium">{proof.originalFileName}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        Subido el {safeFormatDate(proof.createdAt, "dd/MM/yyyy HH:mm")}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <a
+                                      href={proof.fileUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-sm text-blue-600 hover:underline"
+                                    >
+                                      Ver
+                                    </a>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            {!showAllAdminProofs && remainingAdminProofs > 0 && (
+                              <button
+                                onClick={() => setShowAllAdminProofs(true)}
+                                className="text-sm text-green-600 hover:text-green-800 hover:underline flex items-center gap-1 w-full text-left"
+                              >
+                                Ver más ({remainingAdminProofs})
+                                <ChevronDown className="h-4 w-4" />
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      )}
+
+                      {/* No proofs message */}
+                      {userProofs.length === 0 && adminProofs.length === 0 && (
+                        <div className="text-center py-8">
+                          <Receipt className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                          <p className="text-sm text-muted-foreground">
+                            No se han subido comprobantes de pago para esta reserva.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </TabsContent>
             )}
           </Tabs>
