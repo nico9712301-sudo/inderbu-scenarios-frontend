@@ -1,13 +1,13 @@
 import { GetLocationsDataService, ILocationsDataResponse } from '@/application/dashboard/locations/services/GetLocationsDataService';
-import { CommuneFilters } from '@/entities/commune/infrastructure/commune-repository.port';
 import { NeighborhoodFilters } from '@/entities/neighborhood/infrastructure/INeighborhoodRepository';
-
 import { LocationsPage } from '@/presentation/features/dashboard/locations/pages/locations.page';
+import { CommuneFilters } from '@/entities/commune/infrastructure/commune-repository.port';
 import { serializeLocationsData } from '@/presentation/utils/serialization.utils';
-
 import { ContainerFactory } from '@/infrastructure/config/di/container.factory';
 import { IContainer } from '@/infrastructure/config/di/simple-container';
 import { TOKENS } from '@/infrastructure/config/di/tokens';
+
+
 
 interface LocationsRouteProps {
   searchParams: Promise<{
@@ -37,14 +37,14 @@ export default async function LocationsRoute(props: LocationsRouteProps) {
     
     // Parse and validate search params
     const communeFilters: CommuneFilters = {
-      page: searchParams.communePage ? parseInt(searchParams.communePage) : 1,
-      limit: searchParams.communeLimit ? parseInt(searchParams.communeLimit) : 10,
+      page: searchParams.communePage ? parseInt(searchParams.communePage, 10) || 1 : 1,
+      limit: searchParams.communeLimit ? parseInt(searchParams.communeLimit, 10) || 10 : 10,
       search: searchParams.communeSearch || "",
     };
 
     const neighborhoodFilters: NeighborhoodFilters = {
-      page: searchParams.neighborhoodPage ? parseInt(searchParams.neighborhoodPage) : 1,
-      limit: searchParams.neighborhoodLimit ? parseInt(searchParams.neighborhoodLimit) : 10,
+      page: searchParams.neighborhoodPage ? parseInt(searchParams.neighborhoodPage, 10) || 1 : 1,
+      limit: searchParams.neighborhoodLimit ? parseInt(searchParams.neighborhoodLimit, 10) || 10 : 10,
       search: searchParams.neighborhoodSearch || "",
     };
 

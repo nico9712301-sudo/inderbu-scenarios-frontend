@@ -1,6 +1,7 @@
 "use server";
 
 import { ErrorHandlerComposer } from '@/shared/api/error-handler';
+import { isBackendResponse, type BackendResponse } from '@/shared/api/backend-types';
 
 /**
  * Notification Server Actions
@@ -31,9 +32,15 @@ export async function getUnreadNotificationsAction() {
     const { ClientHttpClientFactory, createClientAuthContext } = await import('@/shared/api/http-client-client');
     
     const httpClient = ClientHttpClientFactory.createClient(createClientAuthContext());
-    const result = await httpClient.get<NotificationResponseDto[]>('/api/notifications/unread/all');
+    const result = await httpClient.get<BackendResponse<NotificationResponseDto[]> | NotificationResponseDto[]>('/api/notifications/unread/all');
 
-    return result;
+    // Extract array from BackendResponse if needed
+    if (isBackendResponse<NotificationResponseDto[]>(result)) {
+      return result.data;
+    }
+    
+    // If it's already an array, return it directly
+    return Array.isArray(result) ? result : [];
   }, 'getUnreadNotificationsAction');
 }
 
@@ -46,9 +53,15 @@ export async function getUnreadNotificationsCountAction() {
     const { ClientHttpClientFactory, createClientAuthContext } = await import('@/shared/api/http-client-client');
     
     const httpClient = ClientHttpClientFactory.createClient(createClientAuthContext());
-    const result = await httpClient.get<{ count: number }>('/api/notifications/unread/count');
+    const result = await httpClient.get<BackendResponse<{ count: number }> | { count: number }>('/api/notifications/unread/count');
 
-    return result.count;
+    // Extract count from BackendResponse if needed
+    if (isBackendResponse<{ count: number }>(result)) {
+      return result.data.count;
+    }
+    
+    // If it's already an object with count, return count directly
+    return (result as any).count || 0;
   }, 'getUnreadNotificationsCountAction');
 }
 
@@ -61,11 +74,17 @@ export async function markNotificationAsReadAction(notificationId: number) {
     const { ClientHttpClientFactory, createClientAuthContext } = await import('@/shared/api/http-client-client');
     
     const httpClient = ClientHttpClientFactory.createClient(createClientAuthContext());
-    const result = await httpClient.put<NotificationResponseDto>(
+    const result = await httpClient.put<BackendResponse<NotificationResponseDto> | NotificationResponseDto>(
       `/api/notifications/${notificationId}/read`,
       {}
     );
 
-    return result;
+    // Extract NotificationResponseDto from BackendResponse if needed
+    if (isBackendResponse<NotificationResponseDto>(result)) {
+      return result.data;
+    }
+    
+    // If it's already a NotificationResponseDto, return it directly
+    return result as NotificationResponseDto;
   }, 'markNotificationAsReadAction');
 }

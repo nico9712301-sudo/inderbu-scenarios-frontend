@@ -41,11 +41,14 @@ export function NotificationBell({ onNotificationClick: propOnNotificationClick 
     try {
       const result = await getUnreadNotificationsAction();
       if (result.success) {
-        setNotifications(result.data);
-        setUnreadCount(result.data.filter((n) => !n.isRead).length);
+        // result.data is already the array (extracted in server action)
+        const notificationsArray = Array.isArray(result.data) ? result.data : [];
+        setNotifications(notificationsArray);
+        setUnreadCount(notificationsArray.filter((n) => !n.isRead).length);
       }
     } catch (error) {
       console.error("Error loading notifications:", error);
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
@@ -55,10 +58,13 @@ export function NotificationBell({ onNotificationClick: propOnNotificationClick 
     try {
       const result = await getUnreadNotificationsCountAction();
       if (result.success) {
-        setUnreadCount(result.data);
+        // result.data is already the number (extracted in server action)
+        const count = typeof result.data === 'number' ? result.data : 0;
+        setUnreadCount(count);
       }
     } catch (error) {
       console.error("Error loading unread count:", error);
+      setUnreadCount(0);
     }
   };
 
@@ -85,7 +91,7 @@ export function NotificationBell({ onNotificationClick: propOnNotificationClick 
       try {
         const result = await markNotificationAsReadAction(notification.id);
         if (result.success) {
-          // Update local state
+          // Update local state - result.data is already the NotificationResponseDto
           setNotifications((prev) =>
             prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n))
           );
@@ -105,8 +111,12 @@ export function NotificationBell({ onNotificationClick: propOnNotificationClick 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="relative text-gray-100 hover:!text-gray-100 hover:!bg-transparent [&_svg]:text-gray-100 [&_svg]:hover:!text-gray-100"
+        >
+          <Bell className="h-5 w-5 text-gray-100" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"

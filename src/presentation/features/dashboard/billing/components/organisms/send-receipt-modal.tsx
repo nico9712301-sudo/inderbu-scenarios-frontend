@@ -13,9 +13,12 @@ import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";
 import { Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
-import { sendReceiptByEmailAction, getReceiptsByReservationAction } from "@/infrastructure/web/controllers/dashboard/billing.actions";
+import { sendReceiptByEmailAction } from "@/infrastructure/web/controllers/dashboard/billing.actions";
 import type { ReservationDto } from "@/entities/reservation/model/types";
 import type { ReceiptPlainObject } from "@/entities/billing/domain/ReceiptEntity";
+import { ReceiptSearchCombobox } from "../molecules/receipt-search-combobox";
+import { ReceiptRenderer } from "./receipt-renderer";
+import type { TemplateContent } from "./template-builder/types/template-builder.types";
 
 interface SendReceiptModalProps {
   open: boolean;
@@ -30,47 +33,53 @@ export function SendReceiptModal({
   reservation,
   onSuccess,
 }: SendReceiptModalProps) {
-  const [latestReceipt, setLatestReceipt] = useState<ReceiptPlainObject | null>(null);
+  const [selectedReceipt, setSelectedReceipt] = useState<ReceiptPlainObject | null>(null);
+  const [templateContent, setTemplateContent] = useState<TemplateContent | null>(null);
   const [loading, setLoading] = useState(false);
-  const [loadingReceipt, setLoadingReceipt] = useState(false);
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
 
-  // Load latest receipt when modal opens
+  // Reset state when modal closes
   useEffect(() => {
-    if (open && reservation) {
-      loadLatestReceipt();
+    if (!open) {
+      setSelectedReceipt(null);
+      setTemplateContent(null);
     }
-  }, [open, reservation]);
+  }, [open]);
 
-  const loadLatestReceipt = async () => {
-    if (!reservation) return;
+  // Load template content when receipt is selected
+  useEffect(() => {
+    if (selectedReceipt?.templateContent) {
+      loadTemplateContent(selectedReceipt.templateContent);
+    } else {
+      setTemplateContent(null);
+    }
+  }, [selectedReceipt]);
 
-    setLoadingReceipt(true);
+  const loadTemplateContent = async (contentString: string) => {
+    setLoadingTemplate(true);
     try {
-      const result = await getReceiptsByReservationAction(reservation.id);
-      if (result.success && result.data.length > 0) {
-        // Get the most recent receipt (last generated)
-        const receipts = result.data;
-        const latest = receipts.sort(
-          (a, b) => new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime()
-        )[0];
-        setLatestReceipt(latest);
-      } else {
-        toast.error("No hay recibos generados", {
-          description: "Debe generar un recibo primero antes de enviarlo por email.",
-        });
-        onClose();
-      }
+      const parsed = JSON.parse(contentString);
+      setTemplateContent(parsed);
     } catch (error) {
-      console.error("Error loading receipt:", error);
-      toast.error("Error al cargar recibo");
-      onClose();
+      console.error("Error parsing template content:", error);
+      toast.error("Error al cargar el contenido de la plantilla");
+      setTemplateContent(null);
     } finally {
-      setLoadingReceipt(false);
+      setLoadingTemplate(false);
+    }
+  };
+
+  const handleReceiptChange = (receiptId: number | null, receipt?: ReceiptPlainObject) => {
+    if (receipt) {
+      setSelectedReceipt(receipt);
+    } else {
+      setSelectedReceipt(null);
+      setTemplateContent(null);
     }
   };
 
   const handleSend = async () => {
-    if (!reservation || !latestReceipt || !reservation.user?.email) {
+    if (!reservation || !selectedReceipt || !reservation.user?.email) {
       toast.error("No se puede enviar el recibo");
       return;
     }
@@ -78,7 +87,7 @@ export function SendReceiptModal({
     setLoading(true);
     try {
       const result = await sendReceiptByEmailAction({
-        receiptId: latestReceipt.id,
+        receiptId: selectedReceipt.id,
         email: reservation.user.email,
       });
 
@@ -105,49 +114,66 @@ export function SendReceiptModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Enviar Recibo por Email</DialogTitle>
           <DialogDescription>
-            Se enviará el recibo más reciente por correo electrónico al cliente.
+            Selecciona el recibo que deseas enviar por correo electrónico al cliente.
           </DialogDescription>
         </DialogHeader>
 
-        {loadingReceipt ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="ml-2 text-sm text-muted-foreground">
-              Cargando recibo...
-            </span>
-          </div>
-        ) : latestReceipt ? (
-          <div className="space-y-4 py-4">
-            <div className="rounded-md bg-muted p-4 space-y-2">
-              <p className="text-sm font-medium">Destinatario</p>
-              <div className="space-y-1">
-                <p className="text-sm">
-                  {reservation.user.firstName} {reservation.user.lastName}
-                </p>
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  {reservation.user.email}
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-md bg-blue-50 border border-blue-200 p-3">
-              <p className="text-sm text-blue-800">
-                Se enviará el recibo generado el{" "}
-                {new Date(latestReceipt.generatedAt).toLocaleDateString("es-ES", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-                .
+        <div className="space-y-6 py-4">
+          {/* Destinatario */}
+          <div className="rounded-md bg-muted p-4 space-y-2">
+            <p className="text-sm font-medium">Destinatario</p>
+            <div className="space-y-1">
+              <p className="text-sm">
+                {reservation.user.firstName} {reservation.user.lastName}
+              </p>
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                {reservation.user.email}
               </p>
             </div>
           </div>
-        ) : null}
+
+          {/* Selector de Recibo */}
+          <div className="space-y-2">
+            <Label htmlFor="receipt-select">Seleccionar Recibo</Label>
+            <ReceiptSearchCombobox
+              reservationId={reservation.id}
+              value={selectedReceipt?.id || null}
+              onValueChange={handleReceiptChange}
+              placeholder="Buscar recibo por fecha..."
+              disabled={loading}
+            />
+          </div>
+
+          {/* Preview del Recibo */}
+          {loadingTemplate ? (
+            <div className="flex items-center justify-center py-12 border rounded-md">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span className="ml-2 text-sm text-muted-foreground">
+                Cargando preview del recibo...
+              </span>
+            </div>
+          ) : selectedReceipt && templateContent ? (
+            <div className="space-y-2">
+              <Label>Preview del Recibo</Label>
+              <div className="border rounded-md p-4 bg-white overflow-auto max-h-[500px]">
+                <ReceiptRenderer
+                  receipt={selectedReceipt}
+                  reservation={reservation}
+                  content={templateContent}
+                />
+              </div>
+            </div>
+          ) : selectedReceipt && !templateContent ? (
+            <div className="border rounded-md p-8 text-center text-muted-foreground">
+              <p>No se pudo cargar el contenido de la plantilla.</p>
+            </div>
+          ) : null}
+        </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={loading}>
@@ -155,7 +181,7 @@ export function SendReceiptModal({
           </Button>
           <Button
             onClick={handleSend}
-            disabled={loading || loadingReceipt || !latestReceipt}
+            disabled={loading || loadingTemplate || !selectedReceipt || !templateContent}
           >
             {loading ? (
               <>
