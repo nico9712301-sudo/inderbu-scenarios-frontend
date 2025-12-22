@@ -1,6 +1,6 @@
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useCallback, useRef } from "react";
 import { ScheduleConfig, IFromTo, URLSchedulerState } from "../types/scheduler.types";
+import { useEffect, useCallback, useRef, startTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 
 
@@ -63,6 +63,7 @@ export const useURLPersistence = (
   }, [searchParams]);
 
   // Actualizar URL cuando cambie el estado
+  // Diferir la actualización usando requestAnimationFrame para evitar scroll reset
   const updateURL = useCallback((urlState: URLSchedulerState) => {
     const params = new URLSearchParams(searchParams);
 
@@ -78,10 +79,25 @@ export const useURLPersistence = (
     if (urlState.weekdays) params.set('weekdays', urlState.weekdays);
     if (urlState.mode) params.set('mode', urlState.mode);
 
-    // Shallow routing para no recargar página
+    // Construir nueva URL
     const newURL = params.toString() ? `?${params.toString()}` : '';
     const currentPath = window.location.pathname;
-    router.replace(`${currentPath}${newURL}`, { scroll: false });
+    const fullURL = `${currentPath}${newURL}`;
+
+    // Guardar la posición del scroll antes de actualizar
+    const scrollY = window.scrollY;
+
+    // Diferir la actualización usando requestAnimationFrame para evitar scroll reset
+    requestAnimationFrame(() => {
+      startTransition(() => {
+        router.replace(fullURL, { scroll: false });
+        
+        // Restaurar la posición del scroll después de la actualización
+        requestAnimationFrame(() => {
+          window.scrollTo(0, scrollY);
+        });
+      });
+    });
   }, [router, searchParams]);
 
   // Restaurar estado desde URL al montar
