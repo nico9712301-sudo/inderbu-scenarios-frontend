@@ -723,7 +723,7 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
                         >
                           <td className="px-4 py-3 text-sm">{commune.id}</td>
                           <td className="px-4 py-3 text-sm font-medium">
-                            {commune.name}
+                            {commune.name || "Sin nombre"}
                           </td>
                           <td className="px-4 py-3 text-sm">
                             {commune.city?.name || "No asignada"}

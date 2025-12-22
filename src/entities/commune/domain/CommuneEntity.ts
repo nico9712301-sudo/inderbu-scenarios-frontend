@@ -105,10 +105,11 @@ export class CommuneEntity {
   }
 
   getFullName(): string {
+    const displayName = this.name || "Sin nombre";
     if (this.hasCity()) {
-      return `${this.name}, ${this.getCityName()}`;
+      return `${displayName}, ${this.getCityName()}`;
     }
-    return this.name;
+    return displayName;
   }
 
   matchesSearchQuery(query: string): boolean {
@@ -175,8 +176,9 @@ export class CommuneEntity {
       typeof apiData === 'object' &&
       typeof apiData.id === 'number' &&
       apiData.id > 0 &&
-      typeof apiData.name === 'string' &&
-      apiData.name.trim().length > 0
+      typeof apiData.name === 'string'
+      // Allow empty names when reading from backend (backend may return incomplete data)
+      // Validation for creation/updates is handled by isValidForCreation()
     );
   }
 }

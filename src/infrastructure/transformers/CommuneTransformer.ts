@@ -55,8 +55,9 @@ function isValidCommuneBackend(data: any): data is CommuneBackend {
     typeof data === "object" &&
     typeof data.id === "number" &&
     data.id > 0 &&
-    typeof data.name === "string" &&
-    data.name.trim().length > 0
+    typeof data.name === "string"
+    // Allow empty names when reading from backend (backend may return incomplete data)
+    // Validation for creation/updates is handled by domain entity
   );
 }
 

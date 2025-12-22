@@ -22,6 +22,8 @@ import {
   Download,
   Loader2,
   RefreshCw,
+  Upload,
+  FileImage,
 } from "lucide-react";
 import type { TemplateContent } from "@/presentation/features/dashboard/billing/components/organisms/template-builder/types/template-builder.types";
 import { getReceiptsByReservationAction } from "@/infrastructure/web/controllers/dashboard/billing.actions";
@@ -81,6 +83,12 @@ export function ModifyReservationModal({
   const [loadingReceipts, setLoadingReceipts] = useState(false);
   const [downloadingReceipt, setDownloadingReceipt] = useState(false);
 
+  // Payment proof upload states
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [dragActive, setDragActive] = useState(false);
+
   const loadReceipts = useCallback(async () => {
     if (!reservation) return;
 
@@ -101,6 +109,106 @@ export function ModifyReservationModal({
       setLoadingReceipts(false);
     }
   }, [reservation]);
+
+  // Handle file selection
+  const handleFileSelect = useCallback((file: File) => {
+    // Validate file size (10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      toast.error("El archivo es demasiado grande", {
+        description: "El tamaño máximo permitido es 10MB"
+      });
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Formato de archivo no permitido", {
+        description: "Solo se permiten archivos PNG, JPG, JPEG y PDF"
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+    toast.success(`Archivo seleccionado: ${file.name}`);
+  }, []);
+
+  // Handle file upload
+  const handleFileUpload = useCallback(async () => {
+    if (!selectedFile || !reservation) {
+      toast.error("No hay archivo seleccionado");
+      return;
+    }
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('reservationId', reservation.id.toString());
+
+      // Simulate upload progress for now
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
+      // TODO: Replace with actual API call
+      // const response = await uploadPaymentProofAction(formData);
+
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      setUploadProgress(100);
+      toast.success("Comprobante de pago subido exitosamente", {
+        description: "Tu comprobante será revisado por el administrador"
+      });
+
+      setSelectedFile(null);
+      setUploadProgress(0);
+    } catch (error) {
+      console.error('Error uploading payment proof:', error);
+      toast.error("Error al subir el comprobante", {
+        description: "Intenta nuevamente o contacta soporte"
+      });
+    } finally {
+      setUploading(false);
+    }
+  }, [selectedFile, reservation]);
+
+  // Handle drag and drop
+  const handleDrag = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileSelect(e.dataTransfer.files[0]);
+    }
+  }, [handleFileSelect]);
+
+  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFileSelect(e.target.files[0]);
+    }
+  }, [handleFileSelect]);
 
   // Load receipts when tab changes to payments
   useEffect(() => {
@@ -482,7 +590,7 @@ export function ModifyReservationModal({
                             •{" "}
                             {
                               reservation.subScenario.scenario.neighborhood
-                                .commune.name
+                                .commune.name || "Sin nombre"
                             }
                           </>
                         )}
@@ -667,43 +775,171 @@ export function ModifyReservationModal({
                       .sort((a, b) => new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime())[0];
 
                     return (
-                      <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-2">
+                      <>
+                        <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Receipt className="h-5 w-5 text-green-600" />
+                                <span className="font-semibold text-gray-900 text-lg">
+                                  Recibo de pago
+                                </span>
+                                {latestReceipt.isSent && (
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-green-50 text-green-700 border-green-200 text-sm"
+                                  >
+                                    Enviado por email
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+
                             <div className="flex items-center gap-2">
-                              <Receipt className="h-5 w-5 text-green-600" />
-                              <span className="font-semibold text-gray-900 text-lg">
-                                Recibo de pago
-                              </span>
-                              {latestReceipt.isSent && (
-                                <Badge
-                                  variant="outline"
-                                  className="bg-green-50 text-green-700 border-green-200 text-sm"
-                                >
-                                  Enviado por email
-                                </Badge>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleDownloadReceipt(latestReceipt)}
+                                disabled={downloadingReceipt}
+                                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+                              >
+                                {downloadingReceipt ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Download className="h-4 w-4" />
+                                )}
+                                Descargar PDF
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Payment Proof Upload Section */}
+                      <div className="mt-6 border border-gray-200 rounded-lg p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-100 rounded-lg">
+                              <FileImage className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-gray-900 text-lg">
+                                Comprobante de Pago
+                              </h4>
+                              <p className="text-sm text-gray-600">
+                                Sube tu comprobante de pago para confirmar la reserva
+                              </p>
+                            </div>
+                          </div>
+
+                          <div
+                            className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                              dragActive
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-blue-300 hover:border-blue-400"
+                            }`}
+                            onDragEnter={handleDrag}
+                            onDragLeave={handleDrag}
+                            onDragOver={handleDrag}
+                            onDrop={handleDrop}
+                          >
+                            <div className="space-y-3">
+                              {selectedFile ? (
+                                <>
+                                  <div className="flex justify-center">
+                                    <CheckCircle className="h-8 w-8 text-green-500" />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-700">
+                                      {selectedFile.name}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                                    </p>
+                                  </div>
+                                  {uploading && (
+                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                      <div
+                                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                        style={{ width: `${uploadProgress}%` }}
+                                      ></div>
+                                    </div>
+                                  )}
+                                  <div className="flex gap-2 justify-center">
+                                    <Button
+                                      onClick={handleFileUpload}
+                                      disabled={uploading}
+                                      className="bg-green-600 hover:bg-green-700"
+                                      size="sm"
+                                    >
+                                      {uploading ? (
+                                        <>
+                                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                          Subiendo... {uploadProgress}%
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Upload className="h-4 w-4 mr-2" />
+                                          Subir archivo
+                                        </>
+                                      )}
+                                    </Button>
+                                    <Button
+                                      onClick={() => setSelectedFile(null)}
+                                      disabled={uploading}
+                                      variant="outline"
+                                      size="sm"
+                                    >
+                                      <X className="h-4 w-4 mr-2" />
+                                      Cancelar
+                                    </Button>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="flex justify-center">
+                                    <Upload className="h-8 w-8 text-blue-500" />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-700">
+                                      Arrastra y suelta tu archivo aquí, o haz clic para seleccionar
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      Formatos soportados: PNG, JPG, JPEG, PDF (máx. 10MB)
+                                    </p>
+                                  </div>
+                                  <input
+                                    type="file"
+                                    className="hidden"
+                                    accept="image/*,.pdf"
+                                    id="payment-proof-upload"
+                                    onChange={handleFileInputChange}
+                                  />
+                                  <label
+                                    htmlFor="payment-proof-upload"
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 cursor-pointer transition-colors"
+                                  >
+                                    <Upload className="h-4 w-4" />
+                                    Seleccionar archivo
+                                  </label>
+                                </>
                               )}
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="default"
-                              size="sm"
-                              onClick={() => handleDownloadReceipt(latestReceipt)}
-                              disabled={downloadingReceipt}
-                              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
-                            >
-                              {downloadingReceipt ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Download className="h-4 w-4" />
-                              )}
-                              Descargar PDF
-                            </Button>
+                          <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <div className="text-sm text-blue-700">
+                              <p className="font-medium mb-1">Información importante:</p>
+                              <ul className="space-y-1 text-xs">
+                                <li>• El comprobante será revisado por el administrador</li>
+                                <li>• Una vez aprobado, tu reserva será confirmada automáticamente</li>
+                                <li>• Asegúrate de que el comprobante sea claro y legible</li>
+                              </ul>
+                            </div>
                           </div>
                         </div>
                       </div>
+                      </>
                     );
                   })()
                 )}
