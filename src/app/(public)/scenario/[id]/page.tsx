@@ -41,16 +41,7 @@ export default async function ScenarioDetailRoute({ params, searchParams }: Page
   const { id } = await params;
   const awaitedSearchParams = await searchParams;
 
-  console.log('🚀 SERVER COMPONENT - SCENARIO PAGE:');
-  console.log('- id:', id);
-  console.log('- awaitedSearchParams:', awaitedSearchParams);
-  console.log('- awaitedSearchParams.date:', awaitedSearchParams.date);
-  console.log('- awaitedSearchParams.finalDate:', awaitedSearchParams.finalDate);
-  console.log('- awaitedSearchParams.weekdays:', awaitedSearchParams.weekdays);
-  console.log('- getTodayString():', getTodayString());
-
   const initialDateToUse = awaitedSearchParams.date || getTodayString();
-  console.log('- Final initialDate used for availability:', initialDateToUse);
 
   try {
     // DDD: Dependency injection - use central container factory
@@ -67,13 +58,6 @@ export default async function ScenarioDetailRoute({ params, searchParams }: Page
       initialDate: initialDateToUse,
       finalDate: awaitedSearchParams.finalDate,
       weekdays: parseWeekdays(awaitedSearchParams.weekdays),
-    });
-
-    console.log('✅ Availability result from use case:', {
-      subScenarioId: availabilityResult.subScenarioId,
-      requestedConfig: availabilityResult.requestedConfiguration,
-      timeSlots: availabilityResult.timeSlots?.length,
-      calculatedDates: availabilityResult.calculatedDates?.length
     });
     
     // Presentation Layer responsibility: Serialize domain entities for client components
